@@ -4,7 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { FormEvent, ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FaInstagram } from "react-icons/fa";
 import {
   ArrowLeft,
   ArrowRight,
@@ -46,6 +47,7 @@ import {
   type Notice,
   type ResearchArea,
 } from "../data/content";
+import { getActiveNavigationItem, navigation } from "../data/navigation";
 import {
   getCourseBySlug,
   getCoursesForArea,
@@ -63,100 +65,9 @@ type DepartmentSiteProps = {
   searchParams: Record<string, string>;
 };
 
-type NavItem = {
-  key: string;
-  label: LocaleText;
-  path: string;
-  children: { label: LocaleText; path: string }[];
-};
-
 const t = (value: LocaleText, locale: Locale) => value[locale];
 const tx = (locale: Locale, ko: string, en: string) => (locale === "ko" ? ko : en);
 const hrefFor = (locale: Locale, path = "") => `/${locale}${path}`;
-
-const navigation: NavItem[] = [
-  {
-    key: "about",
-    label: { ko: "학부소개", en: "About" },
-    path: "/about",
-    children: [
-      ["학부 소개", "About the Department", "/about"],
-      ["학부장 인사말", "Chair's Message", "/about/greeting"],
-      ["비전 및 교육목표", "Vision & Objectives", "/about/vision"],
-      ["연혁", "History", "/about/history"],
-      ["조직 및 연락처", "Organization & Contact", "/about/contact"],
-      ["오시는 길", "Directions", "/about/directions"],
-    ].map(([ko, en, path]) => ({ label: { ko, en }, path })),
-  },
-  {
-    key: "faculty",
-    label: { ko: "교수진", en: "People" },
-    path: "/faculty",
-    children: [
-      ["전체 교수진", "All Faculty", "/faculty"],
-      ["연구분야별 교수진", "Faculty by Area", "/faculty?view=area"],
-      ["연구실", "Laboratories", "/labs"],
-      ["명예교수", "Emeritus Faculty", "/faculty/emeritus"],
-      ["교직원", "Staff", "/faculty/staff"],
-    ].map(([ko, en, path]) => ({ label: { ko, en }, path })),
-  },
-  {
-    key: "research",
-    label: { ko: "연구분야", en: "Research" },
-    path: "/research",
-    children: [
-      ["연구분야 전체", "All Research Areas", "/research"],
-      ...researchAreas.map((area) => [
-        `${area.number} ${area.name.ko}`,
-        `${area.number} ${area.name.en}`,
-        `/research/${area.slug}`,
-      ]),
-      ["연구성과", "Research Outcomes", "/research/outcomes"],
-      ["연구시설", "Research Facilities", "/research/facilities"],
-    ].map(([ko, en, path]) => ({ label: { ko, en }, path })),
-  },
-  {
-    key: "academics",
-    label: { ko: "교육과정", en: "Academics" },
-    path: "/academics",
-    children: [
-      ["학부과정", "Undergraduate", "/academics/undergraduate"],
-      ["학부 교과목", "Undergraduate Courses", "/academics/courses?program=undergraduate"],
-      ["대학원과정", "Graduate", "/academics/graduate"],
-      ["대학원 교과목", "Graduate Courses", "/academics/courses?program=graduate"],
-      ["졸업요건", "Graduation Requirements", "/academics/requirements"],
-      ["교과과정 체계도", "Curriculum Map", "/academics/curriculum-map"],
-    ].map(([ko, en, path]) => ({ label: { ko, en }, path })),
-  },
-  {
-    key: "news",
-    label: { ko: "학과소식", en: "News" },
-    path: "/news/notices",
-    children: [
-      ["학부공지", "Undergraduate Notices", "/news/notices?audience=undergraduate"],
-      ["대학원공지", "Graduate Notices", "/news/notices?audience=graduate"],
-      ["학부 뉴스", "Department News", "/news/department"],
-      ["연구 뉴스", "Research News", "/news/research"],
-      ["세미나", "Seminars", "/news/seminars"],
-      ["행사", "Events", "/news/events"],
-      ["학사일정", "Academic Calendar", "/news/calendar"],
-      ["채용정보", "Careers", "/news/careers"],
-    ].map(([ko, en, path]) => ({ label: { ko, en }, path })),
-  },
-  {
-    key: "admission",
-    label: { ko: "입학·홍보", en: "Admissions" },
-    path: "/admission/undergraduate",
-    children: [
-      ["학부 입학", "Undergraduate Admission", "/admission/undergraduate"],
-      ["대학원 입학", "Graduate Admission", "/admission/graduate"],
-      ["학부 홍보", "Department Brochure", "/promotion/department"],
-      ["학생 활동", "Student Activities", "/promotion/students"],
-      ["Instagram", "Instagram", "/promotion/instagram"],
-      ["문의하기", "Contact Us", "/promotion/contact"],
-    ].map(([ko, en, path]) => ({ label: { ko, en }, path })),
-  },
-];
 
 const quickLinks = [
   { ko: "학부공지", en: "Notices", path: "/news/notices?audience=undergraduate", icon: MessageSquareText },
@@ -329,8 +240,23 @@ function SiteHeader({
   searchOpen: boolean;
   setSearchOpen: (value: boolean) => void;
 }) {
-  const currentTop = segments[0] ?? "";
-  const languagePath = `/${locale === "ko" ? "en" : "ko"}${segments.length ? `/${segments.join("/")}` : ""}`;
+  const headerShellRef = useRef<HTMLDivElement>(null);
+  const currentPath = segments.length ? `/${segments.join("/")}` : "/";
+  const localeSuffix = segments.length ? `/${segments.join("/")}` : "";
+  const activeItemKey = getActiveNavigationItem(currentPath)?.key;
+
+  useEffect(() => {
+    if (!openMenu) return;
+
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (!headerShellRef.current?.contains(event.target as Node)) {
+        setOpenMenu(null);
+      }
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
+  }, [openMenu, setOpenMenu]);
 
   return (
     <>
@@ -346,68 +272,112 @@ function SiteHeader({
           <time dateTime="2026-07-08">2026.07.08</time>
         </div>
       </aside>
-      <header className="site-header">
-        <div className="container header-row">
-          <Link href={hrefFor(locale)} className="brand" aria-label={tx(locale, "연세대학교 기계공학부 홈", "Mechanical Engineering home")}>
-            <span className="brand-mark" aria-hidden="true">Y</span>
-            <span className="brand-text">
-              <strong>{tx(locale, "연세대학교 기계공학부", "Mechanical Engineering")}</strong>
-              <small>YONSEI UNIVERSITY</small>
-            </span>
-          </Link>
+      <div
+        className="header-navigation-shell"
+        ref={headerShellRef}
+        onMouseLeave={() => setOpenMenu(null)}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setOpenMenu(null);
+          }
+        }}
+      >
+        <header className="site-header">
+          <div className="container header-row">
+            <Link href={hrefFor(locale)} className="brand" aria-label={tx(locale, "연세대학교 기계공학부 홈", "Mechanical Engineering home")}>
+              <span className="brand-mark" aria-hidden="true">
+                <Image src="/yonsei-symbol.jpg" alt="" width={1907} height={2268} priority unoptimized />
+              </span>
+              <span className="brand-text">
+                <strong>연세대학교 기계공학부</strong>
+                <small>YONSEI UNIVERSITY · MECHANICAL ENGINEERING</small>
+              </span>
+            </Link>
 
-          <nav className="desktop-nav" aria-label={tx(locale, "주요 메뉴", "Primary navigation")} onMouseLeave={() => setOpenMenu(null)}>
-            {navigation.map((item) => {
-              const active = currentTop === item.key || (item.key === "admission" && currentTop === "promotion");
-              return (
-                <div className="nav-item" key={item.key} onMouseEnter={() => setOpenMenu(item.key)}>
-                  <button
-                    type="button"
-                    className={active ? "active" : undefined}
-                    aria-expanded={openMenu === item.key}
-                    aria-controls={`menu-${item.key}`}
-                    onClick={() => setOpenMenu(item.key)}
+            <nav className="desktop-nav" aria-label={tx(locale, "주요 메뉴", "Primary navigation")}>
+              {navigation.map((item) => {
+                const active = activeItemKey === item.key;
+                return (
+                  <div className="nav-item" key={item.key} onMouseEnter={() => setOpenMenu(item.key)}>
+                    <button
+                      type="button"
+                      className={active ? "active" : undefined}
+                      aria-expanded={openMenu === item.key}
+                      aria-controls="desktop-mega-menu"
+                      onClick={() => setOpenMenu(openMenu === item.key ? null : item.key)}
+                      onFocus={() => setOpenMenu(item.key)}
+                    >
+                      {t(item.label, locale)}
+                      <ChevronDown size={14} aria-hidden="true" />
+                    </button>
+                  </div>
+                );
+              })}
+            </nav>
+
+            <div className="header-tools">
+              <div className="language-switch" aria-label={tx(locale, "언어 선택", "Choose language")}>
+                <Link href={`/ko${localeSuffix}`} lang="ko" aria-current={locale === "ko" ? "page" : undefined} onClick={() => setOpenMenu(null)}>KR</Link>
+                <span aria-hidden="true">|</span>
+                <Link href={`/en${localeSuffix}`} lang="en" aria-current={locale === "en" ? "page" : undefined} onClick={() => setOpenMenu(null)}>EN</Link>
+              </div>
+              <a href="https://www.instagram.com/yonsei_mech/" target="_blank" rel="noreferrer" className="icon-button" aria-label="Yonsei Mechanical Engineering Instagram" title="Instagram">
+                <FaInstagram size={19} aria-hidden="true" />
+              </a>
+              <button type="button" className="icon-button" aria-label={tx(locale, "검색 열기", "Open search")} title={tx(locale, "검색", "Search")} onClick={() => setSearchOpen(true)}>
+                <Search size={20} />
+              </button>
+              <button
+                type="button"
+                className="icon-button mobile-menu-button"
+                aria-label={tx(locale, "전체 메뉴 열기", "Open menu")}
+                aria-expanded={mobileOpen}
+                onClick={() => {
+                  setOpenMenu(null);
+                  setMobileOpen(true);
+                }}
+              >
+                <Menu size={24} />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {openMenu && (
+          <div className="mega-menu" id="desktop-mega-menu">
+            <div className="container mega-menu-grid">
+              {navigation.map((item) => (
+                <section
+                  className={`mega-menu-column${openMenu === item.key ? " active" : ""}`}
+                  key={item.key}
+                  onMouseEnter={() => setOpenMenu(item.key)}
+                >
+                  <Link
+                    className="mega-menu-title"
+                    href={hrefFor(locale, item.path)}
+                    onClick={() => setOpenMenu(null)}
+                    onFocus={() => setOpenMenu(item.key)}
                   >
                     {t(item.label, locale)}
-                    <ChevronDown size={14} aria-hidden="true" />
-                  </button>
-                  {openMenu === item.key && (
-                    <div className="nav-dropdown" id={`menu-${item.key}`}>
-                      <div className="nav-dropdown-heading">
-                        <span>{t(item.label, locale)}</span>
-                        <Link href={hrefFor(locale, item.path)}>{tx(locale, "전체보기", "Overview")}</Link>
-                      </div>
-                      <div className="nav-dropdown-links">
-                        {item.children.map((child) => (
-                          <Link key={child.path} href={hrefFor(locale, child.path)} onClick={() => setOpenMenu(null)}>
-                            {t(child.label, locale)}
-                            <ArrowRight size={14} aria-hidden="true" />
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </nav>
-
-          <div className="header-tools">
-            <Link href={languagePath} className="language-switch" lang={locale === "ko" ? "en" : "ko"}>
-              {locale === "ko" ? "EN" : "KR"}
-            </Link>
-            <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" className="icon-button" aria-label="Instagram" title="Instagram">
-              <Camera size={19} />
-            </a>
-            <button type="button" className="icon-button" aria-label={tx(locale, "검색 열기", "Open search")} title={tx(locale, "검색", "Search")} onClick={() => setSearchOpen(true)}>
-              <Search size={20} />
-            </button>
-            <button type="button" className="icon-button mobile-menu-button" aria-label={tx(locale, "전체 메뉴 열기", "Open menu")} aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}>
-              <Menu size={24} />
-            </button>
+                  </Link>
+                  <div className="mega-menu-links">
+                    {item.children.map((child) => (
+                      <Link
+                        key={`${item.key}-${child.path}`}
+                        href={hrefFor(locale, child.path)}
+                        onClick={() => setOpenMenu(null)}
+                        onFocus={() => setOpenMenu(item.key)}
+                      >
+                        {t(child.label, locale)}
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
           </div>
-        </div>
-      </header>
+        )}
+      </div>
 
       {mobileOpen && (
         <div className="mobile-menu" role="dialog" aria-modal="true" aria-label={tx(locale, "전체 메뉴", "Full menu")}>
@@ -420,14 +390,14 @@ function SiteHeader({
           <nav aria-label={tx(locale, "모바일 주요 메뉴", "Mobile navigation")}>
             {navigation.map((item) => (
               <div className="mobile-nav-group" key={item.key}>
-                <button type="button" aria-expanded={mobileSection === item.key} onClick={() => setMobileSection(mobileSection === item.key ? null : item.key)}>
+                <button type="button" aria-expanded={mobileSection === item.key} aria-controls={`mobile-section-${item.key}`} onClick={() => setMobileSection(mobileSection === item.key ? null : item.key)}>
                   {t(item.label, locale)}
                   <ChevronDown size={18} />
                 </button>
                 {mobileSection === item.key && (
-                  <div className="mobile-nav-links">
+                  <div className="mobile-nav-links" id={`mobile-section-${item.key}`}>
                     {item.children.map((child) => (
-                      <Link href={hrefFor(locale, child.path)} key={child.path} onClick={() => setMobileOpen(false)}>
+                      <Link href={hrefFor(locale, child.path)} key={child.path} onClick={() => { setMobileOpen(false); setMobileSection(null); }}>
                         {t(child.label, locale)}
                       </Link>
                     ))}
@@ -437,8 +407,10 @@ function SiteHeader({
             ))}
           </nav>
           <div className="mobile-menu-footer">
-            <Link href={languagePath}>{locale === "ko" ? "English" : "한국어"}</Link>
-            <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram <ExternalLink size={14} /></a>
+            <Link href={`/ko${localeSuffix}`} lang="ko" aria-current={locale === "ko" ? "page" : undefined}>KR</Link>
+            <span aria-hidden="true">|</span>
+            <Link href={`/en${localeSuffix}`} lang="en" aria-current={locale === "en" ? "page" : undefined}>EN</Link>
+            <a href="https://www.instagram.com/yonsei_mech/" target="_blank" rel="noreferrer" aria-label="Yonsei Mechanical Engineering Instagram">Instagram <ExternalLink size={14} /></a>
           </div>
         </div>
       )}
@@ -840,7 +812,8 @@ function GenericPage({ locale, segments }: { locale: Locale; segments: string[] 
   };
   const description = pageCopy[key] ? pageCopy[key][locale] : tx(locale, "공식 콘텐츠를 입력할 수 있도록 페이지 구조를 준비했습니다.", "This page is ready for verified department content.");
   const isDirections = key === "directions";
-  return <><PageHeader eyebrow={(section ?? "DEPARTMENT").toUpperCase()} title={label} description={description} /><section className="section content-section"><div className="container generic-layout"><main><p className="section-label">OVERVIEW</p><h2>{label}</h2><p>{tx(locale, "[공식 콘텐츠 입력 예정] 현재 페이지는 전체 메뉴와 사용자 경로가 끊기지 않도록 준비한 운영용 템플릿입니다.", "[Official content required] This operational template keeps navigation and user journeys complete.")}</p>{isDirections && <div className="contact-placeholder"><MapPin size={34} /><div><h3>{tx(locale, "위치 및 연락처", "Location & Contact")}</h3><p>{tx(locale, "[공식 주소 확인 필요]", "[Official address required]")}</p><p>{tx(locale, "[대표 전화 및 이메일 확인 필요]", "[Official phone and email required]")}</p></div></div>}</main><aside><p>{tx(locale, "관련 페이지", "Related Pages")}</p>{navigation.find((item) => item.key === section || (section === "promotion" && item.key === "admission"))?.children.slice(0, 6).map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{t(item.label, locale)}<ArrowRight size={16} /></Link>)}</aside></div></section></>;
+  const relatedNavigation = getActiveNavigationItem(`/${segments.join("/")}`);
+  return <><PageHeader eyebrow={(section ?? "DEPARTMENT").toUpperCase()} title={label} description={description} /><section className="section content-section"><div className="container generic-layout"><main><p className="section-label">OVERVIEW</p><h2>{label}</h2><p>{tx(locale, "[공식 콘텐츠 입력 예정] 현재 페이지는 전체 메뉴와 사용자 경로가 끊기지 않도록 준비한 운영용 템플릿입니다.", "[Official content required] This operational template keeps navigation and user journeys complete.")}</p>{isDirections && <div className="contact-placeholder"><MapPin size={34} /><div><h3>{tx(locale, "위치 및 연락처", "Location & Contact")}</h3><p>{tx(locale, "[공식 주소 확인 필요]", "[Official address required]")}</p><p>{tx(locale, "[대표 전화 및 이메일 확인 필요]", "[Official phone and email required]")}</p></div></div>}</main><aside><p>{tx(locale, "관련 페이지", "Related Pages")}</p>{relatedNavigation?.children.slice(0, 6).map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{t(item.label, locale)}<ArrowRight size={16} /></Link>)}</aside></div></section></>;
 }
 
 export default function DepartmentSite({ locale, segments, searchParams }: DepartmentSiteProps) {
