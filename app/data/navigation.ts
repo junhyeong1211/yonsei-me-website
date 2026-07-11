@@ -48,13 +48,14 @@ export const navigation: NavigationItem[] = [
   {
     key: "research-people",
     label: { ko: "연구·구성원", en: "Research & People" },
-    path: "/research",
+    path: "/research/fields",
     activePaths: ["/research", "/labs", "/faculty"],
     children: [
-      child("연구 분야", "Research Areas", "/research"),
+      child("연구 분야", "Research Areas", "/research/fields"),
       child("연구실", "Laboratories", "/labs"),
       child("교수진", "Faculty", "/faculty"),
-      child("연구 탐색", "Explore Research", "/search?q=연구"),
+      child("연구 비전·역량", "Research Vision & Capabilities", "/research/vision-capabilities"),
+      child("사회난제 신문고", "Social Challenges", "/research/social-challenges"),
     ],
   },
   {
