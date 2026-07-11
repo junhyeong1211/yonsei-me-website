@@ -175,9 +175,9 @@ p {
 
 .brand-mark {
   display: grid;
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
   place-items: center;
 }
 
@@ -202,7 +202,7 @@ p {
 .brand-text small {
   margin-top: 4px;
   color: var(--color-muted);
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
   line-height: 1.35;
   white-space: nowrap;
@@ -2249,6 +2249,16 @@ p {
     font-size: 15px;
   }
 
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  .brand-text small {
+    font-size: 9px;
+  }
+
   .nav-item > button {
     min-width: 82px;
     padding: 0 9px;
@@ -2482,9 +2492,9 @@ p {
   }
 
   .brand-mark {
-    width: 42px;
-    height: 42px;
-    flex-basis: 42px;
+    width: 35px;
+    height: 35px;
+    flex-basis: 35px;
   }
 
   .brand-mark img {
@@ -2504,7 +2514,7 @@ p {
   .brand-text small {
     max-width: 185px;
     overflow: hidden;
-    font-size: 7px;
+    font-size: 8.5px;
     text-overflow: ellipsis;
   }
 
