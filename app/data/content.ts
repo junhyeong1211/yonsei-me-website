@@ -374,5 +374,5 @@ export const instagramPosts = [
   },
 ];
 
-export const heroImage =
-  "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=1800&q=88";
+// Replace this local file with an approved department photograph when available.
+export const heroImage = "/images/hero-mechanical.webp";

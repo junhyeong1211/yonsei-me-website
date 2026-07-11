@@ -285,18 +285,13 @@ function SiteHeader({
         <header className="site-header">
           <div className="container header-row">
             <Link href={hrefFor(locale)} className="brand" aria-label={tx(locale, "연세대학교 기계공학부 홈", "Mechanical Engineering home")}>
-              <span className="brand-mark" aria-hidden="true">
-                <Image src="/yonsei-symbol.png" alt="" width={1907} height={2268} priority unoptimized />
+              <span className="brand-mark">
+                <Image src="/images/yonsei-symbol.png" alt="연세대학교 심볼" width={1185} height={1188} priority unoptimized />
               </span>
-              <Image
-                className="brand-wordmark"
-                src="/yonsei-mechanical-wordmark.png"
-                alt=""
-                width={186}
-                height={53}
-                priority
-                unoptimized
-              />
+              <span className="brand-text">
+                <strong>연세대학교 기계공학부</strong>
+                <small>YONSEI UNIVERSITY · MECHANICAL ENGINEERING</small>
+              </span>
             </Link>
 
             <nav className="desktop-nav" aria-label={tx(locale, "주요 메뉴", "Primary navigation")}>
@@ -508,18 +503,48 @@ function SiteFooter({ locale }: { locale: Locale }) {
 
 function HomePage({ locale }: { locale: Locale }) {
   const [noticeTab, setNoticeTab] = useState<"undergraduate" | "graduate">("undergraduate");
+  const homeRef = useRef<HTMLDivElement>(null);
   const filteredNotices = notices.filter((notice) => notice.audience === noticeTab).slice(0, 5);
 
+  useEffect(() => {
+    const root = homeRef.current;
+    if (!root) return;
+
+    const targets = Array.from(root.querySelectorAll<HTMLElement>("[data-reveal]"));
+    const reveal = (target: HTMLElement) => target.classList.add("is-visible");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduceMotion || !("IntersectionObserver" in window)) {
+      targets.forEach(reveal);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            reveal(entry.target as HTMLElement);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+    );
+
+    targets.forEach((target) => observer.observe(target));
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <>
-      <section className="hero" aria-labelledby="hero-title">
-        {/* The photo is replaceable from the data file without changing this component. */}
-        <Image src={heroImage} alt={tx(locale, "기계공학 연구 환경", "Mechanical engineering research environment")} fill priority sizes="100vw" />
+    <div className="home-page" ref={homeRef}>
+      <noscript><style>{"[data-reveal], [data-reveal] .home-stagger > * { opacity: 1 !important; transform: none !important; }"}</style></noscript>
+      <section className="hero" aria-labelledby="hero-title" data-reveal>
+        <Image src={heroImage} alt={tx(locale, "기계공학 연구 장비", "Mechanical engineering research equipment")} fill priority sizes="100vw" unoptimized />
         <div className="hero-overlay" aria-hidden="true" />
         <div className="container hero-content">
           <p className="hero-kicker">MECHANICAL ENGINEERING · YONSEI UNIVERSITY</p>
-          <h1 id="hero-title">{tx(locale, "기계의 원리를 넘어,\n미래의 움직임을 설계합니다", "Beyond mechanics,\nwe design how the future moves")}</h1>
-          <p>{tx(locale, "기초 원리와 첨단 기술을 연결해 사람과 사회를 위한 새로운 기계 시스템을 탐구합니다.", "Connecting fundamental principles with advanced technology to shape mechanical systems for society.")}</p>
+          <h1 id="hero-title">{tx(locale, "기계공학으로 더 나은 움직임을 만듭니다", "Building better motion through mechanical engineering")}</h1>
+          <p>{tx(locale, "에너지·로보틱스·설계·제조·바이오 분야의 교육과 연구를 통해 미래 산업을 이끌 인재와 기술을 키웁니다.", "Through education and research in energy, robotics, design, manufacturing, and bioengineering, we cultivate people and technology to lead future industries.")}</p>
           <div className="hero-actions">
             <Link className="button light" href={hrefFor(locale, "/about")}>{tx(locale, "학부 소개", "About Us")}<ArrowRight size={17} /></Link>
             <Link className="text-button light" href={hrefFor(locale, "/admission/undergraduate")}>{tx(locale, "입학 안내", "Admissions")}<ArrowRight size={17} /></Link>
@@ -529,7 +554,7 @@ function HomePage({ locale }: { locale: Locale }) {
       </section>
 
       <nav className="quick-links" aria-label={tx(locale, "주요 바로가기", "Quick links")}>
-        <div className="container quick-links-grid">
+        <div className="container quick-links-grid" data-reveal>
           {quickLinks.map((item) => {
             const Icon = item.icon;
             return <Link href={hrefFor(locale, item.path)} key={item.path}><Icon size={23} strokeWidth={1.5} /><span>{locale === "ko" ? item.ko : item.en}</span><ArrowRight size={16} /></Link>;
@@ -538,7 +563,7 @@ function HomePage({ locale }: { locale: Locale }) {
       </nav>
 
       <section className="section news-calendar-section">
-        <div className="container split-content">
+        <div className="container split-content home-stagger" data-reveal>
           <div className="notice-preview">
             <SectionHeading label="NOTICE" title={tx(locale, "공지사항", "Notices")} link={<Link className="section-more" href={hrefFor(locale, "/news/notices")} aria-label={tx(locale, "공지사항 전체보기", "View all notices")}><ArrowRight size={21} /></Link>} />
             <div className="tabs" role="tablist" aria-label={tx(locale, "공지 구분", "Notice audience")}>
@@ -559,23 +584,23 @@ function HomePage({ locale }: { locale: Locale }) {
       </section>
 
       <section className="research-section section">
-        <div className="container">
+        <div className="container" data-reveal>
           <SectionHeading label="RESEARCH" title={tx(locale, "세상을 움직이는 여섯 가지 연구", "Six fields moving the world forward")} link={<Link className="text-button light" href={hrefFor(locale, "/labs")}>{tx(locale, "연구실 전체보기", "All laboratories")}<ArrowRight size={17} /></Link>} />
-          <div className="research-grid">{researchAreas.map((area) => <ResearchCard key={area.id} area={area} locale={locale} />)}</div>
+          <div className="research-grid home-stagger">{researchAreas.map((area) => <ResearchCard key={area.id} area={area} locale={locale} />)}</div>
         </div>
       </section>
 
       <section className="section faculty-section">
-        <div className="container">
+        <div className="container" data-reveal>
           <SectionHeading label="FACULTY" title={tx(locale, "지식의 경계를 넓히는 교수진", "Faculty expanding the boundaries of knowledge")} link={<Link className="text-button" href={hrefFor(locale, "/faculty")}>{tx(locale, "전체 교수진", "View all faculty")}<ArrowRight size={17} /></Link>} />
-          <div className="faculty-grid preview">{faculty.slice(0, 4).map((person) => <FacultyCard key={person.id} item={person} locale={locale} />)}</div>
+          <div className="faculty-grid preview home-stagger">{faculty.slice(0, 4).map((person) => <FacultyCard key={person.id} item={person} locale={locale} />)}</div>
         </div>
       </section>
 
       <section className="education-section section">
-        <div className="container">
+        <div className="container" data-reveal>
           <SectionHeading label="EDUCATION" title={tx(locale, "원리에서 혁신으로 이어지는 교육", "Education from principles to innovation")} />
-          <div className="education-grid">
+          <div className="education-grid home-stagger">
             <EducationPanel locale={locale} type="undergraduate" />
             <EducationPanel locale={locale} type="graduate" />
           </div>
@@ -583,9 +608,9 @@ function HomePage({ locale }: { locale: Locale }) {
       </section>
 
       <section className="section instagram-section">
-        <div className="container">
+        <div className="container" data-reveal>
           <SectionHeading label="INSTAGRAM" title={tx(locale, "기계공학부의 오늘", "Inside Mechanical Engineering")} link={<a className="text-button" href="https://www.instagram.com/" target="_blank" rel="noreferrer">@YONSEI_ME<ExternalLink size={15} /></a>} />
-          <div className="instagram-grid">
+          <div className="instagram-grid home-stagger">
             {instagramPosts.map((post) => (
               <a className="instagram-card" href="https://www.instagram.com/" target="_blank" rel="noreferrer" key={post.id}>
                 <div className="instagram-image"><Image src={post.image} alt="" fill sizes="(max-width: 680px) 44vw, (max-width: 940px) 50vw, 33vw" /><span><Camera size={23} /></span></div>
@@ -595,7 +620,7 @@ function HomePage({ locale }: { locale: Locale }) {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }
 
