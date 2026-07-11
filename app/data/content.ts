@@ -374,5 +374,34 @@ export const instagramPosts = [
   },
 ];
 
-export const heroImage =
-  "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=1800&q=88";
+export const heroSlides = [
+  {
+    id: "campus",
+    image: "/images/hero-campus.png",
+    alt: { ko: "연세대학교 공학원 건물", en: "Yonsei University Engineering Hall" },
+  },
+  {
+    id: "lab",
+    image: "/images/hero-lab.png",
+    alt: { ko: "정밀 기계 실험실", en: "Precision mechanical engineering laboratory" },
+  },
+  {
+    id: "equipment",
+    image: "/images/hero-equipment.png",
+    alt: { ko: "기계공학 연구 장비", en: "Mechanical engineering research equipment" },
+  },
+] as const;
+
+export const heroImage = heroSlides[0].image;
+
+export const relatedSites = [
+  { label: { ko: "연세대학교", en: "Yonsei University" }, url: "https://www.yonsei.ac.kr/sc/index.do" },
+  { label: { ko: "연세대학교 공과대학", en: "Yonsei College of Engineering" }, url: "https://engineering.yonsei.ac.kr/engineering/index.do" },
+  { label: { ko: "BK21 교육연구단", en: "BK21 Education and Research Group" }, url: "https://me.yonsei.ac.kr/me/bk21/vision_1.do" },
+  { label: { ko: "연세대학교 심리상담센터", en: "Yonsei Counseling Center" }, url: "https://counsel.yonsei.ac.kr/ysclinic/index.do" },
+  { label: { ko: "연세대학교 ABC", en: "Yonsei ABC" }, url: "https://yabc.yonsei.ac.kr/sinchon/index.php" },
+  { label: { ko: "연세대학교 학술정보원", en: "Yonsei University Library" }, url: "https://library.yonsei.ac.kr/local/html/education" },
+  { label: { ko: "Y-DEC", en: "Y-DEC" }, url: "https://ydec.yonsei.ac.kr/ydec/index.do" },
+  { label: { ko: "커리어 연세", en: "Career Yonsei" }, url: "https://career.yonsei.ac.kr/nonIndex.do" },
+  { label: { ko: "LEARN US", en: "LEARN US" }, url: "https://www.learnus.org/" },
+] as const;
