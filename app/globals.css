@@ -183,9 +183,9 @@ p {
 
 .brand-mark img {
   position: absolute;
-  top: -20px;
-  left: -17px;
-  width: 83px;
+  top: -14px;
+  left: -12px;
+  width: 73px;
   height: auto;
   max-width: none;
 }
@@ -2416,9 +2416,9 @@ p {
   }
 
   .brand-mark img {
-    top: -17px;
-    left: -15px;
-    width: 73px;
+    top: -14px;
+    left: -12px;
+    width: 66px;
   }
 
   .brand-wordmark {
