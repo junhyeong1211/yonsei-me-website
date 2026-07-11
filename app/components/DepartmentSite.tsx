@@ -286,12 +286,17 @@ function SiteHeader({
           <div className="container header-row">
             <Link href={hrefFor(locale)} className="brand" aria-label={tx(locale, "연세대학교 기계공학부 홈", "Mechanical Engineering home")}>
               <span className="brand-mark" aria-hidden="true">
-                <Image src="/yonsei-symbol.jpg" alt="" width={1907} height={2268} priority unoptimized />
+                <Image src="/yonsei-symbol.png" alt="" width={1907} height={2268} priority unoptimized />
               </span>
-              <span className="brand-text">
-                <strong>연세대학교 기계공학부</strong>
-                <small>YONSEI UNIVERSITY · MECHANICAL ENGINEERING</small>
-              </span>
+              <Image
+                className="brand-wordmark"
+                src="/yonsei-mechanical-wordmark.png"
+                alt=""
+                width={186}
+                height={53}
+                priority
+                unoptimized
+              />
             </Link>
 
             <nav className="desktop-nav" aria-label={tx(locale, "주요 메뉴", "Primary navigation")}>

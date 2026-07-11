@@ -190,25 +190,10 @@ p {
   max-width: none;
 }
 
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.25;
-}
-
-.brand-text strong {
-  font-size: 17px;
-  font-weight: 760;
-  white-space: nowrap;
-}
-
-.brand-text small {
-  margin-top: 4px;
-  color: var(--color-muted);
-  font-size: 8px;
-  font-weight: 700;
-  line-height: 1.35;
-  white-space: nowrap;
+.brand-wordmark {
+  width: 186px;
+  height: auto;
+  flex: 0 0 auto;
 }
 
 .desktop-nav {
@@ -2188,8 +2173,8 @@ p {
     padding-right: 18px;
   }
 
-  .brand-text strong {
-    font-size: 15px;
+  .brand-wordmark {
+    width: 172px;
   }
 
   .nav-item > button {
@@ -2436,19 +2421,8 @@ p {
     width: 73px;
   }
 
-  .brand-text strong {
-    max-width: 185px;
-    overflow: hidden;
-    font-size: 14px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .brand-text small {
-    max-width: 185px;
-    overflow: hidden;
-    font-size: 7px;
-    text-overflow: ellipsis;
+  .brand-wordmark {
+    width: 156px;
   }
 
   .brand {
