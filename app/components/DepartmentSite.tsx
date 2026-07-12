@@ -74,6 +74,11 @@ import {
   requiredUndergraduateCourseDetails,
   type UndergraduateCourseDetail,
 } from "../data/undergraduateCourseDetails";
+import {
+  aboutDepartmentIntroduction,
+  aboutEducationalGoals,
+  aboutEducationalPurpose,
+} from "../data/about";
 import { getActiveNavigationItem, navigation } from "../data/navigation";
 import {
   getCourseBySlug,
@@ -1606,6 +1611,60 @@ function RelatedLinks({ locale, items }: { locale: Locale; items: { title: strin
   return <section className="detail-block"><p className="section-label">RELATED CONTENT</p><h2>{tx(locale, "연관 콘텐츠", "Related Content")}</h2><div className="related-links">{items.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{item.title}<ArrowRight size={18} /></Link>)}</div></section>;
 }
 
+function AboutPage({ locale }: { locale: Locale }) {
+  const officialLanguageNotice = locale === "en" ? "Official content below is currently provided in Korean." : null;
+  const relatedLinks = [
+    { title: tx(locale, "연혁", "History"), path: "/about/history" },
+    { title: tx(locale, "교수진", "Faculty"), path: "/faculty" },
+    { title: tx(locale, "연구 분야", "Research Areas"), path: "/research/fields" },
+    { title: tx(locale, "학부 교육과정", "Undergraduate Program"), path: "/academics/undergraduate" },
+    { title: tx(locale, "오시는 길", "Directions"), path: "/about/directions" },
+  ];
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="ABOUT YONSEI MECHANICAL ENGINEERING"
+        title={tx(locale, "학부 소개·비전", "About & Vision")}
+        description={locale === "ko" ? "연세대학교 기계공학부는 기계공학의 이론과 응용을 바탕으로 사회와 산업의 발전에 기여할 창의적 공학 인재를 양성합니다." : "Official information on the Department of Mechanical Engineering."}
+      />
+      <section className="section content-section about-page">
+        <div className="container about-page-content">
+          {officialLanguageNotice && <p className="about-language-notice">{officialLanguageNotice}</p>}
+          <section className="about-introduction-section">
+            <p className="section-label">DEPARTMENT</p>
+            <h2>{locale === "ko" ? aboutDepartmentIntroduction.titleKo : aboutDepartmentIntroduction.titleEn}</h2>
+            <p>{aboutDepartmentIntroduction.summary}</p>
+          </section>
+
+          <section className="about-purpose-section">
+            <p className="section-label">EDUCATIONAL PURPOSE</p>
+            <h2>{locale === "ko" ? aboutEducationalPurpose.titleKo : aboutEducationalPurpose.titleEn}</h2>
+            <p>{aboutEducationalPurpose.summary}</p>
+          </section>
+
+          <section className="about-goals-section">
+            <SectionHeading label="EDUCATIONAL GOALS" title={tx(locale, "세부 교육목표", "Educational Goals")} />
+            <div className="about-goals-grid">
+              {aboutEducationalGoals.map((goal) => (
+                <article key={goal.number}>
+                  <span>{goal.number}</span>
+                  <h3>{goal.title}</h3>
+                  <p>{goal.description}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <nav className="about-related-links" aria-label={tx(locale, "학부 소개 관련 페이지", "Related about pages")}>
+            {relatedLinks.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{item.title}<ArrowRight size={17} /></Link>)}
+          </nav>
+        </div>
+      </section>
+    </>
+  );
+}
+
 function PlaceholderPage({ locale, segments }: { locale: Locale; segments: string[] }) {
   const key = segments[segments.length - 1] ?? "about";
   const label = routeLabels[key] ? t(routeLabels[key], locale) : tx(locale, "콘텐츠 준비 중", "Content in preparation");
@@ -1653,6 +1712,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   const [section, second, third] = segments;
   let page: ReactNode;
   if (!section) page = <HomePage locale={locale} />;
+  else if (section === "about" && !second) page = <AboutPage locale={locale} />;
   else if (section === "faculty" && second && getFacultyMemberBySlug(second)) page = <FacultyMemberDetail locale={locale} member={getFacultyMemberBySlug(second)!} />;
   else if (section === "faculty" && !second) page = <FacultyMemberDirectory locale={locale} />;
   else if (section === "faculty" && second && getFacultyBySlug(second)) page = <FacultyDetail locale={locale} person={getFacultyBySlug(second)!} />;
