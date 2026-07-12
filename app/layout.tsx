@@ -5,7 +5,8 @@ import "./globals.css";
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
-  const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  const isLocalHost = host.startsWith("localhost") || host.startsWith("127.0.0.1") || host.startsWith("[::1]");
+  const protocol = requestHeaders.get("x-forwarded-proto") ?? (isLocalHost ? "http" : "https");
   const origin = `${protocol}://${host}`;
 
   return {
@@ -16,6 +17,11 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description:
       "연세대학교 기계공학부의 교육, 연구, 교수진, 학과 소식을 연결하는 공식 홈페이지 프론트엔드입니다.",
+    icons: {
+      icon: [{ url: "/images/yonsei-symbol.png", type: "image/png" }],
+      shortcut: ["/images/yonsei-symbol.png"],
+      apple: [{ url: "/images/yonsei-symbol.png", type: "image/png" }],
+    },
     openGraph: {
       title: "YONSEI UNIVERSITY · MECHANICAL ENGINEERING",
       description: "교육, 연구, 교수진과 학과 소식을 한 곳에서 확인하세요.",
