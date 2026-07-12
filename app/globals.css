@@ -13,7 +13,7 @@
   --color-background: #f4f6f8;
   --color-gold: #96773a;
   --color-sage: #526d67;
-  --container-width: 1320px;
+  --container-width: 1280px;
   --section-spacing: 112px;
   --header-height: 84px;
   --font-sans: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
@@ -74,6 +74,13 @@ p {
 .container {
   width: min(calc(100% - 64px), var(--container-width));
   margin: 0 auto;
+}
+
+/* Keep the composition consistent on wide desktop displays. */
+@media (min-width: 1600px) {
+  .container {
+    width: min(calc(100% - 96px), var(--container-width));
+  }
 }
 
 .section {
