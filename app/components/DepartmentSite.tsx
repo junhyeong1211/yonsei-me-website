@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import type { FormEvent, ReactNode } from "react";
+import type { FormEvent, ReactNode, RefObject } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaInstagram } from "react-icons/fa";
 import {
@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import {
   courses,
+  events,
   faculty,
   heroSlides,
   instagramPosts,
@@ -45,6 +46,7 @@ import {
   type Notice,
   type ResearchArea,
 } from "../data/content";
+import { calendarEventsByMonth, type CalendarEvent } from "../data/calendar";
 import {
   researchAreas as directoryResearchAreas,
   type ResearchArea as DirectoryResearchArea,
@@ -79,6 +81,7 @@ import {
   aboutEducationalGoals,
   aboutEducationalPurpose,
 } from "../data/about";
+import { departmentHistory } from "../data/history";
 import { getActiveNavigationItem, navigation } from "../data/navigation";
 import {
   getCourseBySlug,
@@ -90,6 +93,7 @@ import {
   getNoticeBySlug,
   getResearchAreaBySlug,
 } from "../lib/content";
+import { departmentDirections } from "../data/directions";
 
 type DepartmentSiteProps = {
   locale: Locale;
@@ -100,25 +104,6 @@ type DepartmentSiteProps = {
 const t = (value: LocaleText, locale: Locale) => value[locale];
 const tx = (locale: Locale, ko: string, en: string) => (locale === "ko" ? ko : en);
 const hrefFor = (locale: Locale, path = "") => `/${locale}${path}`;
-const googleCalendarId = "0nevledgmf1pgvjsc57sp2tdik@group.calendar.google.com";
-
-const googleCalendarUrl = (locale: Locale, mode: "MONTH" | "AGENDA") => {
-  const params = new URLSearchParams({
-    src: googleCalendarId,
-    ctz: "Asia/Seoul",
-    hl: locale === "ko" ? "ko" : "en",
-    mode,
-    showTitle: "0",
-    showNav: mode === "MONTH" ? "1" : "0",
-    showDate: mode === "MONTH" ? "1" : "0",
-    showPrint: "0",
-    showTabs: "0",
-    showCalendars: "0",
-    showTz: "0",
-  });
-  return `https://calendar.google.com/calendar/embed?${params.toString()}`;
-};
-
 const quickLinks = [
   { ko: "학부공지", en: "Notices", path: "/news/notices?audience=undergraduate", icon: MessageSquareText },
   { ko: "학사일정", en: "Calendar", path: "/news/calendar", icon: CalendarDays },
@@ -816,7 +801,9 @@ function HomePage({ locale }: { locale: Locale }) {
             </div>
             <div className="calendar-preview">
               <SectionHeading label="ACADEMIC CALENDAR" title={tx(locale, "학사일정", "Academic Calendar")} link={<Link className="section-more" href={hrefFor(locale, "/news/calendar")} aria-label={tx(locale, "학사일정 전체보기", "View full calendar")}><ArrowRight size={21} /></Link>} />
-              <GoogleCalendarEmbed locale={locale} mode="AGENDA" compact />
+              <div className="event-list compact">
+                {events.slice(0, 4).map((event) => <EventRow key={event.id} event={event} locale={locale} />)}
+              </div>
             </div>
           </div>
         </section>
@@ -888,6 +875,17 @@ function NoticeRow({ notice, locale }: { notice: Notice; locale: Locale }) {
       <strong>{t(notice.title, locale)}</strong>
       <time dateTime={notice.publishedAt}>{notice.publishedAt.replaceAll("-", ".")}</time>
     </Link>
+  );
+}
+
+function EventRow({ event, locale }: { event: (typeof events)[number]; locale: Locale }) {
+  const date = new Date(`${event.startDate}T00:00:00`);
+  const label = event.time ? `${event.category} · ${t(event.time, locale)}` : event.category;
+  return (
+    <div className="event-row">
+      <div className="event-date"><span>{date.toLocaleString("en", { month: "short" }).toUpperCase()}</span><strong>{String(date.getDate()).padStart(2, "0")}</strong></div>
+      <div><span>{label}</span><h3>{t(event.title, locale)}</h3></div>
+    </div>
   );
 }
 
@@ -1399,20 +1397,32 @@ function UndergraduateProgramPage({ locale }: { locale: Locale }) {
 
 type UndergraduateCourseTab = "schedule" | "required" | "elective";
 
+const resolveUndergraduateCourseTab = (searchParams: Record<string, string>): UndergraduateCourseTab => {
+  if (searchParams.tab === "required" || searchParams.tab === "elective" || searchParams.tab === "schedule") return searchParams.tab;
+  if (searchParams.category === "required" || searchParams.category === "elective") return searchParams.category;
+  return "schedule";
+};
+
+const normalizedCourseFilter = (value: string | undefined, allowed: string[]) => value && allowed.includes(value) ? value : "all";
+
 function CourseDirectory({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
   const router = useRouter();
-  const queryTab = searchParams.tab;
-  const initialTab: UndergraduateCourseTab = queryTab === "required" || queryTab === "elective" || queryTab === "schedule"
-    ? queryTab
-    : searchParams.category === "required" || searchParams.category === "elective"
-      ? searchParams.category
-      : "schedule";
-  const [tab, setTab] = useState<UndergraduateCourseTab>(initialTab);
-  const [year, setYear] = useState(searchParams.year ?? "all");
-  const [semester, setSemester] = useState(searchParams.semester ?? "all");
-  const [category, setCategory] = useState(searchParams.category && !["required", "elective"].includes(searchParams.category) ? searchParams.category : "all");
+  const [tab, setTab] = useState<UndergraduateCourseTab>(() => resolveUndergraduateCourseTab(searchParams));
+  const [year, setYear] = useState(() => normalizedCourseFilter(searchParams.year, ["1", "2", "3", "4"]));
+  const [semester, setSemester] = useState(() => normalizedCourseFilter(searchParams.semester, ["1", "2"]));
+  const [category, setCategory] = useState(() => normalizedCourseFilter(searchParams.category, ["university-core", "required", "elective"]));
   const [query, setQuery] = useState(searchParams.q ?? searchParams.query ?? "");
   const [expandedOffering, setExpandedOffering] = useState<string | null>(null);
+
+  useEffect(() => {
+    const nextTab = resolveUndergraduateCourseTab(searchParams);
+    setTab(nextTab);
+    if (nextTab !== "schedule") return;
+    setYear(normalizedCourseFilter(searchParams.year, ["1", "2", "3", "4"]));
+    setSemester(normalizedCourseFilter(searchParams.semester, ["1", "2"]));
+    setCategory(normalizedCourseFilter(searchParams.category, ["university-core", "required", "elective"]));
+    setQuery(searchParams.q ?? searchParams.query ?? "");
+  }, [searchParams.category, searchParams.q, searchParams.query, searchParams.semester, searchParams.tab, searchParams.year]);
 
   const values = { year, semester, category, query };
   const results = useMemo(() => undergraduateCourseOfferings.filter((item) => {
@@ -1466,12 +1476,12 @@ function CourseDirectory({ locale, searchParams }: { locale: Locale; searchParam
               ["required", tx(locale, "전공필수", "Required Courses")],
               ["elective", tx(locale, "전공선택", "Elective Courses")],
             ] as [UndergraduateCourseTab, string][]).map(([value, label]) => (
-              <button type="button" role="tab" aria-selected={tab === value} onClick={() => selectTab(value)} key={value}>{label}</button>
+              <button type="button" role="tab" id={`undergraduate-course-tab-${value}`} aria-controls={`undergraduate-course-panel-${value}`} aria-selected={tab === value} onClick={() => selectTab(value)} key={value}>{label}</button>
             ))}
           </div>
 
           {tab === "schedule" ? (
-            <div role="tabpanel" className="course-schedule-panel">
+            <div role="tabpanel" className="course-schedule-panel" id="undergraduate-course-panel-schedule" aria-labelledby="undergraduate-course-tab-schedule" tabIndex={0}>
               <form className="undergraduate-course-filter" onSubmit={(event) => { event.preventDefault(); syncScheduleUrl(values); }}>
                 <div className="filter-field search-field">
                   <label htmlFor="undergraduate-course-query">{tx(locale, "교과목 검색", "Search Courses")}</label>
@@ -1488,7 +1498,7 @@ function CourseDirectory({ locale, searchParams }: { locale: Locale; searchParam
               {results.length ? <UndergraduateCourseSchedule locale={locale} items={results} expandedOffering={expandedOffering} setExpandedOffering={setExpandedOffering} /> : <EmptyState locale={locale} />}
             </div>
           ) : (
-            <div role="tabpanel" className="course-detail-panel">
+            <div role="tabpanel" className="course-detail-panel" id={`undergraduate-course-panel-${tab}`} aria-labelledby={`undergraduate-course-tab-${tab}`} tabIndex={0}>
               <p className="course-detail-intro">{tab === "required" ? tx(locale, "기계공학부 학사과정의 전공필수 교과목입니다.", "Required courses in the undergraduate mechanical engineering program.") : tx(locale, "기계공학의 세부 분야를 확장하는 전공선택 교과목입니다.", "Elective courses that deepen study across mechanical engineering fields.")}</p>
               <UndergraduateCourseDetailList locale={locale} items={tab === "required" ? requiredUndergraduateCourseDetails : electiveUndergraduateCourseDetails} />
             </div>
@@ -1533,7 +1543,7 @@ function UndergraduateCourseSchedule({ locale, items, expandedOffering, setExpan
 }
 
 function UndergraduateCourseDetailList({ locale, items }: { locale: Locale; items: UndergraduateCourseDetail[] }) {
-  return <div className="undergraduate-course-detail-list">{items.map((item) => <details key={`${item.courseCode}-${item.nameKo}`}><summary><span className={`course-category course-category-${item.category}`}>{undergraduateCategoryLabel(item.category, locale)}</span><div><small>{item.courseCode}</small><h2>{locale === "en" && item.nameEn ? item.nameEn : item.nameKo}</h2>{item.nameEn && <p>{locale === "ko" ? item.nameEn : item.nameKo}</p>}</div><span className="course-detail-toggle">{tx(locale, "상세보기", "View Details")}<ChevronDown size={17} /></span></summary><div className="course-detail-description"><p>{item.description}</p>{item.reviewNote && <aside><strong>{tx(locale, "공식 확인 필요", "Official verification needed")}</strong><span>{item.reviewNote}</span></aside>}</div></details>)}</div>;
+  return <div className="undergraduate-course-detail-list">{items.map((item) => <details key={`${item.courseCode}-${item.nameKo}`}><summary><span className={`course-category course-category-${item.category}`}>{undergraduateCategoryLabel(item.category, locale)}</span><div><small>{item.courseCode}</small><h2>{locale === "en" && item.nameEn ? item.nameEn : item.nameKo}</h2>{item.nameEn && <p className="course-detail-english">{locale === "ko" ? item.nameEn : item.nameKo}</p>}<p className="course-detail-preview">{item.description}</p></div><span className="course-detail-toggle">{tx(locale, "상세보기", "View Details")}<ChevronDown size={17} /></span></summary><div className="course-detail-description"><p>{item.description}</p>{item.reviewNote && <aside><strong>{tx(locale, "공식 확인 필요", "Official verification needed")}</strong><span>{item.reviewNote}</span></aside>}</div></details>)}</div>;
 }
 
 function CourseDetail({ locale, course }: { locale: Locale; course: Course }) {
@@ -1555,37 +1565,225 @@ function NoticeDetail({ locale, notice }: { locale: Locale; notice: Notice }) {
   return <><PageHeader eyebrow="NOTICE" title={t(notice.title, locale)} description={`${notice.category} · ${notice.publishedAt.replaceAll("-", ".")}`} /><section className="section content-section"><article className="container article-detail"><div className="article-meta"><span>{notice.audience === "undergraduate" ? tx(locale, "학부공지", "Undergraduate") : tx(locale, "대학원공지", "Graduate")}</span><time>{notice.publishedAt}</time></div><div className="article-body"><p>{t(notice.body, locale)}</p><p>{tx(locale, "현재 공지는 화면 구성 확인을 위한 샘플입니다. 게시 전 공식 내용과 일정, 담당 부서 정보를 확인해 주세요.", "This notice is sample content for layout review. Verify all official details before publishing.")}</p></div>{notice.attachments && <div className="attachments"><h2>{tx(locale, "첨부파일", "Attachments")}</h2>{notice.attachments.map((attachment) => <a href={attachment.url} key={attachment.id}><Download size={18} />{t(attachment.name, locale)}</a>)}</div>}<div className="article-navigation">{previous ? <Link href={hrefFor(locale, `/news/notices/${previous.slug}`)}><ChevronLeft size={18} /><span><small>{tx(locale, "이전글", "Previous")}</small>{t(previous.title, locale)}</span></Link> : <span />}{next ? <Link href={hrefFor(locale, `/news/notices/${next.slug}`)}><span><small>{tx(locale, "다음글", "Next")}</small>{t(next.title, locale)}</span><ChevronRight size={18} /></Link> : <span />}</div><Link className="button outline article-list-button" href={hrefFor(locale, "/news/notices")}><ArrowLeft size={17} />{tx(locale, "목록으로", "Back to list")}</Link></article></section></>;
 }
 
-function GoogleCalendarEmbed({ locale, mode, compact = false }: { locale: Locale; mode: "MONTH" | "AGENDA"; compact?: boolean }) {
+function getCalendarDays(year: number, month: number) {
+  const monthIndex = month - 1;
+  const firstWeekday = new Date(Date.UTC(year, monthIndex, 1)).getUTCDay();
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const totalDays = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
+  const firstVisibleDate = new Date(Date.UTC(year, monthIndex, 1 - firstWeekday));
+
+  return Array.from({ length: totalDays }, (_, index) => {
+    const date = new Date(firstVisibleDate);
+    date.setUTCDate(firstVisibleDate.getUTCDate() + index);
+    const dateKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+
+    return {
+      dateKey,
+      day: date.getUTCDate(),
+      isCurrentMonth: date.getUTCMonth() === monthIndex,
+    };
+  });
+}
+
+function formatCalendarTime(value: string, locale: Locale) {
+  if (!value) return tx(locale, "종일", "All day");
+  const [hours, minutes] = value.split(":").map(Number);
+  if (locale === "en") return `${hours % 12 || 12}:${String(minutes).padStart(2, "0")} ${hours < 12 ? "AM" : "PM"}`;
+  return `${hours < 12 ? "오전" : "오후"} ${hours % 12 || 12}:${String(minutes).padStart(2, "0")}`;
+}
+
+function formatCalendarDate(value: string, locale: Locale) {
+  const [year, month, day] = value.split("-").map(Number);
+  return locale === "ko" ? `${year}년 ${month}월 ${day}일` : new Intl.DateTimeFormat("en", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
+function getTodayKey() {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+  const valueFor = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${valueFor("year")}-${valueFor("month")}-${valueFor("day")}`;
+}
+
+function groupCalendarEventsByMonth(events: CalendarEvent[]) {
+  const grouped = Object.fromEntries(Array.from({ length: 12 }, (_, index) => [index + 1, []])) as Record<number, CalendarEvent[]>;
+  events.forEach((event) => {
+    if (!event.date.startsWith("2026-")) return;
+    const month = Number(event.date.slice(5, 7));
+    grouped[month].push(event);
+  });
+  return grouped;
+}
+
+function CalendarEventDialog({ event, locale, onClose, closeButtonRef }: { event: CalendarEvent; locale: Locale; onClose: () => void; closeButtonRef: RefObject<HTMLButtonElement | null> }) {
+  const timeLabel = !event.startTime ? formatCalendarTime(event.startTime, locale) : event.endTime && event.endTime !== event.startTime ? `${formatCalendarTime(event.startTime, locale)} - ${formatCalendarTime(event.endTime, locale)}` : formatCalendarTime(event.startTime, locale);
+  const unavailable = tx(locale, "등록된 정보가 없습니다.", "No information is available.");
+
   return (
-    <div className={`google-calendar-embed ${compact ? "is-compact" : ""}`}>
-      <iframe
-        src={googleCalendarUrl(locale, mode)}
-        title={tx(locale, "연세대학교 기계공학부 일정", "Yonsei Mechanical Engineering calendar")}
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-      />
+    <div className="calendar-event-dialog-backdrop" role="presentation" onMouseDown={(clickEvent) => { if (clickEvent.target === clickEvent.currentTarget) onClose(); }}>
+      <section className="calendar-event-dialog" role="dialog" aria-modal="true" aria-labelledby="calendar-event-dialog-title">
+        <button className="calendar-event-dialog-close" type="button" onClick={onClose} ref={closeButtonRef} aria-label={tx(locale, "일정 상세 닫기", "Close event details")}><X size={19} /></button>
+        <p>{t(event.category, locale)}</p>
+        <h2 id="calendar-event-dialog-title">{t(event.title, locale)}</h2>
+        <dl>
+          <div><dt>{tx(locale, "날짜", "Date")}</dt><dd>{formatCalendarDate(event.date, locale)}</dd></div>
+          <div><dt>{tx(locale, "시간", "Time")}</dt><dd>{timeLabel}</dd></div>
+          <div><dt>{tx(locale, "분류", "Category")}</dt><dd>{t(event.category, locale)}</dd></div>
+          <div><dt>{tx(locale, "장소", "Location")}</dt><dd>{event.location ? t(event.location, locale) : unavailable}</dd></div>
+          <div><dt>{tx(locale, "상세", "Details")}</dt><dd>{event.description ? t(event.description, locale) : unavailable}</dd></div>
+        </dl>
+        {event.link && <a href={event.link} target="_blank" rel="noreferrer">{tx(locale, "관련 안내 보기", "View related notice")}<ExternalLink size={15} /></a>}
+      </section>
     </div>
   );
 }
 
-function CalendarPage({ locale }: { locale: Locale }) {
+function CalendarPage({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
+  const router = useRouter();
+  const todayKey = getTodayKey();
+  const todayYear = Number(todayKey.slice(0, 4));
+  const todayMonth = Number(todayKey.slice(5, 7));
+  const queryYear = Number(searchParams.year);
+  const queryMonth = Number(searchParams.month);
+  const initialMonth = queryYear === 2026 && queryMonth >= 1 && queryMonth <= 12 ? queryMonth : (todayYear === 2026 ? todayMonth : 7);
+  const [selectedMonth, setSelectedMonth] = useState(initialMonth);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [focusedDayIndex, setFocusedDayIndex] = useState(0);
+  const [eventsByMonth, setEventsByMonth] = useState<Record<number, CalendarEvent[]>>(calendarEventsByMonth);
+  const [calendarSourceReady, setCalendarSourceReady] = useState(false);
+  const calendarDayRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const selectedEvents = eventsByMonth[selectedMonth] ?? [];
+  const calendarDays = getCalendarDays(2026, selectedMonth);
+  const eventsByDate = selectedEvents.reduce<Record<string, CalendarEvent[]>>((acc, event) => {
+    acc[event.date] = [...(acc[event.date] ?? []), event];
+    return acc;
+  }, {});
+  const weekdays = locale === "ko" ? ["일", "월", "화", "수", "목", "금", "토"] : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const monthLabel = locale === "ko" ? `2026년 ${selectedMonth}월` : new Intl.DateTimeFormat("en", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(2026, selectedMonth - 1, 1)));
+  const monthOptions = Array.from({ length: 12 }, (_, index) => index + 1);
+
+  const selectMonth = (month: number) => {
+    const nextMonth = Math.min(12, Math.max(1, month));
+    setSelectedMonth(nextMonth);
+    setSelectedDate(null);
+    setFocusedDayIndex(0);
+    router.replace(`${hrefFor(locale, "/news/calendar")}?year=2026&month=${nextMonth}`, { scroll: false });
+  };
+
+  const openEvent = (event: CalendarEvent) => {
+    setSelectedDate(event.date);
+    setSelectedEvent(event);
+  };
+
+  const moveFocus = (index: number, offset: number) => {
+    const nextIndex = Math.min(calendarDays.length - 1, Math.max(0, index + offset));
+    setFocusedDayIndex(nextIndex);
+    window.requestAnimationFrame(() => calendarDayRefs.current[nextIndex]?.focus());
+  };
+
+  useEffect(() => {
+    if (queryYear === 2026 && queryMonth >= 1 && queryMonth <= 12 && queryMonth !== selectedMonth) setSelectedMonth(queryMonth);
+  }, [queryMonth, queryYear, selectedMonth]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/calendar?year=2026", { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error("Unable to load calendar events");
+        return response.json() as Promise<{ events?: CalendarEvent[] }>;
+      })
+      .then((data) => {
+        if (!Array.isArray(data.events)) throw new Error("Invalid calendar response");
+        setEventsByMonth(groupCalendarEventsByMonth(data.events));
+        setCalendarSourceReady(true);
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setCalendarSourceReady(true);
+      });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedEvent) return;
+    closeButtonRef.current?.focus();
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setSelectedEvent(null); };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [selectedEvent]);
+
   return (
-    <>
+    <div className="calendar-route-page">
       <PageHeader
-        eyebrow="CALENDAR"
-        title={tx(locale, "일정", "Calendar")}
-        description={tx(locale, "기계공학부의 학사 및 주요 일정을 Google Calendar로 확인합니다.", "View academic and department events through Google Calendar.")}
+        eyebrow="ACADEMIC CALENDAR"
+        title={tx(locale, "학사일정", "Academic Calendar")}
+        description={tx(locale, "기계공학부의 학사 및 주요 일정을 월간 달력으로 확인합니다.", "View academic and department events in a monthly calendar.")}
       />
       <section className="section content-section">
         <div className="container calendar-page">
-          <GoogleCalendarEmbed locale={locale} mode="MONTH" />
-          <a className="calendar-google-link" href={googleCalendarUrl(locale, "MONTH")} target="_blank" rel="noopener noreferrer">
-            {tx(locale, "Google Calendar에서 크게 보기", "Open in Google Calendar")}
-            <ExternalLink size={15} />
-          </a>
+          <section className="department-calendar" aria-labelledby="calendar-month-title">
+            <header className="department-calendar-toolbar">
+              <div>
+                <p className="section-label">MONTHLY SCHEDULE</p>
+                <h2 id="calendar-month-title">{monthLabel}</h2>
+              </div>
+              <div className="calendar-month-controls">
+                <button type="button" className="calendar-icon-button" onClick={() => selectMonth(selectedMonth - 1)} disabled={selectedMonth === 1} aria-label={tx(locale, "이전 달", "Previous month")} title={tx(locale, "이전 달", "Previous month")}><ChevronLeft size={18} /></button>
+                <label className="calendar-month-select"><span className="sr-only">{tx(locale, "월 선택", "Select month")}</span><select value={selectedMonth} onChange={(event) => selectMonth(Number(event.target.value))}>{monthOptions.map((month) => <option value={month} key={month}>{locale === "ko" ? `${month}월` : new Intl.DateTimeFormat("en", { month: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2026, month - 1, 1)))}</option>)}</select></label>
+                <button type="button" className="calendar-icon-button" onClick={() => selectMonth(selectedMonth + 1)} disabled={selectedMonth === 12} aria-label={tx(locale, "다음 달", "Next month")} title={tx(locale, "다음 달", "Next month")}><ChevronRight size={18} /></button>
+                <button type="button" className="calendar-today-button" onClick={() => selectMonth(todayYear === 2026 ? todayMonth : 7)} aria-label={tx(locale, "오늘로 이동", "Go to today")}>{tx(locale, "오늘", "Today")}</button>
+              </div>
+            </header>
+            <div className="department-calendar-viewport">
+              <div className="department-calendar-body" role="grid" aria-label={tx(locale, `${monthLabel} 일정`, `${monthLabel} schedule`)}>
+                <div className="department-calendar-weekdays" role="row">
+                  {weekdays.map((weekday, index) => <span className={index === 0 ? "is-sunday" : index === 6 ? "is-saturday" : undefined} role="columnheader" key={weekday}>{weekday}</span>)}
+                </div>
+                <div className="department-calendar-grid">
+                  {calendarDays.map((day, index) => {
+                    const dayEvents = eventsByDate[day.dateKey] ?? [];
+                    const weekday = index % 7;
+                    const isToday = day.dateKey === todayKey;
+                    const isSelected = day.dateKey === selectedDate;
+                    const dateLabel = formatCalendarDate(day.dateKey, locale);
+                    return (
+                      <div
+                        className={`department-calendar-day${day.isCurrentMonth ? "" : " is-outside"}${weekday === 0 ? " is-sunday" : weekday === 6 ? " is-saturday" : ""}${isToday ? " is-today" : ""}${isSelected ? " is-selected" : ""}${dayEvents.length ? " has-events" : ""}`}
+                        role="gridcell"
+                        aria-label={dayEvents.length ? tx(locale, `${dateLabel}, 일정 ${dayEvents.length}개`, `${dateLabel}, ${dayEvents.length} events`) : tx(locale, `${dateLabel}, 등록된 일정 없음`, `${dateLabel}, no events`)}
+                        aria-current={isToday ? "date" : undefined}
+                        aria-selected={isSelected || undefined}
+                        tabIndex={index === focusedDayIndex ? 0 : -1}
+                        onFocus={() => setFocusedDayIndex(index)}
+                        onKeyDown={(event) => {
+                          if (event.target !== event.currentTarget) return;
+                          if (event.key === "ArrowLeft") { event.preventDefault(); moveFocus(index, -1); }
+                          if (event.key === "ArrowRight") { event.preventDefault(); moveFocus(index, 1); }
+                          if (event.key === "ArrowUp") { event.preventDefault(); moveFocus(index, -7); }
+                          if (event.key === "ArrowDown") { event.preventDefault(); moveFocus(index, 7); }
+                          if ((event.key === "Enter" || event.key === " ") && dayEvents.length) { event.preventDefault(); openEvent(dayEvents[0]); }
+                        }}
+                        ref={(element) => { calendarDayRefs.current[index] = element; }}
+                        key={day.dateKey}
+                      >
+                        <time dateTime={day.dateKey}>{day.day}</time>
+                        {dayEvents.length > 0 && <div className="department-calendar-events">{dayEvents.slice(0, 2).map((event) => <button type="button" key={event.id} onClick={() => openEvent(event)}><span>{formatCalendarTime(event.startTime, locale)}</span><strong>{t(event.category, locale)} · {t(event.title, locale)}</strong></button>)}{dayEvents.length > 2 && <button type="button" className="calendar-more-events" onClick={() => openEvent(dayEvents[2])}>+{dayEvents.length - 2}{tx(locale, "개 더보기", " more")}</button>}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            {!selectedEvents.length && <p className="calendar-month-empty">{calendarSourceReady ? tx(locale, "등록된 일정이 없습니다.", "No events are registered.") : tx(locale, "일정을 불러오는 중입니다.", "Loading events.")}</p>}
+          </section>
+          <section className="calendar-mobile-events" aria-labelledby="calendar-mobile-events-title">
+            <h2 id="calendar-mobile-events-title">{tx(locale, "이번 달 일정", "This month’s schedule")}</h2>
+            {selectedEvents.length ? <ol>{selectedEvents.map((event) => <li key={event.id}><button type="button" onClick={() => openEvent(event)}><time dateTime={event.date}>{formatCalendarDate(event.date, locale)}</time><span>{formatCalendarTime(event.startTime, locale)}</span><strong>{t(event.category, locale)} · {t(event.title, locale)}</strong></button></li>)}</ol> : <p>{calendarSourceReady ? tx(locale, "등록된 일정이 없습니다.", "No events are registered.") : tx(locale, "일정을 불러오는 중입니다.", "Loading events.")}</p>}
+          </section>
         </div>
       </section>
-    </>
+      {selectedEvent && <CalendarEventDialog event={selectedEvent} locale={locale} onClose={() => setSelectedEvent(null)} closeButtonRef={closeButtonRef} />}
+    </div>
   );
 }
 
@@ -1621,45 +1819,211 @@ function AboutPage({ locale }: { locale: Locale }) {
     { title: tx(locale, "오시는 길", "Directions"), path: "/about/directions" },
   ];
 
+  useEffect(() => {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>("[data-about-reveal]"));
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion || !("IntersectionObserver" in window)) {
+      elements.forEach((element) => element.classList.add("is-visible"));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12 });
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
+      <noscript><style>{`[data-about-reveal] { opacity: 1 !important; transform: none !important; }`}</style></noscript>
       <PageHeader
         eyebrow="ABOUT YONSEI MECHANICAL ENGINEERING"
         title={tx(locale, "학부 소개·비전", "About & Vision")}
         description={locale === "ko" ? "연세대학교 기계공학부는 기계공학의 이론과 응용을 바탕으로 사회와 산업의 발전에 기여할 창의적 공학 인재를 양성합니다." : "Official information on the Department of Mechanical Engineering."}
       />
-      <section className="section content-section about-page">
-        <div className="container about-page-content">
+
+      <section className="about-vision-section">
+        <div className="container">
           {officialLanguageNotice && <p className="about-language-notice">{officialLanguageNotice}</p>}
-          <section className="about-introduction-section">
-            <p className="section-label">DEPARTMENT</p>
-            <h2>{locale === "ko" ? aboutDepartmentIntroduction.titleKo : aboutDepartmentIntroduction.titleEn}</h2>
-            <p>{aboutDepartmentIntroduction.summary}</p>
-          </section>
+          <div className="about-vision-panel">
+            <section className="about-vision-introduction about-page-reveal" data-about-reveal>
+              <header>
+                <span>01</span>
+                <p>ABOUT</p>
+                <h2>{locale === "ko" ? aboutDepartmentIntroduction.titleKo : aboutDepartmentIntroduction.titleEn}</h2>
+              </header>
+              <p>{aboutDepartmentIntroduction.summary}</p>
+            </section>
 
-          <section className="about-purpose-section">
-            <p className="section-label">EDUCATIONAL PURPOSE</p>
-            <h2>{locale === "ko" ? aboutEducationalPurpose.titleKo : aboutEducationalPurpose.titleEn}</h2>
-            <p>{aboutEducationalPurpose.summary}</p>
-          </section>
+            <section className="about-vision-purpose about-page-reveal" data-about-reveal>
+              <header>
+                <p>EDUCATIONAL PURPOSE</p>
+                <h2>{locale === "ko" ? aboutEducationalPurpose.titleKo : aboutEducationalPurpose.titleEn}</h2>
+              </header>
+              <p>{aboutEducationalPurpose.summary}</p>
+            </section>
 
-          <section className="about-goals-section">
-            <SectionHeading label="EDUCATIONAL GOALS" title={tx(locale, "세부 교육목표", "Educational Goals")} />
-            <div className="about-goals-grid">
-              {aboutEducationalGoals.map((goal) => (
-                <article key={goal.number}>
-                  <span>{goal.number}</span>
-                  <h3>{goal.title}</h3>
-                  <p>{goal.description}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <nav className="about-related-links" aria-label={tx(locale, "학부 소개 관련 페이지", "Related about pages")}>
-            {relatedLinks.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{item.title}<ArrowRight size={17} /></Link>)}
-          </nav>
+            <section className="about-vision-goals about-page-reveal" data-about-reveal>
+              <header>
+                <p>OBJECTIVES</p>
+                <h2>{tx(locale, "세부 교육목표", "Educational Goals")}</h2>
+              </header>
+              <div className="about-goals-grid">
+                {aboutEducationalGoals.map((goal) => (
+                  <article key={goal.number}>
+                    <span>{Number(goal.number)}</span>
+                    <h3>{goal.title}</h3>
+                    <p>{goal.description}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
         </div>
+      </section>
+
+      <section className="about-related-band about-page-reveal" data-about-reveal>
+        <nav className="container about-related-links" aria-label={tx(locale, "학부 소개 관련 페이지", "Related about pages")}>
+          {relatedLinks.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{item.title}<ArrowRight size={17} /></Link>)}
+        </nav>
+      </section>
+    </>
+  );
+}
+
+function MapEmbed({ locale }: { locale: Locale }) {
+  const embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(departmentDirections.mapQuery)}&output=embed`;
+
+  return (
+    <div className="directions-map-frame">
+      <div className="directions-map-fallback">
+        <MapPin size={22} aria-hidden="true" />
+        <p>{departmentDirections.mapQuery}</p>
+      </div>
+      <iframe
+        src={embedUrl}
+        title={tx(locale, "연세대학교 기계공학부 위치 지도", "Map of Yonsei Mechanical Engineering")}
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        allowFullScreen
+      />
+    </div>
+  );
+}
+
+function DirectionsPage({ locale }: { locale: Locale }) {
+  const [addressCopied, setAddressCopied] = useState(false);
+  const relatedLinks = [
+    { title: tx(locale, "학부 소개·비전", "About & Vision"), path: "/about" },
+    { title: tx(locale, "연혁", "History"), path: "/about/history" },
+    { title: tx(locale, "교수진", "Faculty"), path: "/faculty" },
+    { title: tx(locale, "연구 분야", "Research Areas"), path: "/research/fields" },
+  ];
+
+  const copyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(`${departmentDirections.address} ${departmentDirections.postalCode}`);
+      setAddressCopied(true);
+      window.setTimeout(() => setAddressCopied(false), 1800);
+    } catch {
+      setAddressCopied(false);
+    }
+  };
+
+  return (
+    <>
+      <header className="directions-page-header">
+        <div className="container">
+          <p className="section-label">LOCATION</p>
+          <h1>{tx(locale, "오시는 길", "Contact & Directions")}</h1>
+          <p>{tx(locale, "연세대학교 기계공학부의 위치와 대중교통 이용 방법을 안내합니다.", "Find the department and public transportation information for your visit.")}</p>
+        </div>
+      </header>
+
+      <section className="directions-map-section">
+        <div className="container">
+          <MapEmbed locale={locale} />
+          <div className="directions-map-meta">
+            <p>{departmentDirections.mapQuery}</p>
+            <a href={departmentDirections.externalMapUrl} target="_blank" rel="noopener noreferrer">
+              {tx(locale, "지도 크게 보기", "Open larger map")}
+              <span className="sr-only">{tx(locale, " (새 창)", " (opens in a new window)")}</span>
+              <ExternalLink size={15} aria-hidden="true" />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section className="directions-contact-section" aria-labelledby="directions-contact-title">
+        <div className="container">
+          <h2 className="sr-only" id="directions-contact-title">{tx(locale, "연락처", "Contact information")}</h2>
+          <div className="directions-contact-grid">
+            <article>
+              <span>{tx(locale, "주소", "Address")}</span>
+              <p>{departmentDirections.address}<br />{tx(locale, "우편번호", "Postal code")} {departmentDirections.postalCode}</p>
+              <button type="button" onClick={copyAddress} aria-label={tx(locale, "주소 복사", "Copy address")}>
+                {addressCopied ? tx(locale, "주소가 복사되었습니다", "Address copied") : tx(locale, "주소 복사", "Copy address")}
+              </button>
+            </article>
+            <article>
+              <span>{tx(locale, "전화", "Telephone")}</span>
+              <a href={`tel:${departmentDirections.phone.replaceAll("-", "")}`} aria-label={tx(locale, `기계공학부 전화 ${departmentDirections.phone}`, `Call the department at ${departmentDirections.phone}`)}>{departmentDirections.phone}</a>
+            </article>
+            <article>
+              <span>{tx(locale, "이메일", "Email")}</span>
+              <a href={`mailto:${departmentDirections.email}`} aria-label={tx(locale, `기계공학부 이메일 ${departmentDirections.email}`, `Email the department at ${departmentDirections.email}`)}>{departmentDirections.email}</a>
+            </article>
+          </div>
+          <p className="directions-copy-status" aria-live="polite">{addressCopied ? tx(locale, "주소가 복사되었습니다.", "The address has been copied.") : ""}</p>
+        </div>
+      </section>
+
+      <section className="directions-transit-section" aria-labelledby="subway-heading">
+        <div className="container">
+          <header className="directions-section-heading">
+            <p className="section-label">SUBWAY</p>
+            <h2 id="subway-heading">{tx(locale, "지하철 이용 안내", "By Subway")}</h2>
+            <p><span className="subway-line-mark">{t(departmentDirections.subway.line, locale)}</span>{t(departmentDirections.subway.station, locale)}</p>
+          </header>
+          <div className="subway-exit-grid">
+            {departmentDirections.subway.exits.map((exit) => (
+              <article key={exit.number}>
+                <strong>{tx(locale, `${exit.number}번 출구`, `Exit ${exit.number}`)}</strong>
+                <p>{t(exit.description, locale)}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="directions-bus-section" aria-labelledby="bus-heading">
+        <div className="container">
+          <header className="directions-section-heading">
+            <p className="section-label">BUS</p>
+            <h2 id="bus-heading">{tx(locale, "버스 이용 안내", "By Bus")}</h2>
+          </header>
+          <div className="bus-route-grid">
+            {departmentDirections.busRoutes.map((group) => (
+              <article className={`bus-route-group is-${group.colorKey}`} key={group.colorKey}>
+                <h3><span aria-hidden="true" />{t(group.type, locale)}</h3>
+                <div aria-label={`${t(group.type, locale)} ${tx(locale, "버스 노선", "bus routes")}`}>
+                  {group.routes.map((route) => <span key={route}>{route}</span>)}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="directions-related-section">
+        <nav className="container directions-related-links" aria-label={tx(locale, "학부 소개 관련 페이지", "Related pages") }>
+          {relatedLinks.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{item.title}<ArrowRight size={17} aria-hidden="true" /></Link>)}
+        </nav>
       </section>
     </>
   );
@@ -1680,6 +2044,71 @@ function PlaceholderPage({ locale, segments }: { locale: Locale; segments: strin
   const isDirections = key === "directions";
   const relatedNavigation = getActiveNavigationItem(`/${segments.join("/")}`);
   return <><PageHeader eyebrow={(section ?? "DEPARTMENT").toUpperCase()} title={label} description={description} /><section className="section content-section"><div className="container generic-layout"><main><p className="section-label">CONTENT</p><h2>{tx(locale, "콘텐츠 준비 중", "Content in preparation")}</h2><p>{tx(locale, "공식 콘텐츠를 준비하고 있습니다. 확인되는 대로 업데이트하겠습니다.", "Official content is being prepared and will be updated when confirmed.")}</p>{isDirections && <div className="contact-placeholder"><MapPin size={34} /><div><h3>{tx(locale, "위치 및 연락처", "Location & Contact")}</h3><p>{tx(locale, "[공식 주소 확인 필요]", "[Official address required]")}</p><p>{tx(locale, "[대표 전화 및 이메일 확인 필요]", "[Official phone and email required]")}</p></div></div>}</main><aside><p>{tx(locale, "관련 페이지", "Related Pages")}</p>{relatedNavigation?.children.slice(0, 6).map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{t(item.label, locale)}<ArrowRight size={16} /></Link>)}</aside></div></section></>;
+}
+
+function HistoryPage({ locale }: { locale: Locale }) {
+  const languageNotice = locale === "en" ? "Official history records are currently provided in Korean." : null;
+  const relatedLinks = [
+    { title: tx(locale, "학부 소개·비전", "About & Vision"), path: "/about" },
+    { title: tx(locale, "교육 목표", "Educational Goals"), path: "/academics/undergraduate" },
+    { title: tx(locale, "교수진", "Faculty"), path: "/faculty" },
+    { title: tx(locale, "오시는 길", "Directions"), path: "/about/directions" },
+  ];
+
+  useEffect(() => {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>("[data-history-reveal]"));
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion || !("IntersectionObserver" in window)) {
+      elements.forEach((element) => element.classList.add("is-visible"));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12 });
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <>
+      <noscript><style>{`[data-history-reveal] { opacity: 1 !important; transform: none !important; }`}</style></noscript>
+      <PageHeader
+        eyebrow="HISTORY"
+        title={tx(locale, "연혁", "History")}
+        description={tx(locale, "연세대학교 기계공학부는 1958년 출발 이후, 교육과 연구의 축적을 바탕으로 기계공학 분야의 발전을 이어오고 있습니다.", "The Department of Mechanical Engineering has continued to advance its field through the accumulated strength of education and research since 1958.")}
+      />
+      <section className="section history-page">
+        <div className="container history-page-content">
+          {languageNotice && <p className="history-language-notice">{languageNotice}</p>}
+          <header className="history-intro" data-history-reveal>
+            <p className="section-label">DEPARTMENT HISTORY</p>
+            <h2>{tx(locale, "기계공학부 연혁", "Department History")}</h2>
+          </header>
+          <ol className="history-timeline" aria-label={tx(locale, "기계공학부 연혁 목록", "Department history timeline")}>
+            {departmentHistory.map((entry) => (
+              <li className={`history-timeline-item${entry.highlight ? " is-highlight" : ""}`} data-history-reveal key={entry.id}>
+                <span className="history-timeline-marker" aria-hidden="true" />
+                <article>
+                  <time dateTime={`${entry.year}-${String(entry.month).padStart(2, "0")}`}>
+                    <strong>{entry.year}</strong><span>. {String(entry.month).padStart(2, "0")}.</span>
+                  </time>
+                  <p>{entry.title}</p>
+                </article>
+              </li>
+            ))}
+          </ol>
+          <nav className="history-related-links" aria-label={tx(locale, "연혁 관련 페이지", "Related history pages")}>
+            {relatedLinks.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{item.title}<ArrowRight size={17} /></Link>)}
+          </nav>
+        </div>
+      </section>
+    </>
+  );
 }
 
 export default function DepartmentSite({ locale, segments, searchParams }: DepartmentSiteProps) {
@@ -1713,6 +2142,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   let page: ReactNode;
   if (!section) page = <HomePage locale={locale} />;
   else if (section === "about" && !second) page = <AboutPage locale={locale} />;
+  else if (section === "about" && second === "history") page = <HistoryPage locale={locale} />;
   else if (section === "faculty" && second && getFacultyMemberBySlug(second)) page = <FacultyMemberDetail locale={locale} member={getFacultyMemberBySlug(second)!} />;
   else if (section === "faculty" && !second) page = <FacultyMemberDirectory locale={locale} />;
   else if (section === "faculty" && second && getFacultyBySlug(second)) page = <FacultyDetail locale={locale} person={getFacultyBySlug(second)!} />;
@@ -1722,12 +2152,13 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "labs" && second && getResearchLabBySlug(second)) page = <ResearchLabDetail locale={locale} lab={getResearchLabBySlug(second)!} />;
   else if (section === "labs" && second && getLabBySlug(second)) page = <LabDetail locale={locale} lab={getLabBySlug(second)!} />;
   else if (section === "labs" && !second) page = <ResearchLabDirectory locale={locale} searchParams={searchParams} />;
+  else if (section === "about" && second === "directions") page = <DirectionsPage locale={locale} />;
   else if (section === "academics" && second === "undergraduate") page = <UndergraduateProgramPage locale={locale} />;
   else if (section === "academics" && second === "courses" && third && getCourseBySlug(third)) page = <CourseDetail locale={locale} course={getCourseBySlug(third)!} />;
   else if (section === "academics" && second === "courses") page = <CourseDirectory locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "notices" && third && getNoticeBySlug(third)) page = <NoticeDetail locale={locale} notice={getNoticeBySlug(third)!} />;
   else if (section === "news" && second === "notices") page = <NoticeDirectory locale={locale} searchParams={searchParams} />;
-  else if (section === "news" && second === "calendar") page = <CalendarPage locale={locale} />;
+  else if (section === "news" && second === "calendar") page = <CalendarPage locale={locale} searchParams={searchParams} />;
   else if (section === "search") page = <SearchPage locale={locale} searchParams={searchParams} />;
   else if (section === "promotion" && second === "instagram") page = <HomePage locale={locale} />;
   else page = <PlaceholderPage locale={locale} segments={segments} />;

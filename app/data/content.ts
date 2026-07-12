@@ -79,6 +79,7 @@ export type Event = {
   slug: string;
   title: LocaleText;
   startDate: string;
+  time?: LocaleText;
   endDate?: string;
   location?: LocaleText;
   category: string;
@@ -346,11 +347,13 @@ export const notices: Notice[] = [
 ];
 
 export const events: Event[] = [
-  { id: "event-01", slug: "event-01", title: { ko: "[수강신청 일정 입력 예정]", en: "[Course registration schedule]" }, startDate: "2026-08-03", category: "학사" },
-  { id: "event-02", slug: "event-02", title: { ko: "[대학원 학위논문 일정 입력 예정]", en: "[Graduate thesis schedule]" }, startDate: "2026-08-12", category: "대학원" },
-  { id: "event-03", slug: "event-03", title: { ko: "[2학기 개강 일정 입력 예정]", en: "[Fall semester begins]" }, startDate: "2026-09-01", category: "학사" },
-  { id: "event-04", slug: "event-04", title: { ko: "[기계공학 세미나 일정 입력 예정]", en: "[Mechanical engineering seminar]" }, startDate: "2026-09-11", category: "세미나" },
-  { id: "event-05", slug: "event-05", title: { ko: "[중간시험 일정 입력 예정]", en: "[Midterm examination period]" }, startDate: "2026-10-19", endDate: "2026-10-23", category: "학사" },
+  { id: "event-01", slug: "bk-seminar-lee-ji-hyun", title: { ko: "이지현 교수", en: "Prof. Lee Ji-hyun" }, startDate: "2026-07-14", time: { ko: "오전 11:00", en: "11:00 AM" }, category: "BK 세미나" },
+  { id: "event-02", slug: "bk-seminar-robert-landers", title: { ko: "Prof. Robert G. Landers", en: "Prof. Robert G. Landers" }, startDate: "2026-07-15", time: { ko: "오전 10:30", en: "10:30 AM" }, category: "BK 세미나" },
+  { id: "event-03", slug: "summer-intensive-series-01", title: { ko: "여름학기 해외집중강의 시리즈(2차)", en: "Summer Intensive Lecture Series (Round 2)" }, startDate: "2026-07-20", time: { ko: "오후 2:00", en: "2:00 PM" }, category: "여름학기" },
+  { id: "event-04", slug: "summer-intensive-series-02", title: { ko: "여름학기 해외집중강의 시리즈(2차)", en: "Summer Intensive Lecture Series (Round 2)" }, startDate: "2026-07-21", time: { ko: "오후 2:00", en: "2:00 PM" }, category: "여름학기" },
+  { id: "event-05", slug: "summer-intensive-series-03", title: { ko: "여름학기 해외집중강의 시리즈(2차)", en: "Summer Intensive Lecture Series (Round 2)" }, startDate: "2026-07-23", time: { ko: "오후 2:00", en: "2:00 PM" }, category: "여름학기" },
+  { id: "event-06", slug: "summer-intensive-series-04", title: { ko: "여름학기 해외집중강의 시리즈(2차)", en: "Summer Intensive Lecture Series (Round 2)" }, startDate: "2026-07-24", time: { ko: "오후 2:00", en: "2:00 PM" }, category: "여름학기" },
+  { id: "event-07", slug: "bk-seminar-hirai", title: { ko: "히라이 교수", en: "Prof. Hirai" }, startDate: "2026-07-31", time: { ko: "오후 5:00", en: "5:00 PM" }, category: "BK 세미나" },
 ];
 
 export const instagramPosts = [
