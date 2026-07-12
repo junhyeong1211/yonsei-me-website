@@ -8141,3 +8141,394 @@ p {
     font-weight: 750;
   }
 }
+
+/* Graduate program */
+.graduate-program-page .academic-quick-links a {
+  flex: 1 1 0;
+}
+
+.graduate-program-overview {
+  margin-bottom: 96px;
+}
+
+.graduate-program-overview-list {
+  border-top: 1px solid var(--color-navy-deep);
+}
+
+.graduate-program-overview-list article {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  padding: 28px 0 30px;
+  border-bottom: 1px solid var(--color-border);
+  gap: 22px;
+}
+
+.graduate-program-overview-list article > span {
+  color: var(--color-yonsei-blue);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.graduate-program-overview-list h3 {
+  margin: 0;
+  color: var(--color-navy-deep);
+  font-size: 20px;
+  line-height: 1.35;
+}
+
+.graduate-program-overview-list p {
+  max-width: 720px;
+  margin: 10px 0 0;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.graduate-program-overview-list a {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 16px;
+  color: var(--color-yonsei-blue);
+  font-size: 13px;
+  font-weight: 750;
+  gap: 7px;
+}
+
+.graduate-program-overview-list a:hover,
+.graduate-program-overview-list a:focus-visible {
+  color: var(--color-navy-deep);
+}
+
+.graduate-course-catalog {
+  scroll-margin-top: calc(var(--header-height) + 24px);
+}
+
+.graduate-course-catalog-description {
+  margin: -42px 0 22px;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.graduate-course-filter-note {
+  max-width: 820px;
+  margin: 0 0 28px;
+  padding-left: 14px;
+  color: #627385;
+  border-left: 3px solid #8ab6d4;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.graduate-course-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  margin-bottom: 28px;
+  border-top: 1px solid var(--color-navy-deep);
+  border-bottom: 1px solid var(--color-border);
+  column-gap: 30px;
+}
+
+.graduate-filter-group,
+.graduate-course-search {
+  padding: 22px 0;
+}
+
+.graduate-filter-group > p,
+.graduate-course-search label {
+  display: block;
+  margin: 0 0 12px;
+  color: var(--color-navy-deep);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.graduate-filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.graduate-filter-options button {
+  min-height: 32px;
+  padding: 0 11px;
+  color: #627385;
+  background: #fff;
+  border: 1px solid #cfd9e1;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+.graduate-filter-options button:hover,
+.graduate-filter-options button:focus-visible,
+.graduate-filter-options button[aria-pressed="true"] {
+  color: var(--color-yonsei-blue);
+  border-color: var(--color-yonsei-blue);
+  background: #f5f9fc;
+}
+
+.graduate-filter-options button:focus-visible,
+.graduate-course-search input:focus-visible,
+.graduate-course-results-heading button:focus-visible,
+.graduate-program-overview-list a:focus-visible {
+  outline: 2px solid var(--color-yonsei-blue);
+  outline-offset: 2px;
+}
+
+.graduate-course-search {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--color-border);
+}
+
+.graduate-course-search > div {
+  display: flex;
+  max-width: 660px;
+}
+
+.graduate-course-search input {
+  min-width: 0;
+  height: 42px;
+  flex: 1 1 auto;
+  padding: 0 13px;
+  color: var(--color-navy-deep);
+  background: #fff;
+  border: 1px solid #cfd9e1;
+  border-right: 0;
+  border-radius: 0;
+  font: inherit;
+  font-size: 13px;
+}
+
+.graduate-course-search .button {
+  min-height: 42px;
+  padding: 0 17px;
+  border-radius: 0;
+  font-size: 12px;
+}
+
+.graduate-course-results-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  gap: 18px;
+}
+
+.graduate-course-results-heading p {
+  margin: 0;
+  color: #697888;
+  font-size: 13px;
+}
+
+.graduate-course-results-heading strong {
+  margin-right: 5px;
+  color: var(--color-navy-deep);
+  font-weight: 800;
+}
+
+.graduate-course-results-heading button {
+  padding: 0;
+  color: #657789;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.graduate-course-results-heading button:hover {
+  color: var(--color-yonsei-blue);
+}
+
+.graduate-course-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid var(--color-navy-deep);
+  font-size: 13px;
+}
+
+.graduate-course-table th {
+  height: 48px;
+  padding: 0 16px;
+  color: #6d7c8b;
+  background: #f6f8fa;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 11px;
+  font-weight: 750;
+  text-align: left;
+}
+
+.graduate-course-table th:first-child,
+.graduate-course-table td:first-child {
+  width: 132px;
+  white-space: nowrap;
+}
+
+.graduate-course-table th:last-child,
+.graduate-course-table td:last-child {
+  width: 76px;
+  text-align: center;
+}
+
+.graduate-course-table td {
+  padding: 18px 16px;
+  color: #637282;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.graduate-course-table td:first-child {
+  color: #4c6072;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.graduate-course-table td:nth-child(2) {
+  min-width: 220px;
+}
+
+.graduate-course-table td:nth-child(2) strong {
+  color: var(--color-navy-deep);
+  font-size: 14px;
+  font-weight: 750;
+  transition: color 160ms ease;
+}
+
+.graduate-course-table td:nth-child(2) em {
+  display: block;
+  margin-top: 5px;
+  color: #7b642d;
+  font-size: 10px;
+  font-style: normal;
+}
+
+.graduate-course-table tbody tr {
+  transition: background-color 160ms ease;
+}
+
+.graduate-course-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.graduate-course-table tbody tr:hover td:nth-child(2) strong {
+  color: var(--color-yonsei-blue);
+}
+
+.graduate-course-mobile-list {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .graduate-program-page .academic-quick-links a {
+    flex: 0 0 auto;
+  }
+
+  .graduate-course-table-wrap {
+    display: none;
+  }
+
+  .graduate-course-mobile-list {
+    display: grid;
+    border-top: 1px solid var(--color-navy-deep);
+  }
+
+  .graduate-course-mobile-list article {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .graduate-course-mobile-list article > span {
+    display: block;
+    color: #577084;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .graduate-course-mobile-list h3 {
+    margin: 7px 0 0;
+    color: var(--color-navy-deep);
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .graduate-course-mobile-list p {
+    margin: 5px 0 0;
+    color: #758394;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .graduate-course-mobile-list dl {
+    margin: 12px 0 0;
+  }
+
+  .graduate-course-mobile-list dl div {
+    display: flex;
+    color: #667587;
+    font-size: 12px;
+    gap: 14px;
+  }
+
+  .graduate-course-mobile-list dt {
+    min-width: 32px;
+  }
+
+  .graduate-course-mobile-list dd {
+    margin: 0;
+    color: var(--color-navy-deep);
+    font-weight: 750;
+  }
+
+  .graduate-course-mobile-list em {
+    display: block;
+    margin-top: 10px;
+    color: #7b642d;
+    font-size: 10px;
+    font-style: normal;
+  }
+}
+
+@media (max-width: 680px) {
+  .graduate-program-overview {
+    margin-bottom: 64px;
+  }
+
+  .graduate-program-overview-list article {
+    grid-template-columns: 42px minmax(0, 1fr);
+    padding: 22px 0;
+    gap: 10px;
+  }
+
+  .graduate-program-overview-list h3 {
+    font-size: 17px;
+  }
+
+  .graduate-program-overview-list p {
+    font-size: 13px;
+  }
+
+  .graduate-course-catalog-description {
+    margin-top: -34px;
+  }
+
+  .graduate-course-toolbar {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  .graduate-filter-group + .graduate-filter-group {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .graduate-course-search > div {
+    max-width: none;
+  }
+
+  .graduate-course-search .button {
+    padding: 0 13px;
+  }
+}

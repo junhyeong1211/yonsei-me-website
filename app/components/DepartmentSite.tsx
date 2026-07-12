@@ -91,6 +91,13 @@ import {
   type GraduateRequirementTable,
 } from "../data/graduateGraduationRequirements";
 import {
+  externalGraduateHandbookUrl,
+  graduateCourseLevelMatches,
+  graduateCourses,
+  type GraduateCourse,
+  type GraduateCourseLevelFilter,
+} from "../data/graduateCourses";
+import {
   aboutDepartmentIntroduction,
   aboutEducationalGoals,
   aboutEducationalPurpose,
@@ -1426,6 +1433,189 @@ function UndergraduateProgramPage({ locale }: { locale: Locale }) {
   );
 }
 
+type GraduateCreditsFilter = "all" | "3" | "0";
+
+const graduateLevelOptions: { value: GraduateCourseLevelFilter; ko: string; en: string }[] = [
+  { value: "all", ko: "전체", en: "All" },
+  { value: "5000", ko: "5000단위", en: "5000 level" },
+  { value: "6000", ko: "6000단위", en: "6000 level" },
+  { value: "7000", ko: "7000단위", en: "7000 level" },
+  { value: "8000", ko: "8000단위 이상", en: "8000 level and above" },
+  { value: "directed", ko: "연구지도", en: "Directed Research" },
+];
+
+const graduateCreditsOptions: { value: GraduateCreditsFilter; ko: string; en: string }[] = [
+  { value: "all", ko: "전체 학점", en: "All credits" },
+  { value: "3", ko: "3학점", en: "3 credits" },
+  { value: "0", ko: "0학점", en: "0 credits" },
+];
+
+const graduateLevelFilterFromQuery = (value: string | undefined): GraduateCourseLevelFilter =>
+  graduateLevelOptions.some((item) => item.value === value) ? value as GraduateCourseLevelFilter : "all";
+
+const graduateCreditsFilterFromQuery = (value: string | undefined): GraduateCreditsFilter =>
+  value === "3" || value === "0" ? value : "all";
+
+function GraduateProgramPage({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
+  const quickLinks = [
+    { label: tx(locale, "대학원 교과목", "Graduate Courses"), path: "/academics/graduate#course-catalog" },
+    { label: tx(locale, "대학원 졸업요건", "Graduate Requirements"), path: "/academics/requirements?program=graduate" },
+    { label: tx(locale, "교수진", "Faculty"), path: "/faculty" },
+    { label: tx(locale, "연구실", "Laboratories"), path: "/labs" },
+    { label: tx(locale, "대학원 진학", "Graduate Admission"), path: "/admission/graduate" },
+  ];
+  const overviewItems = [
+    {
+      number: "01",
+      title: tx(locale, "전공 교과목", "Major Courses"),
+      description: tx(locale, "기계공학의 세부 전공과 연구 분야에 해당하는 5000단위 이상의 대학원 교과목을 확인할 수 있습니다.", "Review graduate courses at the 5000 level and above across mechanical engineering specialties and research areas."),
+    },
+    {
+      number: "02",
+      title: tx(locale, "연구·세미나 교과목", "Research and Seminar Courses"),
+      description: tx(locale, "기계공학세미나와 연구지도 과목을 통해 연구 발표와 학위 연구를 수행합니다.", "Mechanical engineering seminars and directed research courses support research presentations and degree research."),
+    },
+    {
+      number: "03",
+      title: tx(locale, "졸업요건 연계", "Graduate Requirements"),
+      description: tx(locale, "최소 이수학점, 필수 교과목, 종합시험 및 논문심사 요건은 대학원 졸업요건 페이지에서 확인할 수 있습니다.", "Confirm minimum credits, required coursework, comprehensive examinations, and thesis review requirements on the graduate requirements page."),
+      path: "/academics/requirements?program=graduate",
+    },
+  ];
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="GRADUATE PROGRAM"
+        title={tx(locale, "대학원 교육과정", "Graduate Program")}
+        description={tx(locale, "기계공학과 대학원에서 개설되는 전공 교과목을 학정번호와 분야별 수준에 따라 확인할 수 있습니다.", "Review graduate mechanical engineering courses by course code and level.")}
+      />
+      <section className="section content-section graduate-program-page">
+        <div className="container">
+          <nav className="academic-quick-links" aria-label={tx(locale, "대학원 교육과정 빠른 링크", "Graduate program quick links")}>
+            {quickLinks.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{item.label}<ArrowRight size={16} /></Link>)}
+            {externalGraduateHandbookUrl && <a href={externalGraduateHandbookUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, "대학원 수강편람 조회, 새 탭에서 열림", "Open the graduate course handbook in a new tab")}>{tx(locale, "대학원 수강편람 조회", "Graduate Course Handbook")}<ExternalLink size={15} /></a>}
+          </nav>
+
+          <section className="graduate-program-overview" aria-label={tx(locale, "대학원 교육과정 안내", "Graduate program overview")}>
+            <SectionHeading label="PROGRAM GUIDE" title={tx(locale, "대학원 교육과정 안내", "Program Guide")} />
+            <div className="graduate-program-overview-list">
+              {overviewItems.map((item) => (
+                <article key={item.number}>
+                  <span>{item.number}</span>
+                  <div><h3>{item.title}</h3><p>{item.description}</p>{item.path && <Link href={hrefFor(locale, item.path)}>{tx(locale, "대학원 졸업요건 확인", "View Graduate Requirements")}<ArrowRight size={15} /></Link>}</div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <GraduateCourseCatalog locale={locale} searchParams={searchParams} />
+        </div>
+      </section>
+    </>
+  );
+}
+
+function GraduateCourseCatalog({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
+  const router = useRouter();
+  const [level, setLevel] = useState<GraduateCourseLevelFilter>(() => graduateLevelFilterFromQuery(searchParams.level));
+  const [credits, setCredits] = useState<GraduateCreditsFilter>(() => graduateCreditsFilterFromQuery(searchParams.credits));
+  const [query, setQuery] = useState(searchParams.q ?? "");
+
+  useEffect(() => {
+    setLevel(graduateLevelFilterFromQuery(searchParams.level));
+    setCredits(graduateCreditsFilterFromQuery(searchParams.credits));
+    setQuery(searchParams.q ?? "");
+  }, [searchParams.credits, searchParams.level, searchParams.q]);
+
+  const results = useMemo(() => graduateCourses.filter((course) => {
+    const searchable = `${course.courseCode} ${course.nameKo} ${course.nameEn}`.toLowerCase();
+    return graduateCourseLevelMatches(course, level)
+      && (credits === "all" || course.credits === Number(credits))
+      && (!query.trim() || searchable.includes(query.trim().toLowerCase()));
+  }), [credits, level, query]);
+
+  const syncUrl = (next: { level: GraduateCourseLevelFilter; credits: GraduateCreditsFilter; query: string }) => {
+    const params = new URLSearchParams();
+    if (next.level !== "all") params.set("level", next.level);
+    if (next.credits !== "all") params.set("credits", next.credits);
+    if (next.query.trim()) params.set("q", next.query.trim());
+    const suffix = params.size ? `?${params.toString()}` : "";
+    router.replace(`${hrefFor(locale, "/academics/graduate")}${suffix}`);
+  };
+
+  const updateLevel = (nextLevel: GraduateCourseLevelFilter) => {
+    setLevel(nextLevel);
+    syncUrl({ level: nextLevel, credits, query });
+  };
+  const updateCredits = (nextCredits: GraduateCreditsFilter) => {
+    setCredits(nextCredits);
+    syncUrl({ level, credits: nextCredits, query });
+  };
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    syncUrl({ level, credits, query });
+  };
+  const resetFilters = () => {
+    setLevel("all");
+    setCredits("all");
+    setQuery("");
+    router.replace(hrefFor(locale, "/academics/graduate"));
+  };
+  const hasFilters = level !== "all" || credits !== "all" || Boolean(query.trim());
+
+  return (
+    <section className="graduate-course-catalog" id="course-catalog" aria-labelledby="graduate-course-catalog-title">
+      <SectionHeading label="GRADUATE COURSES" title={tx(locale, "대학원 교과목", "Graduate Courses")} />
+      <p className="graduate-course-catalog-description">{tx(locale, "학정번호, 교과목명 및 학점 정보를 검색하고 확인할 수 있습니다.", "Search course codes, course titles, and credit information.")}</p>
+      <p className="graduate-course-filter-note">{tx(locale, "학정번호 수준은 학위과정이나 난이도의 공식 분류가 아닌 교과목 탐색을 위한 코드 범위 필터입니다.", "Course levels are code-range filters for browsing and do not represent an official degree-track or difficulty classification.")}</p>
+
+      <div className="graduate-course-toolbar">
+        <div className="graduate-filter-group">
+          <p>{tx(locale, "학정번호 수준", "Course code level")}</p>
+          <div role="group" aria-label={tx(locale, "학정번호 수준 필터", "Course code level filter")} className="graduate-filter-options">
+            {graduateLevelOptions.map((item) => <button type="button" aria-pressed={level === item.value} onClick={() => updateLevel(item.value)} key={item.value}>{locale === "ko" ? item.ko : item.en}</button>)}
+          </div>
+        </div>
+        <div className="graduate-filter-group">
+          <p>{tx(locale, "학점", "Credits")}</p>
+          <div role="group" aria-label={tx(locale, "학점 필터", "Credit filter")} className="graduate-filter-options">
+            {graduateCreditsOptions.map((item) => <button type="button" aria-pressed={credits === item.value} onClick={() => updateCredits(item.value)} key={item.value}>{locale === "ko" ? item.ko : item.en}</button>)}
+          </div>
+        </div>
+        <form className="graduate-course-search" onSubmit={submitSearch}>
+          <label htmlFor="graduate-course-search">{tx(locale, "학정번호 또는 과목명", "Course code or title")}</label>
+          <div><input id="graduate-course-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "학정번호 또는 과목명 검색", "Search by code or course title")} /><button className="button primary" type="submit"><Search size={16} />{tx(locale, "검색", "Search")}</button></div>
+        </form>
+      </div>
+
+      <div className="graduate-course-results-heading" aria-live="polite">
+        <p>{hasFilters ? <><strong>{tx(locale, "검색 결과", "Results")}</strong> {results.length}{tx(locale, "개", " courses")}</> : <><strong>{tx(locale, "총", "Total")}</strong> {graduateCourses.length}{tx(locale, "개 교과목", " courses")}</>}</p>
+        {hasFilters && <button type="button" onClick={resetFilters}>{tx(locale, "초기화", "Reset")}</button>}
+      </div>
+
+      {results.length ? <GraduateCourseList locale={locale} courses={results} /> : <EmptyState locale={locale} />}
+    </section>
+  );
+}
+
+function GraduateCourseList({ locale, courses: courseItems }: { locale: Locale; courses: GraduateCourse[] }) {
+  return (
+    <>
+      <div className="graduate-course-table-wrap">
+        <table className="graduate-course-table">
+          <caption className="sr-only">{tx(locale, "대학원 교과목 목록", "Graduate course list")}</caption>
+          <thead><tr><th scope="col">{tx(locale, "학정번호", "Code")}</th><th scope="col">{tx(locale, "과목명", "Course")}</th><th scope="col">{tx(locale, "영문명", "English Title")}</th><th scope="col">{tx(locale, "학점", "Credits")}</th></tr></thead>
+          <tbody>{courseItems.map((course) => <tr key={course.id}><td>{course.courseCode}</td><td><strong>{locale === "ko" ? course.nameKo : course.nameEn}</strong>{course.reviewNote && <em>{tx(locale, "공식 확인 필요", "Official verification needed")}</em>}</td><td>{locale === "ko" ? course.nameEn : course.nameKo}</td><td>{course.credits}</td></tr>)}</tbody>
+        </table>
+      </div>
+      <div className="graduate-course-mobile-list">
+        {courseItems.map((course) => <article key={course.id}><span>{course.courseCode}</span><h3>{locale === "ko" ? course.nameKo : course.nameEn}</h3><p>{locale === "ko" ? course.nameEn : course.nameKo}</p><dl><div><dt>{tx(locale, "학점", "Credits")}</dt><dd>{course.credits}</dd></div></dl>{course.reviewNote && <em>{tx(locale, "공식 확인 필요", "Official verification needed")}</em>}</article>)}
+      </div>
+    </>
+  );
+}
+
 type UndergraduateCourseTab = "schedule" | "required" | "elective";
 
 const resolveUndergraduateCourseTab = (searchParams: Record<string, string>): UndergraduateCourseTab => {
@@ -2477,6 +2667,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "academics" && second === "scholarships") page = <ScholarshipsPage locale={locale} searchParams={searchParams} />;
   else if (section === "academics" && second === "requirements") page = <GraduationRequirementsPage locale={locale} searchParams={searchParams} />;
   else if (section === "academics" && second === "undergraduate") page = <UndergraduateProgramPage locale={locale} />;
+  else if (section === "academics" && second === "graduate") page = <GraduateProgramPage locale={locale} searchParams={searchParams} />;
   else if (section === "academics" && second === "courses" && third && getCourseBySlug(third)) page = <CourseDetail locale={locale} course={getCourseBySlug(third)!} />;
   else if (section === "academics" && second === "courses") page = <CourseDirectory locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "notices" && third && getNoticeBySlug(third)) page = <NoticeDetail locale={locale} notice={getNoticeBySlug(third)!} />;
