@@ -9,8 +9,10 @@ import { FaInstagram } from "react-icons/fa";
 import {
   ArrowLeft,
   ArrowRight,
+  ArrowUpRight,
   BookOpen,
   BriefcaseBusiness,
+  BusFront,
   Camera,
   CalendarDays,
   ChevronDown,
@@ -25,6 +27,7 @@ import {
   MessageSquareText,
   RotateCcw,
   Search,
+  TrainFront,
   UserRound,
   X,
 } from "lucide-react";
@@ -153,7 +156,7 @@ const routeLabels: Record<string, LocaleText> = {
   department: { ko: "뉴스", en: "News" },
   notices: { ko: "공지사항", en: "Notices" },
   events: { ko: "행사", en: "Events" },
-  calendar: { ko: "일정", en: "Calendar" },
+  calendar: { ko: "학사일정", en: "Academic Calendar" },
   careers: { ko: "채용정보", en: "Careers" },
   admission: { ko: "입학", en: "Admissions" },
   promotion: { ko: "홍보", en: "Promotion" },
@@ -265,12 +268,14 @@ function FacultyCard({ item, locale }: { item: Faculty; locale: Locale }) {
 
 function ResearchCard({ area, locale }: { area: DirectoryResearchArea; locale: Locale }) {
   return (
-    <Link href={hrefFor(locale, `/research/fields?area=${area.slug}`)} className="research-card">
-      <span className="research-number">{String(area.displayOrder).padStart(2, "0")}</span>
+    <Link
+      href={hrefFor(locale, `/research/fields?area=${area.slug}`)}
+      className="research-card"
+      aria-label={tx(locale, `${area.nameKo} 연구실 목록 보기`, `View laboratories in ${area.nameEn}`)}
+    >
       <h3>{locale === "ko" ? area.nameKo : area.nameEn}</h3>
       <p className="research-en">{locale === "ko" ? area.nameEn : area.nameKo}</p>
-      <p>{area.shortDescription}</p>
-      <ArrowRight size={20} aria-hidden="true" />
+      <ArrowUpRight className="research-card-arrow" size={19} aria-hidden="true" />
     </Link>
   );
 }
@@ -817,9 +822,17 @@ function HomePage({ locale }: { locale: Locale }) {
       </div>
 
       <section className="research-section section" data-home-section>
-        <div className="container" data-reveal>
-          <SectionHeading label="RESEARCH" title={tx(locale, "주요 연구 분야", "Research Areas")} link={<Link className="text-button light" href={hrefFor(locale, "/labs")}>{tx(locale, "연구실 전체보기", "All laboratories")}<ArrowRight size={17} /></Link>} />
-          <div className="research-grid home-stagger">{directoryResearchAreas.map((area) => <ResearchCard key={area.id} area={area} locale={locale} />)}</div>
+        <div className="container">
+          <div className="research-index-layout">
+            <header className="research-index-header">
+              <p className="section-label">RESEARCH</p>
+              <h2>{tx(locale, "주요 연구 분야", "Research Areas")}</h2>
+              <Link className="research-all-link" href={hrefFor(locale, "/labs")}>{tx(locale, "연구실 전체보기", "All laboratories")}<ArrowRight size={17} aria-hidden="true" /></Link>
+            </header>
+            <nav className="research-grid" aria-label={tx(locale, "주요 연구 분야", "Research areas")}>
+              {directoryResearchAreas.map((area) => <ResearchCard key={area.id} area={area} locale={locale} />)}
+            </nav>
+          </div>
         </div>
       </section>
 
@@ -2201,14 +2214,14 @@ function DirectionsPage({ locale }: { locale: Locale }) {
       <section className="directions-transit-section" aria-labelledby="subway-heading">
         <div className="container">
           <header className="directions-section-heading">
-            <p className="section-label">SUBWAY</p>
+            <p className="section-label directions-mode-label"><TrainFront size={16} aria-hidden="true" />SUBWAY</p>
             <h2 id="subway-heading">{tx(locale, "지하철 이용 안내", "By Subway")}</h2>
             <p><span className="subway-line-mark">{t(departmentDirections.subway.line, locale)}</span>{t(departmentDirections.subway.station, locale)}</p>
           </header>
           <div className="subway-exit-grid">
             {departmentDirections.subway.exits.map((exit) => (
               <article key={exit.number}>
-                <strong>{tx(locale, `${exit.number}번 출구`, `Exit ${exit.number}`)}</strong>
+                <strong className="subway-exit-title"><MapPin size={17} aria-hidden="true" />{tx(locale, `${exit.number}번 출구`, `Exit ${exit.number}`)}</strong>
                 <p>{t(exit.description, locale)}</p>
               </article>
             ))}
@@ -2219,13 +2232,13 @@ function DirectionsPage({ locale }: { locale: Locale }) {
       <section className="directions-bus-section" aria-labelledby="bus-heading">
         <div className="container">
           <header className="directions-section-heading">
-            <p className="section-label">BUS</p>
+            <p className="section-label directions-mode-label"><BusFront size={16} aria-hidden="true" />BUS</p>
             <h2 id="bus-heading">{tx(locale, "버스 이용 안내", "By Bus")}</h2>
           </header>
           <div className="bus-route-grid">
             {departmentDirections.busRoutes.map((group) => (
               <article className={`bus-route-group is-${group.colorKey}`} key={group.colorKey}>
-                <h3><span aria-hidden="true" />{t(group.type, locale)}</h3>
+                <h3><BusFront size={17} aria-hidden="true" />{t(group.type, locale)}</h3>
                 <div aria-label={`${t(group.type, locale)} ${tx(locale, "버스 노선", "bus routes")}`}>
                   {group.routes.map((route) => <span key={route}>{route}</span>)}
                 </div>
