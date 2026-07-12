@@ -82,6 +82,12 @@ import {
   aboutEducationalPurpose,
 } from "../data/about";
 import { departmentHistory } from "../data/history";
+import {
+  scholarshipCategoryLabels,
+  scholarships,
+  type Scholarship,
+  type ScholarshipCategory,
+} from "../data/scholarships";
 import { getActiveNavigationItem, navigation } from "../data/navigation";
 import {
   getCourseBySlug,
@@ -142,6 +148,7 @@ const routeLabels: Record<string, LocaleText> = {
   graduate: { ko: "대학원과정", en: "Graduate" },
   courses: { ko: "교과목 안내", en: "Courses" },
   requirements: { ko: "졸업요건", en: "Requirements" },
+  scholarships: { ko: "장학 안내", en: "Scholarships" },
   news: { ko: "학과소식", en: "News" },
   department: { ko: "뉴스", en: "News" },
   notices: { ko: "공지사항", en: "Notices" },
@@ -1546,6 +1553,214 @@ function UndergraduateCourseDetailList({ locale, items }: { locale: Locale; item
   return <div className="undergraduate-course-detail-list">{items.map((item) => <details key={`${item.courseCode}-${item.nameKo}`}><summary><span className={`course-category course-category-${item.category}`}>{undergraduateCategoryLabel(item.category, locale)}</span><div><small>{item.courseCode}</small><h2>{locale === "en" && item.nameEn ? item.nameEn : item.nameKo}</h2>{item.nameEn && <p className="course-detail-english">{locale === "ko" ? item.nameEn : item.nameKo}</p>}<p className="course-detail-preview">{item.description}</p></div><span className="course-detail-toggle">{tx(locale, "상세보기", "View Details")}<ChevronDown size={17} /></span></summary><div className="course-detail-description"><p>{item.description}</p>{item.reviewNote && <aside><strong>{tx(locale, "공식 확인 필요", "Official verification needed")}</strong><span>{item.reviewNote}</span></aside>}</div></details>)}</div>;
 }
 
+type ScholarshipFilterKey = "tuition" | "living-expense" | "grade" | "income" | "year" | "duplicate" | "needs-review";
+
+const scholarshipFilterKeys: ScholarshipFilterKey[] = ["tuition", "living-expense", "grade", "income", "year", "duplicate", "needs-review"];
+
+function scholarshipSupportTypeLabel(item: Scholarship, locale: Locale) {
+  if (item.supportType === "tuition") return tx(locale, "등록금 지원", "Tuition");
+  if (item.supportType === "living-expense") return tx(locale, "생활비 지원", "Living Expense");
+  if (item.supportType === "mixed") return tx(locale, "등록금·생활비 지원", "Tuition & Living Expense");
+  if (item.supportType === "other") return tx(locale, "기타 지원", "Other Support");
+  return tx(locale, "지원 형태 확인 필요", "Support Type To Confirm");
+}
+
+function scholarshipVerificationLabel(item: Scholarship, locale: Locale) {
+  if (item.verificationStatus === "historical") return tx(locale, "과거 기준·최신 공지 확인 필요", "Historical · Check Latest Notice");
+  if (item.verificationStatus === "needs-review") return tx(locale, "최신 정보 확인 필요", "Current Information To Confirm");
+  return tx(locale, "검수 완료", "Verified");
+}
+
+function ScholarshipDetailField({ label, children }: { label: string; children: ReactNode }) {
+  return <div><dt>{label}</dt><dd>{children}</dd></div>;
+}
+
+function ScholarshipsPage({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
+  const router = useRouter();
+  const validCategory = (value: string | undefined): ScholarshipCategory | "all" =>
+    value === "internal" || value === "external" || value === "department-fund" ? value : "all";
+  const parseFilters = (value: string | undefined) => new Set((value ?? "").split(",").filter((item): item is ScholarshipFilterKey => scholarshipFilterKeys.includes(item as ScholarshipFilterKey)));
+  const [category, setCategory] = useState<ScholarshipCategory | "all">(validCategory(searchParams.category));
+  const [query, setQuery] = useState(searchParams.q ?? "");
+  const [filters, setFilters] = useState<Set<ScholarshipFilterKey>>(parseFilters(searchParams.filters));
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const counts: Record<ScholarshipCategory | "all", number> = {
+    all: scholarships.length,
+    internal: scholarships.filter((item) => item.category === "internal").length,
+    external: scholarships.filter((item) => item.category === "external").length,
+    "department-fund": scholarships.filter((item) => item.category === "department-fund").length,
+  };
+
+  const filterDefinitions: { key: ScholarshipFilterKey; label: string }[] = [
+    { key: "tuition", label: tx(locale, "등록금 지원", "Tuition") },
+    { key: "living-expense", label: tx(locale, "생활비 지원", "Living Expense") },
+    { key: "grade", label: tx(locale, "성적 기준 있음", "Grade Requirement") },
+    { key: "income", label: tx(locale, "소득·가계 기준 있음", "Income Requirement") },
+    { key: "year", label: tx(locale, "학년 조건 있음", "Year Requirement") },
+    { key: "duplicate", label: tx(locale, "중복수혜 가능", "Duplicate Award Allowed") },
+    { key: "needs-review", label: tx(locale, "최신 정보 확인 필요", "Needs Current Review") },
+  ];
+
+  const results = useMemo(() => scholarships.filter((item) => {
+    const normalizedQuery = query.trim().toLowerCase();
+    const searchable = [item.name.ko, item.name.en, ...item.eligibility, item.quota, item.amount, item.selectionPeriod, ...item.continuationConditions, item.applicationMethod, ...item.notes, item.reviewNote]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const matchesFilters = [...filters].every((filter) => {
+      if (filter === "tuition") return item.supportType === "tuition" || item.supportType === "mixed";
+      if (filter === "living-expense") return item.supportType === "living-expense" || item.supportType === "mixed";
+      if (filter === "grade") return item.criteria.grade;
+      if (filter === "income") return item.criteria.income;
+      if (filter === "year") return item.criteria.year;
+      if (filter === "duplicate") return item.duplicateAllowed === true;
+      return item.verificationStatus !== "current";
+    });
+    return (category === "all" || item.category === category)
+      && (!normalizedQuery || searchable.includes(normalizedQuery))
+      && matchesFilters;
+  }), [category, filters, query]);
+
+  const syncUrl = (nextCategory: ScholarshipCategory | "all", nextQuery: string, nextFilters: Set<ScholarshipFilterKey>) => {
+    const params = new URLSearchParams();
+    if (nextCategory !== "all") params.set("category", nextCategory);
+    if (nextQuery.trim()) params.set("q", nextQuery.trim());
+    if (nextFilters.size) params.set("filters", [...nextFilters].join(","));
+    const queryString = params.toString();
+    router.replace(`${hrefFor(locale, "/academics/scholarships")}${queryString ? `?${queryString}` : ""}`, { scroll: false });
+  };
+
+  const selectCategory = (nextCategory: ScholarshipCategory | "all") => {
+    setCategory(nextCategory);
+    syncUrl(nextCategory, query, filters);
+  };
+
+  const toggleFilter = (key: ScholarshipFilterKey) => {
+    const nextFilters = new Set(filters);
+    if (nextFilters.has(key)) nextFilters.delete(key);
+    else nextFilters.add(key);
+    setFilters(nextFilters);
+    syncUrl(category, query, nextFilters);
+  };
+
+  const resetSearch = () => {
+    setCategory("all");
+    setQuery("");
+    setFilters(new Set());
+    router.replace(hrefFor(locale, "/academics/scholarships"), { scroll: false });
+  };
+
+  const toggleExpanded = (id: string) => {
+    const nextIds = new Set(expandedIds);
+    if (nextIds.has(id)) nextIds.delete(id);
+    else nextIds.add(id);
+    setExpandedIds(nextIds);
+  };
+
+  const hasSearchState = category !== "all" || Boolean(query.trim()) || filters.size > 0;
+  const missing = tx(locale, "정보 확인 필요", "Information To Confirm");
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="SCHOLARSHIPS"
+        title={tx(locale, "장학 안내", "Scholarships")}
+        description={tx(locale, "교내 장학금과 교외 장학금, 기계공학부 기금장학금의 주요 지원 조건과 선발 정보를 확인할 수 있습니다.", "Compare key eligibility and selection information for internal, external, and department-funded scholarships.")}
+      />
+      <section className="section content-section scholarship-page">
+        <div className="container">
+          {locale === "en" && <p className="scholarship-language-note">Official scholarship descriptions are currently provided in Korean.</p>}
+          <aside className="scholarship-change-notice">
+            <strong>{tx(locale, "신청 전 확인", "Before Applying")}</strong>
+            <p>{tx(locale, "장학금의 선발 기준, 지원 금액 및 일정은 학기별로 변경될 수 있습니다. 신청 전 최신 공지사항과 담당 부서 안내를 반드시 확인해 주세요.", "Selection criteria, award amounts, and schedules may change each semester. Check the latest notice and responsible office before applying.")}</p>
+          </aside>
+
+          <div className="scholarship-tabs" role="tablist" aria-label={tx(locale, "장학금 분류", "Scholarship Categories")}>
+            {(["all", "internal", "external", "department-fund"] as const).map((value) => (
+              <button type="button" role="tab" aria-selected={category === value} onClick={() => selectCategory(value)} key={value}>
+                <span>{value === "all" ? tx(locale, "전체", "All") : t(scholarshipCategoryLabels[value], locale)}</span>
+                <strong>{counts[value]}</strong>
+              </button>
+            ))}
+          </div>
+
+          <form className="scholarship-search" onSubmit={(event) => { event.preventDefault(); syncUrl(category, query, filters); }}>
+            <label htmlFor="scholarship-query">{tx(locale, "장학금 검색", "Search Scholarships")}</label>
+            <div>
+              <Search size={18} aria-hidden="true" />
+              <input id="scholarship-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "장학금명·지원 기준·금액·선발 시기", "Name, eligibility, amount, or selection period")} />
+              <button type="submit">{tx(locale, "검색", "Search")}</button>
+            </div>
+          </form>
+
+          <div className="scholarship-filters" aria-label={tx(locale, "장학금 조건 필터", "Scholarship Condition Filters")}>
+            {filterDefinitions.map((filter) => <button type="button" aria-pressed={filters.has(filter.key)} onClick={() => toggleFilter(filter.key)} key={filter.key}>{filter.label}</button>)}
+          </div>
+
+          <div className="scholarship-results-heading">
+            <p role="status" aria-live="polite"><strong>{results.length}</strong> {tx(locale, "개 장학금", "scholarships")}</p>
+            {hasSearchState && <button type="button" onClick={resetSearch}>{tx(locale, "검색·필터 초기화", "Reset Search & Filters")}</button>}
+          </div>
+
+          {results.length ? <div className="scholarship-list">
+            {results.map((item) => {
+              const expanded = expandedIds.has(item.id);
+              const headingId = `scholarship-heading-${item.id}`;
+              const panelId = `scholarship-panel-${item.id}`;
+              return <article className={`scholarship-item${expanded ? " is-expanded" : ""}`} key={item.id}>
+                <header>
+                  <div className="scholarship-title-block">
+                    <p>{t(item.categoryLabel, locale)} · {scholarshipSupportTypeLabel(item, locale)}</p>
+                    <h2 id={headingId}>{t(item.name, locale)}</h2>
+                    <span>{item.eligibility[0] ?? missing}</span>
+                  </div>
+                  <dl className="scholarship-summary">
+                    <div><dt>{tx(locale, "지원 내용", "Award")}</dt><dd>{item.amount ?? scholarshipSupportTypeLabel(item, locale)}</dd></div>
+                    <div><dt>{tx(locale, "선발 시기", "Selection")}</dt><dd>{item.selectionPeriod ?? missing}</dd></div>
+                  </dl>
+                  <button className="scholarship-expand" type="button" aria-expanded={expanded} aria-controls={panelId} onClick={() => toggleExpanded(item.id)}>
+                    {tx(locale, "상세보기", "Details")}<ChevronDown size={17} aria-hidden="true" />
+                  </button>
+                </header>
+                {expanded && <div className="scholarship-detail" id={panelId} role="region" aria-labelledby={headingId}>
+                  <dl>
+                    <ScholarshipDetailField label={tx(locale, "추천·지원 기준", "Eligibility")}>{item.eligibility.length ? <ul>{item.eligibility.map((value) => <li key={value}>{value}</li>)}</ul> : missing}</ScholarshipDetailField>
+                    <ScholarshipDetailField label={tx(locale, "선발 인원", "Quota")}>{item.quota ?? missing}</ScholarshipDetailField>
+                    <ScholarshipDetailField label={tx(locale, "장학금액", "Amount")}>{item.amount ?? missing}</ScholarshipDetailField>
+                    <ScholarshipDetailField label={tx(locale, "선발 시기", "Selection Period")}>{item.selectionPeriod ?? missing}</ScholarshipDetailField>
+                    <ScholarshipDetailField label={tx(locale, "계속 수혜 조건", "Continuation")}>{item.continuationConditions.length ? <ul>{item.continuationConditions.map((value) => <li key={value}>{value}</li>)}</ul> : missing}</ScholarshipDetailField>
+                    <ScholarshipDetailField label={tx(locale, "중복수혜", "Duplicate Awards")}>{item.duplicateAllowed === true ? tx(locale, "가능(원문 기준)", "Allowed per Source") : item.duplicateAllowed === false ? tx(locale, "불가(원문 기준)", "Not Allowed per Source") : missing}</ScholarshipDetailField>
+                    <ScholarshipDetailField label={tx(locale, "신청 방법·제출처", "Application")}>{item.applicationMethod ?? missing}</ScholarshipDetailField>
+                    <ScholarshipDetailField label={tx(locale, "기타 유의사항", "Notes")}>{item.notes.length ? <ul>{item.notes.map((value) => <li key={value}>{value}</li>)}</ul> : missing}</ScholarshipDetailField>
+                    <ScholarshipDetailField label={tx(locale, "기준연도·검수 상태", "Source & Verification")}><strong className={`scholarship-verification is-${item.verificationStatus}`}>{scholarshipVerificationLabel(item, locale)}</strong>{item.sourceYear && <span>{item.sourceYear}</span>}{item.reviewNote && <p>{item.reviewNote}</p>}</ScholarshipDetailField>
+                  </dl>
+                </div>}
+              </article>;
+            })}
+          </div> : <EmptyState locale={locale} />}
+
+          <aside className="scholarship-footer-note">
+            <h2>{tx(locale, "신청 전 확인사항", "Application Notes")}</h2>
+            <ul>
+              <li>{tx(locale, "장학금 공지는 학기별로 변경될 수 있습니다.", "Scholarship notices may change each semester.")}</li>
+              <li>{tx(locale, "최신 신청 기간과 제출 서류는 공지사항에서 확인해 주세요.", "Check notices for current deadlines and required documents.")}</li>
+              <li>{tx(locale, "일부 교내 장학금은 국가장학금 신청이 필요합니다.", "Some internal scholarships require a national scholarship application.")}</li>
+              <li>{tx(locale, "등록금 범위를 초과하는 중복수혜 가능 여부는 장학금마다 다릅니다.", "Rules for awards exceeding tuition differ by scholarship.")}</li>
+            </ul>
+          </aside>
+
+          <nav className="scholarship-related-links" aria-label={tx(locale, "장학 관련 페이지", "Scholarship Related Pages")}>
+            <Link href={hrefFor(locale, "/news/notices?audience=undergraduate")}>{tx(locale, "학부 공지사항", "Undergraduate Notices")}<ArrowRight size={17} /></Link>
+            <Link href={hrefFor(locale, "/academics")}>{tx(locale, "학사 안내", "Academic Information")}<ArrowRight size={17} /></Link>
+            <Link href={hrefFor(locale, "/academics/courses")}>{tx(locale, "교과목 안내", "Courses")}<ArrowRight size={17} /></Link>
+          </nav>
+        </div>
+      </section>
+    </>
+  );
+}
+
 function CourseDetail({ locale, course }: { locale: Locale; course: Course }) {
   const areas = researchAreas.filter((area) => course.researchAreaIds.includes(area.id));
   return <><PageHeader eyebrow={`${course.code} · COURSE`} title={t(course.name, locale)} description={locale === "ko" ? course.name.en : course.name.ko} /><section className="section content-section"><div className="container detail-layout"><main><section className="detail-block first"><p className="section-label">COURSE OVERVIEW</p><h2>{tx(locale, "교과목 설명", "Course Description")}</h2><p>{t(course.description, locale)}</p></section><section className="detail-block"><p className="section-label">INFORMATION</p><h2>{tx(locale, "교과목 정보", "Course Information")}</h2><dl className="course-detail-grid"><div><dt>{tx(locale, "학정번호", "Code")}</dt><dd>{course.code}</dd></div><div><dt>{tx(locale, "과정", "Program")}</dt><dd>{course.program === "undergraduate" ? tx(locale, "학부", "Undergraduate") : tx(locale, "대학원", "Graduate")}</dd></div><div><dt>{tx(locale, "학년", "Year")}</dt><dd>{course.year ?? "-"}</dd></div><div><dt>{tx(locale, "학기", "Semester")}</dt><dd>{course.semester}</dd></div><div><dt>{tx(locale, "구분", "Category")}</dt><dd>{course.category}</dd></div><div><dt>{tx(locale, "학점", "Credits")}</dt><dd>{course.credits}</dd></div></dl></section><RelatedLinks locale={locale} items={areas.map((area) => ({ title: t(area.name, locale), path: `/research/${area.slug}` }))} /></main><aside className="detail-nav"><Link className="back-link" href={hrefFor(locale, "/academics/courses")}><ArrowLeft size={16} />{tx(locale, "교과목 목록", "Course list")}</Link><p>{tx(locale, "관련 연구분야", "Related Areas")}</p>{areas.map((area) => <Link href={hrefFor(locale, `/research/${area.slug}`)} key={area.id}><span>{area.number}</span>{t(area.name, locale)}</Link>)}</aside></div></section></>;
@@ -2153,6 +2368,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "labs" && second && getLabBySlug(second)) page = <LabDetail locale={locale} lab={getLabBySlug(second)!} />;
   else if (section === "labs" && !second) page = <ResearchLabDirectory locale={locale} searchParams={searchParams} />;
   else if (section === "about" && second === "directions") page = <DirectionsPage locale={locale} />;
+  else if (section === "academics" && second === "scholarships") page = <ScholarshipsPage locale={locale} searchParams={searchParams} />;
   else if (section === "academics" && second === "undergraduate") page = <UndergraduateProgramPage locale={locale} />;
   else if (section === "academics" && second === "courses" && third && getCourseBySlug(third)) page = <CourseDetail locale={locale} course={getCourseBySlug(third)!} />;
   else if (section === "academics" && second === "courses") page = <CourseDirectory locale={locale} searchParams={searchParams} />;

@@ -42,7 +42,7 @@ export const navigation: NavigationItem[] = [
       child("졸업 요건", "Graduation Requirements", "/academics/requirements"),
       child("필수 이수 과목", "Required Courses", "/academics/courses?category=required"),
       child("학사 안내", "Academic Information", "/academics"),
-      child("장학 안내", "Scholarships", "/news/notices?query=장학"),
+      child("장학 안내", "Scholarships", "/academics/scholarships"),
     ],
   },
   {
