@@ -80,6 +80,17 @@ import {
   type UndergraduateCourseDetail,
 } from "../data/undergraduateCourseDetails";
 import {
+  getUndergraduateGraduationRequirement,
+  type AdditionalProgramRequirement,
+  type CurriculumSection,
+  type MajorTypeSummary,
+} from "../data/undergraduateGraduationRequirements";
+import {
+  graduateGraduationRequirements,
+  type GraduateGraduationRequirementSection,
+  type GraduateRequirementTable,
+} from "../data/graduateGraduationRequirements";
+import {
   aboutDepartmentIntroduction,
   aboutEducationalGoals,
   aboutEducationalPurpose,
@@ -1569,6 +1580,88 @@ function UndergraduateCourseDetailList({ locale, items }: { locale: Locale; item
   return <div className="undergraduate-course-detail-list">{items.map((item) => <details key={`${item.courseCode}-${item.nameKo}`}><summary><span className={`course-category course-category-${item.category}`}>{undergraduateCategoryLabel(item.category, locale)}</span><div><small>{item.courseCode}</small><h2>{locale === "en" && item.nameEn ? item.nameEn : item.nameKo}</h2>{item.nameEn && <p className="course-detail-english">{locale === "ko" ? item.nameEn : item.nameKo}</p>}<p className="course-detail-preview">{item.description}</p></div><span className="course-detail-toggle">{tx(locale, "상세보기", "View Details")}<ChevronDown size={17} /></span></summary><div className="course-detail-description"><p>{item.description}</p>{item.reviewNote && <aside><strong>{tx(locale, "공식 확인 필요", "Official verification needed")}</strong><span>{item.reviewNote}</span></aside>}</div></details>)}</div>;
 }
 
+type GraduationProgram = "undergraduate" | "graduate";
+type GraduationAdmissionYear = "2025" | "2024" | "previous";
+
+const graduationProgramFromQuery = (value: string | undefined): GraduationProgram => value === "graduate" ? "graduate" : "undergraduate";
+const graduationYearFromQuery = (value: string | undefined): GraduationAdmissionYear => value === "2024" || value === "previous" ? value : "2025";
+
+function GraduationRequirementsPage({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
+  const router = useRouter();
+  const [program, setProgram] = useState<GraduationProgram>(() => graduationProgramFromQuery(searchParams.program));
+  const [admissionYear, setAdmissionYear] = useState<GraduationAdmissionYear>(() => graduationYearFromQuery(searchParams.year));
+
+  useEffect(() => {
+    setProgram(graduationProgramFromQuery(searchParams.program));
+    setAdmissionYear(graduationYearFromQuery(searchParams.year));
+  }, [searchParams.program, searchParams.year]);
+
+  const syncUrl = (nextProgram: GraduationProgram, nextYear = admissionYear) => {
+    const params = new URLSearchParams({ program: nextProgram });
+    if (nextProgram === "undergraduate") params.set("year", nextYear);
+    router.replace(`${hrefFor(locale, "/academics/requirements")}?${params.toString()}`, { scroll: false });
+  };
+
+  return <>
+    <PageHeader eyebrow="GRADUATION REQUIREMENTS" title={tx(locale, "졸업요건", "Graduation Requirements")} description={tx(locale, "입학연도와 학위과정에 따른 이수학점, 필수 교과목 및 학위 취득 요건을 확인할 수 있습니다.", "Review credits, required courses, and degree requirements by admission year and degree program.")} />
+    <section className="section content-section graduation-requirements-page"><div className="container">
+      {locale === "en" && <p className="graduation-language-note">Official graduation requirement details are currently provided in Korean.</p>}
+      <aside className="graduation-check-notice"><strong>{tx(locale, "확인 안내", "Before You Confirm")}</strong><p>{tx(locale, "졸업요건은 입학연도와 학위과정에 따라 다를 수 있습니다. 최종 졸업사정 전 학사요람과 학부·대학원 공지사항을 반드시 확인해 주세요.", "Graduation requirements may vary by admission year and degree program. Confirm the academic handbook and the latest department or graduate school notices before final degree clearance.")}</p></aside>
+      <div className="graduation-program-tabs" role="tablist" aria-label={tx(locale, "졸업요건 과정 선택", "Degree program selection")}>
+        {(["undergraduate", "graduate"] as GraduationProgram[]).map((item) => <button type="button" role="tab" id={`graduation-program-tab-${item}`} aria-selected={program === item} aria-controls={`graduation-program-panel-${item}`} onClick={() => { setProgram(item); syncUrl(item); }} key={item}>{item === "undergraduate" ? tx(locale, "학부 졸업요건", "Undergraduate Requirements") : tx(locale, "대학원 졸업요건", "Graduate Requirements")}</button>)}
+      </div>
+      {program === "undergraduate" ? <UndergraduateGraduationRequirements locale={locale} admissionYear={admissionYear} onSelectAdmissionYear={(year) => { setAdmissionYear(year); syncUrl("undergraduate", year); }} /> : <GraduateGraduationRequirements locale={locale} />}
+    </div></section>
+  </>;
+}
+
+function UndergraduateGraduationRequirements({ locale, admissionYear, onSelectAdmissionYear }: { locale: Locale; admissionYear: GraduationAdmissionYear; onSelectAdmissionYear: (year: GraduationAdmissionYear) => void }) {
+  const requirement = getUndergraduateGraduationRequirement(admissionYear);
+  const isComplete = requirement.verificationStatus === "verified";
+  const pendingMessage = admissionYear === "2024" ? tx(locale, "2024학번 세부 졸업이수요건은 공식 자료 확인이 필요합니다.", "Detailed graduation credit requirements for 2024 admission require official confirmation.") : tx(locale, "이전 학번의 세부 졸업이수요건은 입학연도별 공식 자료 확인이 필요합니다.", "Detailed requirements for earlier admissions require confirmation against the official materials for each admission year.");
+  return <div role="tabpanel" className="graduation-program-panel" id="graduation-program-panel-undergraduate" aria-labelledby="graduation-program-tab-undergraduate" tabIndex={0}>
+    <div className="graduation-year-selector" aria-label={tx(locale, "학부 입학연도 선택", "Undergraduate admission year")}>{(["2025", "2024", "previous"] as GraduationAdmissionYear[]).map((year) => <button type="button" aria-pressed={admissionYear === year} onClick={() => onSelectAdmissionYear(year)} key={year}>{year === "previous" ? tx(locale, "이전 학번 안내", "Earlier Admission") : tx(locale, `${year}학번`, `${year} Admission`)}</button>)}</div>
+    {!isComplete ? <section className="graduation-pending-state" aria-live="polite"><p className="section-label">OFFICIAL VERIFICATION</p><h2>{pendingMessage}</h2><p>{tx(locale, "현재 제공된 자료에는 해당 학번의 별도 세부 학점표가 없습니다. 최종 졸업사정 전 학사요람과 학부 공지사항을 확인해 주세요.", "The supplied material does not include a separate detailed credit table for this admission year. Check the academic handbook and department notices before final degree clearance.")}</p></section> : <>
+      <section className="requirements-content-section requirements-credit-section"><div className="requirements-section-heading"><div><p className="section-label">2025 ADMISSION</p><h2>핵심 학점 요약</h2></div><p>{tx(locale, "유형별 교양·전공·총 이수학점을 비교합니다.", "Compare liberal arts, major, and total credits by student type.")}</p></div><UndergraduateCreditSummary locale={locale} summaries={requirement.creditSummary} /></section>
+      <section className="requirements-content-section requirements-curriculum-section"><div className="requirements-section-heading"><div><p className="section-label">COURSE COMPOSITION</p><h2>2025학번 교과목 구성</h2></div></div><div className="undergraduate-requirement-sections">{requirement.curriculumSections.map((section) => <UndergraduateRequirementSection locale={locale} section={section} key={section.id} />)}</div></section>
+      <section className="requirements-content-section requirements-notes-section"><div className="requirements-section-heading"><div><p className="section-label">IMPORTANT NOTES</p><h2>학부 주요 유의사항</h2></div></div><div className="undergraduate-notice-list">{requirement.noticeGroups.map((notice) => <details key={notice.id}><summary><span>{notice.title}</span><ChevronDown size={18} aria-hidden="true" /></summary><ul>{notice.items.map((item) => <li key={item}>{item}</li>)}</ul></details>)}</div></section>
+      <section className="requirements-content-section additional-programs-section"><div className="requirements-section-heading"><div><p className="section-label">ADDITIONAL PROGRAMS</p><h2>복수전공·부전공</h2></div></div><div className="additional-program-grid">{requirement.additionalPrograms.map((program) => <AdditionalProgramTable program={program} key={program.id} />)}</div></section>
+    </>}
+  </div>;
+}
+
+function UndergraduateCreditSummary({ locale, summaries }: { locale: Locale; summaries: MajorTypeSummary[] }) {
+  const rows = summaries[0]?.items ?? [];
+  return <><div className="requirements-credit-table-wrap"><table className="requirements-credit-table"><caption className="sr-only">{tx(locale, "2025학번 유형별 졸업 이수학점 비교", "2025 admission graduation credit comparison by student type")}</caption><thead><tr><th scope="col">{tx(locale, "구분", "Category")}</th>{summaries.map((summary) => <th scope="col" key={summary.id}>{summary.label}</th>)}</tr></thead><tbody>{rows.map((row) => <tr className={row.emphasis ? `is-${row.emphasis}` : undefined} key={row.id}><th scope="row">{row.label}</th>{summaries.map((summary) => <td key={summary.id}>{summary.items.find((item) => item.id === row.id)?.value ?? "-"}</td>)}</tr>)}</tbody></table></div><div className="requirements-credit-mobile">{summaries.map((summary) => <article key={summary.id}><h3>{summary.label}</h3><dl>{summary.items.map((item) => <div className={item.emphasis ? `is-${item.emphasis}` : undefined} key={item.id}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl></article>)}</div></>;
+}
+
+function UndergraduateRequirementSection({ locale, section }: { locale: Locale; section: CurriculumSection }) {
+  return <article className={`undergraduate-requirement-section is-${section.id}`}><header><div><p>{section.title}</p><h3>{section.creditRequirement}</h3></div>{section.description && <span>{section.description}</span>}</header>{section.items.length > 0 && <ul>{section.items.map((item) => <li key={`${item.courseCode ?? "general"}-${item.nameKo}`}><RequirementCourseLink locale={locale} name={item.nameKo} code={item.courseCode} /><span>{item.credits === null ? tx(locale, "영역 이수", "Area requirement") : `${item.credits}${tx(locale, "학점", " credits")}`}</span></li>)}</ul>}{section.notes && <p className="undergraduate-section-note">{section.notes.join(" · ")}</p>}</article>;
+}
+
+function RequirementCourseLink({ locale, name, code }: { locale: Locale; name: string; code?: string }) {
+  if (!code) return <strong>{name}</strong>;
+  return <Link href={hrefFor(locale, `/academics/courses?tab=schedule&q=${encodeURIComponent(code)}`)} aria-label={tx(locale, `${name} 교과목 안내에서 검색`, `Search ${name} in course directory`)}><strong>{name}</strong><small>{code}</small></Link>;
+}
+
+function AdditionalProgramTable({ program }: { program: AdditionalProgramRequirement }) {
+  return <article className="additional-program-card"><h3>{program.title}</h3><table><caption className="sr-only">{program.title} 이수학점 비교</caption><thead><tr><th scope="col">입학연도</th><th scope="col">전공필수</th><th scope="col">전공선택</th><th scope="col">졸업학점</th></tr></thead><tbody>{program.rows.map((row) => <tr key={row.admissionYear}><th scope="row">{row.admissionYear}</th><td>{row.required}</td><td>{row.elective}</td><td>{row.total}</td></tr>)}</tbody></table><div>{program.requiredCourses.map((item) => <section key={item.title}><h4>{item.title}</h4><p>{item.description}</p>{item.items && <ul>{item.items.map((courseName) => <li key={courseName}>{courseName}</li>)}</ul>}</section>)}</div></article>;
+}
+
+function GraduateGraduationRequirements({ locale }: { locale: Locale }) {
+  const [activeSectionId, setActiveSectionId] = useState(graduateGraduationRequirements[0].sectionId);
+  const activeSection = graduateGraduationRequirements.find((section) => section.sectionId === activeSectionId) ?? graduateGraduationRequirements[0];
+  return <div role="tabpanel" className="graduation-program-panel" id="graduation-program-panel-graduate" aria-labelledby="graduation-program-tab-graduate" tabIndex={0}><div className="graduate-requirements-desktop"><nav className="graduate-step-navigation" aria-label={tx(locale, "대학원 졸업 절차", "Graduate requirement steps")}>{graduateGraduationRequirements.map((section) => <button type="button" aria-current={activeSectionId === section.sectionId ? "step" : undefined} onClick={() => setActiveSectionId(section.sectionId)} key={section.sectionId}><span>{section.step}</span>{section.title}</button>)}</nav><GraduateRequirementSection locale={locale} section={activeSection} /></div><div className="graduate-requirements-mobile">{graduateGraduationRequirements.map((section, index) => <details open={index === 0} key={section.sectionId}><summary><span>{section.step}</span><strong>{section.title}</strong><ChevronDown size={18} aria-hidden="true" /></summary><GraduateRequirementSection locale={locale} section={section} compact /></details>)}</div></div>;
+}
+
+function GraduateRequirementSection({ locale, section, compact = false }: { locale: Locale; section: GraduateGraduationRequirementSection; compact?: boolean }) {
+  return <section className={`graduate-requirement-section${compact ? " is-compact" : ""}`} aria-labelledby={`graduate-section-${section.sectionId}`}><header><p className="section-label">STEP {section.step}</p><h2 id={`graduate-section-${section.sectionId}`}>{section.title}</h2>{section.summary && <p>{section.summary}</p>}</header>{section.tables.map((item) => <GraduateRequirementTableView table={item} key={item.id} />)}{section.requirementGroups.map((item) => <section className="graduate-requirement-group" key={item.title}><h3>{item.title}</h3><ul>{item.items.map((value) => <li key={value}>{value}</li>)}</ul></section>)}{section.notes.length > 0 && <aside className="graduate-requirement-notes"><h3>{tx(locale, "유의사항", "Notes")}</h3><ul>{section.notes.map((note) => <li key={note}>{note}</li>)}</ul></aside>}</section>;
+}
+
+function GraduateRequirementTableView({ table }: { table: GraduateRequirementTable }) {
+  return <section className="graduate-requirement-table-wrap"><h3>{table.title}</h3><table><caption className="sr-only">{table.title}</caption><thead><tr>{table.columns.map((column) => <th scope="col" key={column}>{column}</th>)}</tr></thead><tbody>{table.rows.map((row) => <tr key={row.join("-")}>{row.map((value, index) => <td data-label={table.columns[index]} key={`${index}-${value}`}>{value}</td>)}</tr>)}</tbody></table></section>;
+}
+
 type ScholarshipFilterKey = "tuition" | "living-expense" | "grade" | "income" | "year" | "duplicate" | "needs-review";
 
 const scholarshipFilterKeys: ScholarshipFilterKey[] = ["tuition", "living-expense", "grade", "income", "year", "duplicate", "needs-review"];
@@ -2385,6 +2478,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "labs" && !second) page = <ResearchLabDirectory locale={locale} searchParams={searchParams} />;
   else if (section === "about" && second === "directions") page = <DirectionsPage locale={locale} />;
   else if (section === "academics" && second === "scholarships") page = <ScholarshipsPage locale={locale} searchParams={searchParams} />;
+  else if (section === "academics" && second === "requirements") page = <GraduationRequirementsPage locale={locale} searchParams={searchParams} />;
   else if (section === "academics" && second === "undergraduate") page = <UndergraduateProgramPage locale={locale} />;
   else if (section === "academics" && second === "courses" && third && getCourseBySlug(third)) page = <CourseDetail locale={locale} course={getCourseBySlug(third)!} />;
   else if (section === "academics" && second === "courses") page = <CourseDirectory locale={locale} searchParams={searchParams} />;
