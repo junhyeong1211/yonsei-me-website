@@ -284,7 +284,6 @@ function ResearchCard({ area, locale }: { area: DirectoryResearchArea; locale: L
       className="research-card"
       aria-label={tx(locale, `${area.nameKo} 연구실 목록 보기`, `View laboratories in ${area.nameEn}`)}
     >
-      <span className="research-card-number" aria-hidden="true">{String(area.displayOrder).padStart(2, "0")}</span>
       <h3>{locale === "ko" ? area.nameKo : area.nameEn}</h3>
       <p className="research-en">{locale === "ko" ? area.nameEn : area.nameKo}</p>
       <ArrowUpRight className="research-card-arrow" size={19} aria-hidden="true" />
@@ -727,7 +726,7 @@ function HomePage({ locale }: { locale: Locale }) {
   return (
     <div className="home-page" ref={homeRef}>
       <noscript><style>{"[data-reveal], [data-reveal] .home-stagger > * { opacity: 1 !important; transform: none !important; }"}</style></noscript>
-      <nav className={`home-section-nav ${activeHomeSection === 2 ? "is-research" : [0, 6].includes(activeHomeSection) ? "is-light" : ""}`} aria-label={tx(locale, "메인 섹션 메뉴", "Main section menu")}>
+      <nav className={`home-section-nav ${[0, 2, 6].includes(activeHomeSection) ? "is-light" : ""}`} aria-label={tx(locale, "메인 섹션 메뉴", "Main section menu")}>
         <div className="home-section-track">
           {homeSectionNavigation.map((item, index) => (
             <button
@@ -835,12 +834,10 @@ function HomePage({ locale }: { locale: Locale }) {
 
       <section className="research-section section" data-home-section>
         <div className="container">
-          <div className="research-index-layout" data-reveal>
+          <div className="research-index-layout">
             <header className="research-index-header">
-              <div>
-                <p className="section-label">RESEARCH</p>
-                <h2>{tx(locale, "주요 연구 분야", "Research Areas")}</h2>
-              </div>
+              <p className="section-label">RESEARCH</p>
+              <h2>{tx(locale, "주요 연구 분야", "Research Areas")}</h2>
               <Link className="research-all-link" href={hrefFor(locale, "/labs")}>{tx(locale, "연구실 전체보기", "All laboratories")}<ArrowRight size={17} aria-hidden="true" /></Link>
             </header>
             <nav className="research-grid" aria-label={tx(locale, "주요 연구 분야", "Research areas")}>
