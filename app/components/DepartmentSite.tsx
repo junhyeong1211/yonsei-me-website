@@ -2428,7 +2428,6 @@ function MapEmbed({ locale }: { locale: Locale }) {
 }
 
 function DirectionsPage({ locale }: { locale: Locale }) {
-  const [addressCopied, setAddressCopied] = useState(false);
   const relatedLinks = [
     { title: tx(locale, "학부 소개·비전", "About & Vision"), path: "/about" },
     { title: tx(locale, "연혁", "History"), path: "/about/history" },
@@ -2439,11 +2438,7 @@ function DirectionsPage({ locale }: { locale: Locale }) {
   const copyAddress = async () => {
     try {
       await navigator.clipboard.writeText(`${departmentDirections.address} ${departmentDirections.postalCode}`);
-      setAddressCopied(true);
-      window.setTimeout(() => setAddressCopied(false), 1800);
-    } catch {
-      setAddressCopied(false);
-    }
+    } catch {}
   };
 
   return (
@@ -2477,9 +2472,7 @@ function DirectionsPage({ locale }: { locale: Locale }) {
             <article>
               <span>{tx(locale, "주소", "Address")}</span>
               <p>{departmentDirections.address}<br />{tx(locale, "우편번호", "Postal code")} {departmentDirections.postalCode}</p>
-              <button type="button" onClick={copyAddress} aria-label={tx(locale, "주소 복사", "Copy address")}>
-                {addressCopied ? tx(locale, "주소가 복사되었습니다", "Address copied") : tx(locale, "주소 복사", "Copy address")}
-              </button>
+              <button type="button" onClick={copyAddress} aria-label={tx(locale, "주소 복사", "Copy address")}>{tx(locale, "주소 복사", "Copy address")}</button>
             </article>
             <article>
               <span>{tx(locale, "전화", "Telephone")}</span>
@@ -2490,7 +2483,6 @@ function DirectionsPage({ locale }: { locale: Locale }) {
               <a href={`mailto:${departmentDirections.email}`} aria-label={tx(locale, `기계공학부 이메일 ${departmentDirections.email}`, `Email the department at ${departmentDirections.email}`)}>{departmentDirections.email}</a>
             </article>
           </div>
-          <p className="directions-copy-status" aria-live="polite">{addressCopied ? tx(locale, "주소가 복사되었습니다.", "The address has been copied.") : ""}</p>
         </div>
       </section>
 

@@ -6254,13 +6254,6 @@ p {
   border-bottom-color: var(--color-yonsei-blue);
 }
 
-.directions-copy-status {
-  min-height: 18px;
-  margin-top: 14px;
-  color: var(--color-yonsei-blue);
-  font-size: 11px;
-}
-
 .directions-transit-section,
 .directions-bus-section {
   padding: 96px 0;
