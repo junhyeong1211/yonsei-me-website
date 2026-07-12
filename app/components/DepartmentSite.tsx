@@ -794,7 +794,7 @@ function HomePage({ locale }: { locale: Locale }) {
       <section className="section faculty-section" data-home-section>
         <div className="container" data-reveal>
           <SectionHeading label="FACULTY" title={tx(locale, "교수진", "Faculty")} link={<Link className="text-button" href={hrefFor(locale, "/faculty")}>{tx(locale, "전체 교수진", "View all faculty")}<ArrowRight size={17} /></Link>} />
-          <div className="faculty-grid preview home-stagger">{faculty.slice(0, 4).map((person) => <FacultyCard key={person.id} item={person} locale={locale} />)}</div>
+          <div className="faculty-member-grid faculty-member-grid-preview home-stagger">{facultyMembers.slice(0, 4).map((member) => <FacultyMemberCard key={member.id} member={member} locale={locale} variant="preview" />)}</div>
         </div>
       </section>
 
@@ -871,6 +871,9 @@ const facultyMemberName = (member: FacultyMember, locale: Locale) =>
 const facultyMemberAlternateName = (member: FacultyMember, locale: Locale) =>
   locale === "ko" ? member.nameEn : member.nameKo;
 
+const facultyMemberLaboratory = (member: FacultyMember) =>
+  researchLabs.find((lab) => lab.professorKo === member.nameKo);
+
 function FacultyMemberPhoto({ member, locale }: { member: FacultyMember; locale: Locale }) {
   const [imageFailed, setImageFailed] = useState(false);
   const name = facultyMemberName(member, locale);
@@ -903,9 +906,28 @@ function FacultyMemberDirectory({ locale }: { locale: Locale }) {
   );
 }
 
-function FacultyMemberCard({ member, locale }: { member: FacultyMember; locale: Locale }) {
+function FacultyMemberCard({ member, locale, variant = "directory" }: { member: FacultyMember; locale: Locale; variant?: "directory" | "preview" }) {
   const name = facultyMemberName(member, locale);
   const alternateName = facultyMemberAlternateName(member, locale);
+  const laboratory = facultyMemberLaboratory(member);
+  const laboratoryContext = laboratory
+    ? (locale === "ko" ? laboratory.nameKo : laboratory.nameEn)
+    : tx(locale, "연구실 정보 확인 중", "Laboratory information pending");
+
+  if (variant === "preview") {
+    return (
+      <Link href={hrefFor(locale, `/faculty/${member.slug}`)} className="faculty-member-card faculty-member-card-preview" aria-label={tx(locale, `${member.nameKo ?? name} 교수 프로필 보기`, `View ${member.nameEn ?? name}'s profile`)}>
+        <FacultyMemberPhoto member={member} locale={locale} />
+        <div className="faculty-member-card-body">
+          <p className="faculty-member-position">{locale === "ko" ? member.positionKo : member.positionEn}</p>
+          <h2>{name}</h2>
+          {alternateName && <p className="faculty-member-name-en">{alternateName}</p>}
+          <p className="faculty-member-laboratory">{laboratoryContext}</p>
+          <span className="faculty-member-detail-link">{tx(locale, "프로필 보기", "View profile")}<ArrowRight size={17} /></span>
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <article className="faculty-member-card">
@@ -914,6 +936,11 @@ function FacultyMemberCard({ member, locale }: { member: FacultyMember; locale: 
         <p className="faculty-member-position">{locale === "ko" ? member.positionKo : member.positionEn}</p>
         <h2>{name}</h2>
         {alternateName && <p className="faculty-member-name-en">{alternateName}</p>}
+        <dl className="faculty-member-contact-list">
+          <div><dt>{tx(locale, "이메일", "Email")}</dt><dd>{member.email ? <a href={`mailto:${member.email}`}>{member.email}</a> : tx(locale, "이메일 확인 중", "Email information pending")}</dd></div>
+          <div><dt>{tx(locale, "연락처", "Contact")}</dt><dd>{member.phoneNumbers.length ? member.phoneNumbers.map((phone, index) => <span key={phone}>{index > 0 && " · "}<a href={`tel:${phone.replaceAll("-", "")}`}>{phone}</a></span>) : tx(locale, "연락처 확인 중", "Contact information pending")}</dd></div>
+          <div><dt>{tx(locale, "위치", "Office")}</dt><dd>{member.office ?? tx(locale, "위치 확인 중", "Office information pending")}</dd></div>
+        </dl>
         <Link href={hrefFor(locale, `/faculty/${member.slug}`)} className="faculty-member-detail-link" aria-label={tx(locale, `${member.nameKo ?? name} 교수 상세보기`, `View ${member.nameEn ?? name}'s profile`)}>{tx(locale, "프로필 보기", "View profile")}<ArrowRight size={17} /></Link>
       </div>
     </article>
@@ -945,6 +972,7 @@ function FacultyMemberDetail({ locale, member }: { locale: Locale; member: Facul
               <div><dt>{tx(locale, "연구실 위치", "Office")}</dt><dd>{member.office ?? tx(locale, "위치 확인 중", "Office information pending")}</dd></div>
               {member.profileUrl && <div><dt>{tx(locale, "외부 프로필", "External profile")}</dt><dd><a href={member.profileUrl} target="_blank" rel="noopener noreferrer">{member.profileUrl}<ExternalLink size={15} /></a></dd></div>}
             </dl>
+            <section className="detail-block faculty-member-research-placeholder"><p className="section-label">RESEARCH INFORMATION</p><h2>{tx(locale, "연구 정보", "Research Information")}</h2><p>{tx(locale, "상세 연구 정보는 추후 업데이트될 예정입니다.", "Detailed research information will be updated soon.")}</p></section>
           </main>
         </div>
       </section>
@@ -1071,8 +1099,8 @@ function ResearchFieldsPage({ locale, searchParams }: { locale: Locale; searchPa
                 link={<Link className="text-button" href={hrefFor(locale, `/labs?area=${selectedArea.slug}`)}>{tx(locale, "전체 연구실 보기", "View all laboratories")}<ArrowRight size={17} /></Link>}
               />
               <p className="research-fields-count"><strong>{relatedLabs.length}</strong> {tx(locale, "개 연구실", "laboratories")}</p>
-              <div className="research-lab-grid compact">
-                {relatedLabs.map((lab) => <ResearchLabCard key={lab.id} lab={lab} locale={locale} />)}
+              <div className="laboratory-directory-grid laboratory-directory-grid-compact">
+                {relatedLabs.map((lab) => <LabCard key={lab.id} lab={lab} locale={locale} />)}
               </div>
             </section>
           ) : (
@@ -1143,7 +1171,7 @@ function ResearchLabDirectory({ locale, searchParams }: { locale: Locale; search
       <PageHeader
         eyebrow="LABORATORIES"
         title={tx(locale, "연구실", "Laboratories")}
-        description={tx(locale, "연구 분야와 지도교수를 기준으로 기계공학부 연구실을 찾아보세요.", "Find Mechanical Engineering laboratories by research area and faculty advisor.")}
+        description={tx(locale, "연구실명 또는 교수명으로 검색해 보세요.", "Search by laboratory or faculty advisor.")}
       />
       <section className="section content-section">
         <div className="container">
@@ -1163,14 +1191,14 @@ function ResearchLabDirectory({ locale, searchParams }: { locale: Locale; search
             </form>
           </div>
           <div className="laboratory-directory-summary"><p><strong>{results.length}</strong> {tx(locale, "개 연구실", "laboratories")}</p><span>{tx(locale, "주·관련 연구 분야 포함", "Primary and secondary areas included")}</span></div>
-          {results.length ? <div className="laboratory-directory-grid">{results.map((lab) => <ResearchLabDirectoryCard key={lab.id} lab={lab} locale={locale} />)}</div> : <EmptyState locale={locale} />}
+          {results.length ? <div className="laboratory-directory-grid">{results.map((lab) => <LabCard key={lab.id} lab={lab} locale={locale} />)}</div> : <EmptyState locale={locale} />}
         </div>
       </section>
     </>
   );
 }
 
-function ResearchLabDirectoryCard({ lab, locale }: { lab: ResearchLab; locale: Locale }) {
+function LabCard({ lab, locale }: { lab: ResearchLab; locale: Locale }) {
   const primaryArea = directoryResearchAreas.find((area) => area.slug === lab.primaryArea);
   const secondaryAreas = lab.secondaryAreas
     .map((slug) => directoryResearchAreas.find((area) => area.slug === slug))
@@ -1185,38 +1213,11 @@ function ResearchLabDirectoryCard({ lab, locale }: { lab: ResearchLab; locale: L
       </header>
       <dl className="laboratory-meta-list">
         <div><dt>{tx(locale, "지도교수", "Faculty advisor")}</dt><dd>{locale === "ko" ? `${lab.professorKo} · ${lab.professorEn}` : `${lab.professorEn} · ${lab.professorKo}`}</dd></div>
-        <div><dt>{tx(locale, "위치", "Location")}</dt><dd>{lab.location ?? "-"}</dd></div>
+        <div><dt>{tx(locale, "위치", "Location")}</dt><dd>{lab.location ?? tx(locale, "위치 확인 중", "Location information pending")}</dd></div>
         <div><dt>{tx(locale, "연락처", "Contact")}</dt><dd>{lab.phoneNumbers.length ? lab.phoneNumbers.map((phone, index) => <span key={phone}>{index > 0 && " · "}<a href={`tel:${phone.replaceAll("-", "")}`}>{phone}</a></span>) : tx(locale, "연락처 확인 중", "Contact information pending")}</dd></div>
       </dl>
       {secondaryAreas.length > 0 && <div className="laboratory-secondary-areas" aria-label={tx(locale, "관련 연구 분야", "Related research areas")}>{secondaryAreas.map((item) => <span key={item.id}>{researchAreaName(item, locale)}</span>)}</div>}
       <Link className="laboratory-directory-detail-link" href={hrefFor(locale, `/labs/${lab.slug}`)} aria-label={tx(locale, `${lab.nameKo} 상세보기`, `View details for ${lab.nameEn}`)}>{tx(locale, "상세보기", "View details")}<ArrowRight size={17} /></Link>
-    </article>
-  );
-}
-
-function ResearchLabCard({ lab, locale }: { lab: ResearchLab; locale: Locale }) {
-  const primaryArea = directoryResearchAreas.find((area) => area.slug === lab.primaryArea);
-  const secondaryAreas = lab.secondaryAreas
-    .map((slug) => directoryResearchAreas.find((area) => area.slug === slug))
-    .filter((area): area is DirectoryResearchArea => Boolean(area));
-  const contact = lab.phoneNumbers.length ? lab.phoneNumbers.join(" · ") : tx(locale, "연락처 확인 중", "Contact information pending");
-
-  return (
-    <article className="research-lab-card">
-      <div className="research-lab-card-heading">
-        <FlaskConical size={24} aria-hidden="true" />
-        <div><h2>{locale === "ko" ? lab.nameKo : lab.nameEn}</h2><p>{locale === "ko" ? lab.nameEn : lab.nameKo}</p></div>
-      </div>
-      <dl>
-        <div><dt>{tx(locale, "지도교수", "Faculty advisor")}</dt><dd>{locale === "ko" ? `${lab.professorKo} · ${lab.professorEn}` : `${lab.professorEn} · ${lab.professorKo}`}</dd></div>
-        <div><dt>{tx(locale, "위치", "Location")}</dt><dd>{lab.location ?? "-"}</dd></div>
-        <div><dt>{tx(locale, "연락처", "Contact")}</dt><dd>{contact}</dd></div>
-      </dl>
-      <div className="research-lab-tags">
-        {primaryArea && <span className="is-primary">{researchAreaName(primaryArea, locale)}</span>}
-        {secondaryAreas.map((area) => <span key={area.id}>{researchAreaName(area, locale)}</span>)}
-      </div>
-      <Link className="research-lab-detail-link" href={hrefFor(locale, `/labs/${lab.slug}`)}>{tx(locale, "상세보기", "View details")}<ArrowRight size={17} /></Link>
     </article>
   );
 }
@@ -1284,10 +1285,10 @@ function ResearchDetail({ locale, area }: { locale: Locale; area: ResearchArea }
 }
 
 function LabDirectory({ locale }: { locale: Locale }) {
-  return <><PageHeader eyebrow="LABORATORIES" title={tx(locale, "연구실", "Laboratories")} description={tx(locale, "연구분야별 연구실과 담당 교수진을 연결해 확인합니다.", "Discover laboratories and their connected faculty by research area.")} /><section className="section content-section"><div className="container lab-grid">{labs.map((lab) => <LabCard key={lab.id} lab={lab} locale={locale} />)}</div></section></>;
+  return <><PageHeader eyebrow="LABORATORIES" title={tx(locale, "연구실", "Laboratories")} description={tx(locale, "연구분야별 연구실과 담당 교수진을 연결해 확인합니다.", "Discover laboratories and their connected faculty by research area.")} /><section className="section content-section"><div className="container lab-grid">{labs.map((lab) => <LegacyLabCard key={lab.id} lab={lab} locale={locale} />)}</div></section></>;
 }
 
-function LabCard({ lab, locale }: { lab: Lab; locale: Locale }) {
+function LegacyLabCard({ lab, locale }: { lab: Lab; locale: Locale }) {
   const area = researchAreas.find((item) => item.id === lab.researchAreaIds[0]);
   return <Link className="lab-card" href={hrefFor(locale, `/labs/${lab.slug}`)}><div className="lab-card-icon"><FlaskConical size={30} /></div><div><p>{area ? t(area.name, locale) : ""}</p><h2>{t(lab.name, locale)}</h2><span>{t(lab.description, locale)}</span></div><ArrowRight size={20} /></Link>;
 }
