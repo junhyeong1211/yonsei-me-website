@@ -4141,6 +4141,698 @@ p {
   }
 }
 
+.academic-quick-links {
+  display: flex;
+  align-items: center;
+  margin-bottom: 82px;
+  border-top: 1px solid var(--color-navy-deep);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.academic-quick-links a {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  color: var(--color-navy-deep);
+  border-right: 1px solid var(--color-border);
+  font-size: 13px;
+  font-weight: 700;
+  gap: 28px;
+}
+
+.academic-quick-links a:hover,
+.academic-quick-links a:focus-visible,
+.academic-related-links a:hover,
+.academic-related-links a:focus-visible {
+  color: var(--color-yonsei-blue);
+}
+
+.undergraduate-year-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 34px;
+  border-top: 2px solid var(--color-navy-deep);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.undergraduate-year {
+  display: flex;
+  min-width: 0;
+  min-height: 540px;
+  flex-direction: column;
+  padding: 30px 28px 28px;
+  border-right: 1px solid var(--color-border);
+  transition: border-color 180ms ease, color 180ms ease;
+}
+
+.undergraduate-year:last-child {
+  border-right: 0;
+}
+
+.undergraduate-year:hover,
+.undergraduate-year:focus-visible {
+  box-shadow: inset 0 3px 0 var(--color-yonsei-blue);
+}
+
+.undergraduate-year-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 44px;
+}
+
+.undergraduate-year-heading span {
+  color: var(--color-yonsei-blue);
+  font-size: 24px;
+  font-weight: 760;
+}
+
+.undergraduate-year-heading p {
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.undergraduate-year h2 {
+  margin-bottom: 16px;
+  color: var(--color-navy-deep);
+  font-size: 25px;
+}
+
+.undergraduate-year > p {
+  min-height: 88px;
+  color: #536170;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.undergraduate-course-names {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.undergraduate-course-names strong {
+  color: var(--color-muted);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+.undergraduate-course-names ul {
+  display: grid;
+  margin: 14px 0 0;
+  padding: 0;
+  gap: 7px;
+  list-style: none;
+}
+
+.undergraduate-course-names li {
+  color: #344353;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.undergraduate-year-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 24px;
+  color: var(--color-navy-deep);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.undergraduate-year:hover .undergraduate-year-link,
+.undergraduate-year:focus-visible .undergraduate-year-link {
+  color: var(--color-yonsei-blue);
+}
+
+.academic-experience-section {
+  margin-top: 104px;
+}
+
+.academic-experience-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 32px;
+  border-top: 1px solid var(--color-navy-deep);
+}
+
+.academic-experience-grid article {
+  min-height: 210px;
+  padding: 28px 34px 30px 0;
+  border-right: 1px solid var(--color-border);
+}
+
+.academic-experience-grid article:not(:first-child) {
+  padding-left: 34px;
+}
+
+.academic-experience-grid article:last-child {
+  border-right: 0;
+}
+
+.academic-experience-grid span {
+  color: var(--color-yonsei-blue);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.academic-experience-grid h3 {
+  margin: 28px 0 14px;
+  color: var(--color-navy-deep);
+  font-size: 21px;
+}
+
+.academic-experience-grid p {
+  max-width: 310px;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.academic-related-links {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-top: 90px;
+  border-top: 1px solid var(--color-navy-deep);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.academic-related-links a {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  border-right: 1px solid var(--color-border);
+  font-size: 12px;
+  font-weight: 700;
+  gap: 12px;
+}
+
+.academic-related-links a:last-child {
+  border-right: 0;
+}
+
+.course-page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 30px;
+}
+
+.course-page-actions .button {
+  gap: 10px;
+}
+
+.undergraduate-course-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--color-navy-deep);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.undergraduate-course-tabs button {
+  position: relative;
+  min-height: 68px;
+  padding: 0 18px;
+  color: #536170;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--color-border);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.undergraduate-course-tabs button:last-child {
+  border-right: 0;
+}
+
+.undergraduate-course-tabs button[aria-selected="true"] {
+  color: var(--color-yonsei-blue);
+}
+
+.undergraduate-course-tabs button[aria-selected="true"]::after {
+  position: absolute;
+  right: 20px;
+  bottom: -1px;
+  left: 20px;
+  height: 3px;
+  background: var(--color-yonsei-blue);
+  content: "";
+}
+
+.course-schedule-panel,
+.course-detail-panel {
+  padding-top: 44px;
+}
+
+.undergraduate-course-filter {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.45fr) repeat(3, minmax(130px, 0.7fr)) auto auto;
+  align-items: end;
+  padding: 22px 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  gap: 14px;
+}
+
+.undergraduate-course-filter .button {
+  height: 46px;
+}
+
+.course-filter-reset {
+  height: 46px;
+  padding: 0 4px;
+  color: var(--color-muted);
+  background: transparent;
+  border: 0;
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.undergraduate-course-table-wrap {
+  overflow-x: auto;
+}
+
+.undergraduate-course-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.undergraduate-course-table th {
+  height: 50px;
+  padding: 0 10px;
+  color: var(--color-muted);
+  background: #f6f7f8;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.undergraduate-course-table td {
+  height: 76px;
+  padding: 13px 10px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.undergraduate-course-table td:nth-child(5) {
+  width: 36%;
+  min-width: 250px;
+}
+
+.undergraduate-course-table td:nth-child(5) strong,
+.undergraduate-course-table td:nth-child(5) small,
+.undergraduate-course-table td:nth-child(5) em {
+  display: block;
+}
+
+.undergraduate-course-table td:nth-child(5) strong {
+  color: var(--color-navy-deep);
+  font-size: 14px;
+}
+
+.undergraduate-course-table td:nth-child(5) small {
+  margin-top: 5px;
+  color: var(--color-muted);
+  font-size: 10px;
+}
+
+.undergraduate-course-table td:nth-child(5) em {
+  margin-top: 6px;
+  color: #7a5b25;
+  font-size: 9px;
+  font-style: normal;
+}
+
+.undergraduate-course-table td:last-child button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  color: var(--color-navy-deep);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  place-items: center;
+  cursor: pointer;
+}
+
+.undergraduate-course-table tr.is-expanded {
+  background: #f8fafc;
+}
+
+.course-table-description {
+  max-width: 660px;
+  margin-top: 18px;
+  color: #4f5d6b;
+  font-size: 12px;
+  line-height: 1.75;
+}
+
+.course-category {
+  display: inline-block;
+  color: #6d7781;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 720;
+  white-space: nowrap;
+}
+
+.course-category-required {
+  color: var(--color-yonsei-blue);
+}
+
+.undergraduate-course-mobile-list {
+  display: none;
+}
+
+.course-detail-intro {
+  max-width: 720px;
+  margin-bottom: 30px;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.undergraduate-course-detail-list {
+  border-top: 2px solid var(--color-navy-deep);
+}
+
+.undergraduate-course-detail-list details {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.undergraduate-course-detail-list summary {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr) auto;
+  min-height: 118px;
+  align-items: center;
+  padding: 22px 10px;
+  gap: 26px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.undergraduate-course-detail-list summary::-webkit-details-marker {
+  display: none;
+}
+
+.undergraduate-course-detail-list summary small {
+  color: var(--color-muted);
+  font-size: 10px;
+}
+
+.undergraduate-course-detail-list summary h2 {
+  margin: 5px 0 0;
+  color: var(--color-navy-deep);
+  font-size: 19px;
+}
+
+.undergraduate-course-detail-list summary p {
+  margin-top: 5px;
+  color: var(--color-muted);
+  font-size: 11px;
+}
+
+.course-detail-toggle {
+  display: flex;
+  align-items: center;
+  color: var(--color-muted);
+  font-size: 10px;
+  font-weight: 700;
+  gap: 8px;
+}
+
+.undergraduate-course-detail-list details[open] .course-detail-toggle svg {
+  transform: rotate(180deg);
+}
+
+.course-detail-description {
+  padding: 0 118px 34px;
+}
+
+.course-detail-description > p {
+  max-width: 780px;
+  color: #435261;
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+.course-detail-description aside {
+  display: grid;
+  max-width: 780px;
+  margin-top: 18px;
+  padding: 13px 16px;
+  color: #655126;
+  background: #f7f3e9;
+  border-left: 2px solid var(--color-gold);
+  font-size: 10px;
+  gap: 4px;
+}
+
+@media (max-width: 1180px) {
+  .undergraduate-year-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .undergraduate-year:nth-child(2) {
+    border-right: 0;
+  }
+
+  .undergraduate-year:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .undergraduate-course-filter {
+    grid-template-columns: minmax(240px, 1.5fr) repeat(3, minmax(120px, 1fr));
+  }
+
+  .undergraduate-course-filter .button,
+  .undergraduate-course-filter .course-filter-reset {
+    grid-row: 2;
+  }
+
+  .academic-related-links {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .academic-related-links a:nth-child(3) {
+    border-right: 0;
+  }
+
+  .academic-related-links a:nth-child(-n + 3) {
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
+@media (max-width: 900px) {
+  .academic-quick-links {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .academic-quick-links a {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .academic-quick-links a:last-child {
+    border-bottom: 0;
+  }
+
+  .academic-experience-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .academic-experience-grid article,
+  .academic-experience-grid article:not(:first-child) {
+    min-height: 0;
+    padding: 26px 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .undergraduate-course-filter {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .undergraduate-course-filter .search-field {
+    grid-column: 1 / -1;
+  }
+
+  .undergraduate-course-table-wrap {
+    display: none;
+  }
+
+  .undergraduate-course-mobile-list {
+    display: grid;
+    border-top: 1px solid var(--color-navy-deep);
+  }
+
+  .undergraduate-course-mobile-list > article {
+    padding: 24px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .course-mobile-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    color: var(--color-muted);
+    font-size: 11px;
+  }
+
+  .undergraduate-course-mobile-list h3 {
+    color: var(--color-navy-deep);
+    font-size: 18px;
+  }
+
+  .course-mobile-english {
+    margin-top: 5px;
+    color: var(--color-muted);
+    font-size: 11px;
+  }
+
+  .undergraduate-course-mobile-list dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 20px 0 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .undergraduate-course-mobile-list dl div {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .undergraduate-course-mobile-list dt {
+    color: var(--color-muted);
+    font-size: 9px;
+  }
+
+  .undergraduate-course-mobile-list dd {
+    margin: 5px 0 0;
+    font-size: 12px;
+  }
+
+  .undergraduate-course-mobile-list details {
+    margin-top: 18px;
+  }
+
+  .undergraduate-course-mobile-list summary {
+    color: var(--color-yonsei-blue);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .undergraduate-course-mobile-list details p {
+    margin-top: 14px;
+    color: #4f5d6b;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .course-review-note {
+    margin-top: 12px;
+    color: #765c2d;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 680px) {
+  .academic-quick-links {
+    margin-bottom: 64px;
+  }
+
+  .undergraduate-year-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .undergraduate-year {
+    min-height: 0;
+    padding: 26px 20px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .undergraduate-year-heading {
+    margin-bottom: 28px;
+  }
+
+  .undergraduate-year > p {
+    min-height: 0;
+  }
+
+  .undergraduate-course-names {
+    margin-bottom: 30px;
+  }
+
+  .academic-experience-section {
+    margin-top: 76px;
+  }
+
+  .academic-related-links {
+    grid-template-columns: 1fr;
+    margin-top: 64px;
+  }
+
+  .academic-related-links a,
+  .academic-related-links a:nth-child(3) {
+    min-height: 62px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .undergraduate-course-tabs {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .undergraduate-course-tabs button {
+    min-width: max-content;
+    flex: 1 0 auto;
+    padding: 0 20px;
+  }
+
+  .undergraduate-course-filter {
+    grid-template-columns: 1fr;
+  }
+
+  .undergraduate-course-filter .search-field,
+  .undergraduate-course-filter .button,
+  .undergraduate-course-filter .course-filter-reset {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .undergraduate-course-detail-list summary {
+    grid-template-columns: 1fr auto;
+    padding: 22px 0;
+    gap: 14px;
+  }
+
+  .undergraduate-course-detail-list summary > .course-category {
+    grid-column: 1 / -1;
+  }
+
+  .course-detail-toggle {
+    font-size: 0;
+  }
+
+  .course-detail-description {
+    padding: 0 0 28px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

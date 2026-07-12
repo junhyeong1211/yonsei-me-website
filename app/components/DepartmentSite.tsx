@@ -60,6 +60,21 @@ import {
   getFacultyMemberBySlug,
   type FacultyMember,
 } from "../data/faculty";
+import {
+  undergraduateLearningExperiences,
+  undergraduateProgramYears,
+} from "../data/undergraduateProgram";
+import {
+  undergraduateCourseOfferings,
+  type UndergraduateCourseCategory,
+  type UndergraduateCourseOffering,
+} from "../data/undergraduateCourseOfferings";
+import {
+  electiveUndergraduateCourseDetails,
+  getUndergraduateCourseDetail,
+  requiredUndergraduateCourseDetails,
+  type UndergraduateCourseDetail,
+} from "../data/undergraduateCourseDetails";
 import { getActiveNavigationItem, navigation } from "../data/navigation";
 import {
   getCourseBySlug,
@@ -116,9 +131,9 @@ const routeLabels: Record<string, LocaleText> = {
   "vision-capabilities": { ko: "연구 비전·역량", en: "Research Vision & Capabilities" },
   "social-challenges": { ko: "사회난제 신문고", en: "Social Challenges" },
   academics: { ko: "교육과정", en: "Academics" },
-  undergraduate: { ko: "학부과정", en: "Undergraduate" },
+  undergraduate: { ko: "학부 교육과정", en: "Undergraduate Program" },
   graduate: { ko: "대학원과정", en: "Graduate" },
-  courses: { ko: "교과목", en: "Courses" },
+  courses: { ko: "교과목 안내", en: "Courses" },
   requirements: { ko: "졸업요건", en: "Requirements" },
   news: { ko: "학과소식", en: "News" },
   department: { ko: "뉴스", en: "News" },
@@ -1299,33 +1314,213 @@ function LabDetail({ locale, lab }: { locale: Locale; lab: Lab }) {
   return <><PageHeader eyebrow="LABORATORY" title={t(lab.name, locale)} description={relatedAreas.map((area) => t(area.name, locale)).join(" · ")} /><section className="section content-section"><div className="container detail-layout"><main><section className="detail-block first"><p className="section-label">ABOUT THE LAB</p><h2>{tx(locale, "연구실 소개", "About the Laboratory")}</h2><p>{t(lab.description, locale)}</p></section><section className="detail-block"><SectionHeading label="FACULTY" title={tx(locale, "담당 교수", "Faculty")} /><div className="faculty-grid related">{relatedFaculty.map((person) => <FacultyCard key={person.id} item={person} locale={locale} />)}</div></section><section className="detail-block"><p className="section-label">CONTACT</p><h2>{tx(locale, "위치 및 연락처", "Location & Contact")}</h2><dl className="profile-meta"><div><dt>{tx(locale, "위치", "Location")}</dt><dd>{lab.location ? t(lab.location, locale) : "-"}</dd></div><div><dt>{tx(locale, "웹사이트", "Website")}</dt><dd>{lab.websiteUrl ?? tx(locale, "[공식 URL 확인 필요]", "[Official URL required]")}</dd></div></dl></section></main><aside className="detail-nav"><p>{tx(locale, "연구분야", "Research Areas")}</p>{relatedAreas.map((area) => <Link href={hrefFor(locale, `/research/${area.slug}`)} key={area.id}><span>{area.number}</span>{t(area.name, locale)}</Link>)}</aside></div></section></>;
 }
 
+const undergraduateHandbookUrl = "https://underwood1.yonsei.ac.kr/com/lgin/SsoCtr/initExtPageWork.do?link=handbList&locale=ko";
+
+function UndergraduateProgramPage({ locale }: { locale: Locale }) {
+  const quickLinks = [
+    { label: tx(locale, "교과목 안내", "Courses"), path: "/academics/courses" },
+    { label: tx(locale, "학부 졸업요건", "Graduation Requirements"), path: "/academics/requirements" },
+  ];
+  const lowerLinks = [
+    { label: tx(locale, "전체 교과목 조회", "All Courses"), path: "/academics/courses?tab=schedule" },
+    { label: tx(locale, "전공필수", "Required Courses"), path: "/academics/courses?tab=required" },
+    { label: tx(locale, "전공선택", "Elective Courses"), path: "/academics/courses?tab=elective" },
+    { label: tx(locale, "학부 졸업요건", "Graduation Requirements"), path: "/academics/requirements" },
+    { label: tx(locale, "학사·장학 안내", "Academic Information & Scholarships"), path: "/academics" },
+  ];
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="UNDERGRADUATE PROGRAM"
+        title={tx(locale, "학부 교육과정", "Undergraduate Program")}
+        description={tx(locale, "기계공학의 기초 이론부터 실험·설계·전공 심화 및 연구까지 학년별 교육과정의 흐름을 확인할 수 있습니다.", "Follow the undergraduate curriculum from engineering foundations through laboratories, design, advanced study, and research.")}
+      />
+      <section className="section content-section undergraduate-program-page">
+        <div className="container">
+          <nav className="academic-quick-links" aria-label={tx(locale, "학부 교육과정 빠른 링크", "Undergraduate program quick links")}>
+            {quickLinks.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{item.label}<ArrowRight size={16} /></Link>)}
+            <a href={undergraduateHandbookUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, "학부 수강편람 조회, 새 탭에서 열림", "Open the undergraduate course handbook in a new tab")}>{tx(locale, "학부 수강편람 조회", "Course Handbook")}<ExternalLink size={15} /></a>
+          </nav>
+
+          <SectionHeading label="PROGRAM FLOW" title={tx(locale, "학년별 교육 흐름", "Program by Year")} />
+          <div className="undergraduate-year-grid">
+            {undergraduateProgramYears.map((item) => (
+              <Link href={hrefFor(locale, `/academics/courses?tab=schedule&year=${item.year}`)} className="undergraduate-year" key={item.year}>
+                <div className="undergraduate-year-heading">
+                  <span>{String(item.year).padStart(2, "0")}</span>
+                  <p>{tx(locale, `${item.year}학년`, `Year ${item.year}`)}</p>
+                </div>
+                <h2>{locale === "ko" ? item.titleKo : item.titleEn}</h2>
+                <p>{locale === "ko" ? item.descriptionKo : item.descriptionEn}</p>
+                <div className="undergraduate-course-names">
+                  <strong>{tx(locale, "대표 과목", "Representative Courses")}</strong>
+                  <ul>{item.representativeCourses.map((name) => <li key={name}>{name}</li>)}</ul>
+                </div>
+                <span className="undergraduate-year-link">{tx(locale, "해당 학년 교과목 보기", `View Year ${item.year} courses`)}<ArrowRight size={16} /></span>
+              </Link>
+            ))}
+          </div>
+
+          <section className="academic-experience-section">
+            <SectionHeading label="LEARNING EXPERIENCE" title={tx(locale, "주요 학습 경험", "Core Learning Experiences")} />
+            <div className="academic-experience-grid">
+              {undergraduateLearningExperiences.map((item) => (
+                <article key={item.number}>
+                  <span>{item.number}</span>
+                  <h3>{locale === "ko" ? item.titleKo : item.titleEn}</h3>
+                  <p>{locale === "ko" ? item.descriptionKo : item.descriptionEn}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <nav className="academic-related-links" aria-label={tx(locale, "학부 교육과정 관련 페이지", "Related undergraduate pages")}>
+            {lowerLinks.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{item.label}<ArrowRight size={17} /></Link>)}
+          </nav>
+        </div>
+      </section>
+    </>
+  );
+}
+
+type UndergraduateCourseTab = "schedule" | "required" | "elective";
+
 function CourseDirectory({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
   const router = useRouter();
-  const [program, setProgram] = useState(searchParams.program ?? "all");
+  const queryTab = searchParams.tab;
+  const initialTab: UndergraduateCourseTab = queryTab === "required" || queryTab === "elective" || queryTab === "schedule"
+    ? queryTab
+    : searchParams.category === "required" || searchParams.category === "elective"
+      ? searchParams.category
+      : "schedule";
+  const [tab, setTab] = useState<UndergraduateCourseTab>(initialTab);
+  const [year, setYear] = useState(searchParams.year ?? "all");
   const [semester, setSemester] = useState(searchParams.semester ?? "all");
-  const [category, setCategory] = useState(searchParams.category ?? "all");
-  const [area, setArea] = useState(searchParams.area ?? "all");
-  const [query, setQuery] = useState(searchParams.query ?? "");
-  const results = useMemo(() => courses.filter((course) => {
-    const searchable = `${course.code} ${course.name.ko} ${course.name.en}`.toLowerCase();
-    return (program === "all" || course.program === program) && (semester === "all" || course.semester === semester || course.semester === "both") && (category === "all" || course.category === category) && (area === "all" || course.researchAreaIds.includes(area)) && (!query || searchable.includes(query.toLowerCase()));
-  }), [program, semester, category, area, query]);
+  const [category, setCategory] = useState(searchParams.category && !["required", "elective"].includes(searchParams.category) ? searchParams.category : "all");
+  const [query, setQuery] = useState(searchParams.q ?? searchParams.query ?? "");
+  const [expandedOffering, setExpandedOffering] = useState<string | null>(null);
 
-  const sync = (values: { program: string; semester: string; category: string; area: string; query: string }) => {
-    const params = new URLSearchParams();
-    Object.entries(values).forEach(([key, value]) => { if (value && value !== "all") params.set(key, value); });
-    router.replace(`${hrefFor(locale, "/academics/courses")}${params.size ? `?${params}` : ""}`);
+  const values = { year, semester, category, query };
+  const results = useMemo(() => undergraduateCourseOfferings.filter((item) => {
+    const searchable = `${item.courseCode} ${item.nameKo} ${item.nameEn ?? ""}`.toLowerCase();
+    return (year === "all" || item.years.includes(Number(year)))
+      && (semester === "all" || item.semester === Number(semester))
+      && (category === "all" || item.category === category)
+      && (!query.trim() || searchable.includes(query.trim().toLowerCase()));
+  }), [year, semester, category, query]);
+
+  const syncScheduleUrl = (next: typeof values) => {
+    const params = new URLSearchParams({ tab: "schedule" });
+    if (next.year !== "all") params.set("year", next.year);
+    if (next.semester !== "all") params.set("semester", next.semester);
+    if (next.category !== "all") params.set("category", next.category);
+    if (next.query.trim()) params.set("q", next.query.trim());
+    router.replace(`${hrefFor(locale, "/academics/courses")}?${params.toString()}`);
   };
-  const values = { program, semester, category, area, query };
-  return <><PageHeader eyebrow="COURSES" title={tx(locale, "교과목 검색", "Course Search")} description={tx(locale, "학부와 대학원 교과목을 과정, 학기, 구분, 연구분야로 찾아보세요.", "Find undergraduate and graduate courses by program, semester, category, and research area.")} /><section className="section content-section"><div className="container"><div className="sample-data-note">{tx(locale, "현재 교과목 정보는 기능 확인용 샘플입니다.", "Course records are sample data for functional review.")}</div><form className="course-filter" onSubmit={(event) => { event.preventDefault(); sync(values); }}><div className="filter-field search-field"><label htmlFor="course-query">{tx(locale, "과목명 또는 학정번호", "Course name or code")}</label><div><Search size={18} /><input id="course-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "검색어 입력", "Enter a keyword")} /></div></div><FilterSelect id="course-program" label={tx(locale, "과정", "Program")} value={program} onChange={(value) => { setProgram(value); sync({ ...values, program: value }); }} options={[["all", tx(locale, "전체", "All")], ["undergraduate", tx(locale, "학부", "Undergraduate")], ["graduate", tx(locale, "대학원", "Graduate")]]} /><FilterSelect id="course-semester" label={tx(locale, "학기", "Semester")} value={semester} onChange={(value) => { setSemester(value); sync({ ...values, semester: value }); }} options={[["all", tx(locale, "전체", "All")], ["spring", tx(locale, "봄학기", "Spring")], ["fall", tx(locale, "가을학기", "Fall")]]} /><FilterSelect id="course-category" label={tx(locale, "구분", "Category")} value={category} onChange={(value) => { setCategory(value); sync({ ...values, category: value }); }} options={[["all", tx(locale, "전체", "All")], ["required", tx(locale, "필수", "Required")], ["elective", tx(locale, "선택", "Elective")]]} /><div className="filter-field"><label htmlFor="course-area">{tx(locale, "연구분야", "Research area")}</label><select id="course-area" value={area} onChange={(event) => { setArea(event.target.value); sync({ ...values, area: event.target.value }); }}><option value="all">{tx(locale, "전체", "All")}</option>{researchAreas.map((item) => <option value={item.id} key={item.id}>{t(item.name, locale)}</option>)}</select></div><button className="button primary" type="submit"><Search size={17} />{tx(locale, "검색", "Search")}</button><button className="icon-button filter-reset" type="button" aria-label={tx(locale, "필터 초기화", "Reset filters")} onClick={() => { setProgram("all"); setSemester("all"); setCategory("all"); setArea("all"); setQuery(""); router.replace(hrefFor(locale, "/academics/courses")); }}><RotateCcw size={19} /></button></form><div className="results-heading"><p><strong>{results.length}</strong> {tx(locale, "개 교과목", "courses")}</p><span>{tx(locale, "샘플 데이터", "Sample data")}</span></div>{results.length ? <CourseResults locale={locale} items={results} /> : <EmptyState locale={locale} />}</div></section></>;
+
+  const selectTab = (nextTab: UndergraduateCourseTab) => {
+    setTab(nextTab);
+    if (nextTab === "schedule") syncScheduleUrl(values);
+    else router.replace(`${hrefFor(locale, "/academics/courses")}?tab=${nextTab}`);
+  };
+
+  const resetFilters = () => {
+    setYear("all");
+    setSemester("all");
+    setCategory("all");
+    setQuery("");
+    router.replace(`${hrefFor(locale, "/academics/courses")}?tab=schedule`);
+  };
+  const hasFilters = year !== "all" || semester !== "all" || category !== "all" || Boolean(query.trim());
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="COURSES"
+        title={tx(locale, "교과목 안내", "Courses")}
+        description={tx(locale, "기계공학부 학사과정의 학년·학기별 개설 교과목과 전공 교과목의 상세 내용을 확인할 수 있습니다.", "Review undergraduate course offerings by year and semester, along with detailed descriptions of required and elective courses.")}
+      />
+      <section className="section content-section undergraduate-courses-page">
+        <div className="container">
+          <div className="course-page-actions">
+            <a className="button outline" href={undergraduateHandbookUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, "학부 수강편람 조회, 새 탭에서 열림", "Open the undergraduate course handbook in a new tab")}>{tx(locale, "학부 수강편람 조회", "Course Handbook")}<ExternalLink size={16} /></a>
+          </div>
+
+          <div className="undergraduate-course-tabs" role="tablist" aria-label={tx(locale, "교과목 안내 구분", "Course information sections")}>
+            {([
+              ["schedule", tx(locale, "학년·학기별 교과목", "Courses by Year and Semester")],
+              ["required", tx(locale, "전공필수", "Required Courses")],
+              ["elective", tx(locale, "전공선택", "Elective Courses")],
+            ] as [UndergraduateCourseTab, string][]).map(([value, label]) => (
+              <button type="button" role="tab" aria-selected={tab === value} onClick={() => selectTab(value)} key={value}>{label}</button>
+            ))}
+          </div>
+
+          {tab === "schedule" ? (
+            <div role="tabpanel" className="course-schedule-panel">
+              <form className="undergraduate-course-filter" onSubmit={(event) => { event.preventDefault(); syncScheduleUrl(values); }}>
+                <div className="filter-field search-field">
+                  <label htmlFor="undergraduate-course-query">{tx(locale, "교과목 검색", "Search Courses")}</label>
+                  <div><Search size={18} /><input id="undergraduate-course-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "교과목명·학정번호·영문명", "Name, course code, or English title")} /></div>
+                </div>
+                <FilterSelect id="undergraduate-course-year" label={tx(locale, "학년", "Year")} value={year} onChange={(value) => { setYear(value); syncScheduleUrl({ ...values, year: value }); }} options={[["all", tx(locale, "전체 학년", "All Years")], ["1", tx(locale, "1학년", "Year 1")], ["2", tx(locale, "2학년", "Year 2")], ["3", tx(locale, "3학년", "Year 3")], ["4", tx(locale, "4학년", "Year 4")]]} />
+                <FilterSelect id="undergraduate-course-semester" label={tx(locale, "학기", "Semester")} value={semester} onChange={(value) => { setSemester(value); syncScheduleUrl({ ...values, semester: value }); }} options={[["all", tx(locale, "전체 학기", "All Semesters")], ["1", tx(locale, "1학기", "Semester 1")], ["2", tx(locale, "2학기", "Semester 2")]]} />
+                <FilterSelect id="undergraduate-course-category" label={tx(locale, "과목 구분", "Category")} value={category} onChange={(value) => { setCategory(value); syncScheduleUrl({ ...values, category: value }); }} options={[["all", tx(locale, "전체 구분", "All Categories")], ["university-core", tx(locale, "대학 교양", "University Core")], ["required", tx(locale, "전공필수", "Required")], ["elective", tx(locale, "전공선택", "Elective")]]} />
+                <button className="button primary" type="submit"><Search size={16} />{tx(locale, "검색", "Search")}</button>
+                {hasFilters && <button className="course-filter-reset" type="button" onClick={resetFilters}>{tx(locale, "초기화", "Reset")}</button>}
+              </form>
+
+              <div className="results-heading"><p><strong>{results.length}</strong> {tx(locale, "개 교과목", "courses")}</p></div>
+              {results.length ? <UndergraduateCourseSchedule locale={locale} items={results} expandedOffering={expandedOffering} setExpandedOffering={setExpandedOffering} /> : <EmptyState locale={locale} />}
+            </div>
+          ) : (
+            <div role="tabpanel" className="course-detail-panel">
+              <p className="course-detail-intro">{tab === "required" ? tx(locale, "기계공학부 학사과정의 전공필수 교과목입니다.", "Required courses in the undergraduate mechanical engineering program.") : tx(locale, "기계공학의 세부 분야를 확장하는 전공선택 교과목입니다.", "Elective courses that deepen study across mechanical engineering fields.")}</p>
+              <UndergraduateCourseDetailList locale={locale} items={tab === "required" ? requiredUndergraduateCourseDetails : electiveUndergraduateCourseDetails} />
+            </div>
+          )}
+        </div>
+      </section>
+    </>
+  );
 }
 
 function FilterSelect({ id, label, value, onChange, options }: { id: string; label: string; value: string; onChange: (value: string) => void; options: [string, string][] }) {
   return <div className="filter-field"><label htmlFor={id}>{label}</label><select id={id} value={value} onChange={(event) => onChange(event.target.value)}>{options.map(([optionValue, optionLabel]) => <option value={optionValue} key={optionValue}>{optionLabel}</option>)}</select></div>;
 }
 
-function CourseResults({ locale, items }: { locale: Locale; items: Course[] }) {
-  return <><div className="course-table-wrap"><table className="course-table"><thead><tr><th>{tx(locale, "학정번호", "Code")}</th><th>{tx(locale, "교과목명", "Course")}</th><th>{tx(locale, "과정", "Program")}</th><th>{tx(locale, "학기", "Semester")}</th><th>{tx(locale, "구분", "Category")}</th><th>{tx(locale, "학점", "Credits")}</th><th><span className="sr-only">{tx(locale, "상세", "Details")}</span></th></tr></thead><tbody>{items.map((course) => <tr key={course.id}><td>{course.code}</td><td><Link href={hrefFor(locale, `/academics/courses/${course.slug}`)}><strong>{t(course.name, locale)}</strong><small>{locale === "ko" ? course.name.en : course.name.ko}</small></Link></td><td>{course.program === "undergraduate" ? tx(locale, "학부", "Undergraduate") : tx(locale, "대학원", "Graduate")}</td><td>{course.semester === "spring" ? tx(locale, "봄", "Spring") : course.semester === "fall" ? tx(locale, "가을", "Fall") : tx(locale, "연중", "Both")}</td><td>{course.category === "required" ? tx(locale, "필수", "Required") : tx(locale, "선택", "Elective")}</td><td>{course.credits}</td><td><Link href={hrefFor(locale, `/academics/courses/${course.slug}`)} aria-label={`${t(course.name, locale)} ${tx(locale, "상세보기", "details")}`}><ArrowRight size={18} /></Link></td></tr>)}</tbody></table></div><div className="course-mobile-list">{items.map((course) => <Link className="course-mobile-card" href={hrefFor(locale, `/academics/courses/${course.slug}`)} key={course.id}><div><span>{course.code}</span><i>{course.program === "undergraduate" ? tx(locale, "학부", "Undergraduate") : tx(locale, "대학원", "Graduate")}</i></div><h3>{t(course.name, locale)}</h3><p>{course.credits} {tx(locale, "학점", "credits")} · {course.category === "required" ? tx(locale, "필수", "Required") : tx(locale, "선택", "Elective")}</p><ArrowRight size={18} /></Link>)}</div></>;
+function undergraduateCategoryLabel(category: UndergraduateCourseCategory, locale: Locale) {
+  if (category === "university-core") return tx(locale, "대학 교양", "University Core");
+  if (category === "required") return tx(locale, "전공필수", "Required");
+  return tx(locale, "전공선택", "Elective");
+}
+
+function UndergraduateCourseSchedule({ locale, items, expandedOffering, setExpandedOffering }: { locale: Locale; items: UndergraduateCourseOffering[]; expandedOffering: string | null; setExpandedOffering: (id: string | null) => void }) {
+  return (
+    <>
+      <div className="undergraduate-course-table-wrap">
+        <table className="undergraduate-course-table">
+          <thead><tr><th>{tx(locale, "학년", "Year")}</th><th>{tx(locale, "학기", "Semester")}</th><th>{tx(locale, "구분", "Category")}</th><th>{tx(locale, "학정번호", "Code")}</th><th>{tx(locale, "교과목명", "Course")}</th><th>{tx(locale, "학점", "Credits")}</th><th>{tx(locale, "강의", "Lecture")}</th><th>{tx(locale, "실습", "Practice")}</th><th><span className="sr-only">{tx(locale, "상세보기", "Details")}</span></th></tr></thead>
+          <tbody>{items.map((item) => {
+            const detailItem = getUndergraduateCourseDetail(item.courseCode, item.nameKo);
+            const expanded = expandedOffering === item.id;
+            return <tr className={expanded ? "is-expanded" : undefined} key={item.id}><td>{item.years.join("·")}</td><td>{item.semester ? tx(locale, `${item.semester}학기`, `S${item.semester}`) : tx(locale, "확인 필요", "To confirm")}</td><td><span className={`course-category course-category-${item.category}`}>{undergraduateCategoryLabel(item.category, locale)}</span></td><td>{item.courseCode}</td><td><strong>{locale === "en" && item.nameEn ? item.nameEn : item.nameKo}</strong>{item.nameEn && <small>{locale === "ko" ? item.nameEn : item.nameKo}</small>}{item.reviewNote && <em>{tx(locale, "공식 확인 필요", "Official verification needed")}</em>}{expanded && detailItem && <p className="course-table-description">{detailItem.description}</p>}</td><td>{item.credits}</td><td>{item.lectureHours}</td><td>{item.practiceHours}</td><td>{detailItem ? <button type="button" aria-expanded={expanded} aria-label={`${item.nameKo} ${tx(locale, "상세 설명", "description")}`} onClick={() => setExpandedOffering(expanded ? null : item.id)}>{expanded ? <ChevronDown size={17} /> : <ChevronRight size={17} />}</button> : <span aria-hidden="true">-</span>}</td></tr>;
+          })}</tbody>
+        </table>
+      </div>
+      <div className="undergraduate-course-mobile-list">
+        {items.map((item) => {
+          const detailItem = getUndergraduateCourseDetail(item.courseCode, item.nameKo);
+          return <article key={item.id}><div className="course-mobile-meta"><span>{item.courseCode}</span><i className={`course-category course-category-${item.category}`}>{undergraduateCategoryLabel(item.category, locale)}</i></div><h3>{locale === "en" && item.nameEn ? item.nameEn : item.nameKo}</h3>{item.nameEn && <p className="course-mobile-english">{locale === "ko" ? item.nameEn : item.nameKo}</p>}<dl><div><dt>{tx(locale, "학년", "Year")}</dt><dd>{item.years.join("·")}</dd></div><div><dt>{tx(locale, "학기", "Semester")}</dt><dd>{item.semester ? item.semester : tx(locale, "확인 필요", "To confirm")}</dd></div><div><dt>{tx(locale, "학점", "Credits")}</dt><dd>{item.credits}</dd></div><div><dt>{tx(locale, "강의·실습", "Lecture · Practice")}</dt><dd>{item.lectureHours} · {item.practiceHours}</dd></div></dl>{item.reviewNote && <p className="course-review-note">{tx(locale, "공식 확인 필요", "Official verification needed")}</p>}{detailItem && <details><summary>{tx(locale, "상세보기", "View Details")}</summary><p>{detailItem.description}</p></details>}</article>;
+        })}
+      </div>
+    </>
+  );
+}
+
+function UndergraduateCourseDetailList({ locale, items }: { locale: Locale; items: UndergraduateCourseDetail[] }) {
+  return <div className="undergraduate-course-detail-list">{items.map((item) => <details key={`${item.courseCode}-${item.nameKo}`}><summary><span className={`course-category course-category-${item.category}`}>{undergraduateCategoryLabel(item.category, locale)}</span><div><small>{item.courseCode}</small><h2>{locale === "en" && item.nameEn ? item.nameEn : item.nameKo}</h2>{item.nameEn && <p>{locale === "ko" ? item.nameEn : item.nameKo}</p>}</div><span className="course-detail-toggle">{tx(locale, "상세보기", "View Details")}<ChevronDown size={17} /></span></summary><div className="course-detail-description"><p>{item.description}</p>{item.reviewNote && <aside><strong>{tx(locale, "공식 확인 필요", "Official verification needed")}</strong><span>{item.reviewNote}</span></aside>}</div></details>)}</div>;
 }
 
 function CourseDetail({ locale, course }: { locale: Locale; course: Course }) {
@@ -1430,6 +1625,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "labs" && second && getResearchLabBySlug(second)) page = <ResearchLabDetail locale={locale} lab={getResearchLabBySlug(second)!} />;
   else if (section === "labs" && second && getLabBySlug(second)) page = <LabDetail locale={locale} lab={getLabBySlug(second)!} />;
   else if (section === "labs" && !second) page = <ResearchLabDirectory locale={locale} searchParams={searchParams} />;
+  else if (section === "academics" && second === "undergraduate") page = <UndergraduateProgramPage locale={locale} />;
   else if (section === "academics" && second === "courses" && third && getCourseBySlug(third)) page = <CourseDetail locale={locale} course={getCourseBySlug(third)!} />;
   else if (section === "academics" && second === "courses") page = <CourseDirectory locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "notices" && third && getNoticeBySlug(third)) page = <NoticeDetail locale={locale} notice={getNoticeBySlug(third)!} />;
