@@ -727,7 +727,7 @@ function HomePage({ locale }: { locale: Locale }) {
   return (
     <div className="home-page" ref={homeRef}>
       <noscript><style>{"[data-reveal], [data-reveal] .home-stagger > * { opacity: 1 !important; transform: none !important; }"}</style></noscript>
-      <nav className={`home-section-nav ${[0, 2, 6].includes(activeHomeSection) ? "is-light" : ""}`} aria-label={tx(locale, "메인 섹션 메뉴", "Main section menu")}>
+      <nav className={`home-section-nav ${activeHomeSection === 2 ? "is-research" : [0, 6].includes(activeHomeSection) ? "is-light" : ""}`} aria-label={tx(locale, "메인 섹션 메뉴", "Main section menu")}>
         <div className="home-section-track">
           {homeSectionNavigation.map((item, index) => (
             <button
