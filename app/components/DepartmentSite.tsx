@@ -30,7 +30,6 @@ import {
 } from "lucide-react";
 import {
   courses,
-  events,
   faculty,
   heroSlides,
   instagramPosts,
@@ -96,6 +95,24 @@ type DepartmentSiteProps = {
 const t = (value: LocaleText, locale: Locale) => value[locale];
 const tx = (locale: Locale, ko: string, en: string) => (locale === "ko" ? ko : en);
 const hrefFor = (locale: Locale, path = "") => `/${locale}${path}`;
+const googleCalendarId = "0nevledgmf1pgvjsc57sp2tdik@group.calendar.google.com";
+
+const googleCalendarUrl = (locale: Locale, mode: "MONTH" | "AGENDA") => {
+  const params = new URLSearchParams({
+    src: googleCalendarId,
+    ctz: "Asia/Seoul",
+    hl: locale === "ko" ? "ko" : "en",
+    mode,
+    showTitle: "0",
+    showNav: mode === "MONTH" ? "1" : "0",
+    showDate: mode === "MONTH" ? "1" : "0",
+    showPrint: "0",
+    showTabs: "0",
+    showCalendars: "0",
+    showTz: "0",
+  });
+  return `https://calendar.google.com/calendar/embed?${params.toString()}`;
+};
 
 const quickLinks = [
   { ko: "학부공지", en: "Notices", path: "/news/notices?audience=undergraduate", icon: MessageSquareText },
@@ -139,7 +156,7 @@ const routeLabels: Record<string, LocaleText> = {
   department: { ko: "뉴스", en: "News" },
   notices: { ko: "공지사항", en: "Notices" },
   events: { ko: "행사", en: "Events" },
-  calendar: { ko: "학사일정", en: "Academic Calendar" },
+  calendar: { ko: "일정", en: "Calendar" },
   careers: { ko: "채용정보", en: "Careers" },
   admission: { ko: "입학", en: "Admissions" },
   promotion: { ko: "홍보", en: "Promotion" },
@@ -160,11 +177,14 @@ function ArrowLink({ children }: { children: ReactNode }) {
 
 function Breadcrumb({ locale, segments }: { locale: Locale; segments: string[] }) {
   if (segments.length === 0) return null;
+  const breadcrumbItems = segments
+    .map((segment, index) => ({ segment, index }))
+    .filter(({ index }) => !(segments[0] === "academics" && segments.length > 1 && index === 0));
 
   return (
     <nav className="breadcrumb container" aria-label={tx(locale, "현재 위치", "Breadcrumb")}>
       <Link href={hrefFor(locale)}>{tx(locale, "홈", "Home")}</Link>
-      {segments.map((segment, index) => {
+      {breadcrumbItems.map(({ segment, index }, itemIndex) => {
         const path = `/${segments.slice(0, index + 1).join("/")}`;
         const area = researchAreas.find((item) => item.slug === segment);
         const researchLab = getResearchLabBySlug(segment);
@@ -187,7 +207,7 @@ function Breadcrumb({ locale, segments }: { locale: Locale; segments: string[] }
                 : routeLabels[segment]
                   ? t(routeLabels[segment], locale)
                   : segment;
-        const isLast = index === segments.length - 1;
+        const isLast = itemIndex === breadcrumbItems.length - 1;
         return (
           <span key={path} className={index > 1 && !isLast ? "breadcrumb-optional" : undefined}>
             <ChevronRight size={14} aria-hidden="true" />
@@ -791,9 +811,7 @@ function HomePage({ locale }: { locale: Locale }) {
             </div>
             <div className="calendar-preview">
               <SectionHeading label="ACADEMIC CALENDAR" title={tx(locale, "학사일정", "Academic Calendar")} link={<Link className="section-more" href={hrefFor(locale, "/news/calendar")} aria-label={tx(locale, "학사일정 전체보기", "View full calendar")}><ArrowRight size={21} /></Link>} />
-              <div className="event-list compact">
-                {events.slice(0, 4).map((event) => <EventRow key={event.id} event={event} locale={locale} />)}
-              </div>
+              <GoogleCalendarEmbed locale={locale} mode="AGENDA" compact />
             </div>
           </div>
         </section>
@@ -865,16 +883,6 @@ function NoticeRow({ notice, locale }: { notice: Notice; locale: Locale }) {
       <strong>{t(notice.title, locale)}</strong>
       <time dateTime={notice.publishedAt}>{notice.publishedAt.replaceAll("-", ".")}</time>
     </Link>
-  );
-}
-
-function EventRow({ event, locale }: { event: (typeof events)[number]; locale: Locale }) {
-  const date = new Date(`${event.startDate}T00:00:00`);
-  return (
-    <div className="event-row">
-      <div className="event-date"><span>{date.toLocaleString("en", { month: "short" }).toUpperCase()}</span><strong>{String(date.getDate()).padStart(2, "0")}</strong></div>
-      <div><span>{event.category}</span><h3>{t(event.title, locale)}</h3></div>
-    </div>
   );
 }
 
@@ -1542,9 +1550,38 @@ function NoticeDetail({ locale, notice }: { locale: Locale; notice: Notice }) {
   return <><PageHeader eyebrow="NOTICE" title={t(notice.title, locale)} description={`${notice.category} · ${notice.publishedAt.replaceAll("-", ".")}`} /><section className="section content-section"><article className="container article-detail"><div className="article-meta"><span>{notice.audience === "undergraduate" ? tx(locale, "학부공지", "Undergraduate") : tx(locale, "대학원공지", "Graduate")}</span><time>{notice.publishedAt}</time></div><div className="article-body"><p>{t(notice.body, locale)}</p><p>{tx(locale, "현재 공지는 화면 구성 확인을 위한 샘플입니다. 게시 전 공식 내용과 일정, 담당 부서 정보를 확인해 주세요.", "This notice is sample content for layout review. Verify all official details before publishing.")}</p></div>{notice.attachments && <div className="attachments"><h2>{tx(locale, "첨부파일", "Attachments")}</h2>{notice.attachments.map((attachment) => <a href={attachment.url} key={attachment.id}><Download size={18} />{t(attachment.name, locale)}</a>)}</div>}<div className="article-navigation">{previous ? <Link href={hrefFor(locale, `/news/notices/${previous.slug}`)}><ChevronLeft size={18} /><span><small>{tx(locale, "이전글", "Previous")}</small>{t(previous.title, locale)}</span></Link> : <span />}{next ? <Link href={hrefFor(locale, `/news/notices/${next.slug}`)}><span><small>{tx(locale, "다음글", "Next")}</small>{t(next.title, locale)}</span><ChevronRight size={18} /></Link> : <span />}</div><Link className="button outline article-list-button" href={hrefFor(locale, "/news/notices")}><ArrowLeft size={17} />{tx(locale, "목록으로", "Back to list")}</Link></article></section></>;
 }
 
+function GoogleCalendarEmbed({ locale, mode, compact = false }: { locale: Locale; mode: "MONTH" | "AGENDA"; compact?: boolean }) {
+  return (
+    <div className={`google-calendar-embed ${compact ? "is-compact" : ""}`}>
+      <iframe
+        src={googleCalendarUrl(locale, mode)}
+        title={tx(locale, "연세대학교 기계공학부 일정", "Yonsei Mechanical Engineering calendar")}
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
+    </div>
+  );
+}
+
 function CalendarPage({ locale }: { locale: Locale }) {
-  const groups = events.reduce<Record<string, typeof events>>((acc, event) => { const month = event.startDate.slice(0, 7); acc[month] = [...(acc[month] ?? []), event]; return acc; }, {});
-  return <><PageHeader eyebrow="ACADEMIC CALENDAR" title={tx(locale, "학사일정", "Academic Calendar")} description={tx(locale, "다가오는 학사 및 학부 일정을 월별로 확인합니다.", "View upcoming academic and department events by month.")} /><section className="section content-section"><div className="container calendar-page">{Object.entries(groups).map(([month, items]) => <section key={month}><header><strong>{month.slice(5)}</strong><span>{month.slice(0, 4)}</span></header><div>{items.map((event) => <EventRow key={event.id} event={event} locale={locale} />)}</div></section>)}</div></section></>;
+  return (
+    <>
+      <PageHeader
+        eyebrow="CALENDAR"
+        title={tx(locale, "일정", "Calendar")}
+        description={tx(locale, "기계공학부의 학사 및 주요 일정을 Google Calendar로 확인합니다.", "View academic and department events through Google Calendar.")}
+      />
+      <section className="section content-section">
+        <div className="container calendar-page">
+          <GoogleCalendarEmbed locale={locale} mode="MONTH" />
+          <a className="calendar-google-link" href={googleCalendarUrl(locale, "MONTH")} target="_blank" rel="noopener noreferrer">
+            {tx(locale, "Google Calendar에서 크게 보기", "Open in Google Calendar")}
+            <ExternalLink size={15} />
+          </a>
+        </div>
+      </section>
+    </>
+  );
 }
 
 function SearchPage({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {

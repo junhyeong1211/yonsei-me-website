@@ -68,6 +68,7 @@ export const navigation: NavigationItem[] = [
       child("뉴스", "News", "/news/department"),
       child("세미나·행사", "Seminars & Events", "/news/events"),
       child("교수 초빙", "Faculty Recruitment", "/news/careers"),
+      child("일정", "Calendar", "/news/calendar"),
     ],
   },
   {
