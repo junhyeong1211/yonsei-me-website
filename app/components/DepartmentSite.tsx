@@ -106,6 +106,11 @@ import {
 import { administrativeStaff } from "../data/staff";
 import { getStudentActivityBySlug, studentActivities, type StudentActivity } from "../data/studentActivities";
 import { facultyRecruitment } from "../data/facultyRecruitment";
+import { getNewsBySlug, newsPosts } from "../data/news";
+import { getSeminarBySlug, seminarPosts } from "../data/seminars";
+import { eventPosts, getEventBySlug } from "../data/events";
+import { matchesEditorialQuery } from "../data/editorialContent";
+import { EditorialBoardPage, EditorialDetailPage, NewsDirectoryPage } from "./NewsContent";
 import { departmentHistory } from "../data/history";
 import {
   scholarshipCategoryLabels,
@@ -203,6 +208,7 @@ const routeLabels: Record<string, LocaleText> = {
   news: { ko: "학과소식", en: "News" },
   department: { ko: "뉴스", en: "News" },
   notices: { ko: "공지사항", en: "Notices" },
+  seminars: { ko: "세미나", en: "Seminars" },
   events: { ko: "행사", en: "Events" },
   "faculty-recruitment": { ko: "교수 초빙", en: "Faculty Recruitment" },
   calendar: { ko: "학사일정", en: "Academic Calendar" },
@@ -3116,9 +3122,40 @@ function SearchPage({ locale, searchParams }: { locale: Locale; searchParams: Re
     ...facultyRecruitment.searchKeywords,
     facultyRecruitment.contact.email,
   ].join(" ").toLowerCase().includes(normalized) ? [facultyRecruitment] : [];
-  const total = facultyResults.length + researchResults.length + courseResults.length + noticeResults.length + studentActivityResults.length + facultyRecruitmentResults.length;
+  const newsContentResults = normalized ? newsPosts.filter((item) => matchesEditorialQuery(item, normalized)) : [];
+  const seminarContentResults = normalized ? seminarPosts.filter((item) => matchesEditorialQuery(item, normalized)) : [];
+  const eventContentResults = normalized ? eventPosts.filter((item) => matchesEditorialQuery(item, normalized)) : [];
+  const total = facultyResults.length + researchResults.length + courseResults.length + noticeResults.length + studentActivityResults.length + facultyRecruitmentResults.length + newsContentResults.length + seminarContentResults.length + eventContentResults.length;
 
-  return <><PageHeader eyebrow="SEARCH" title={tx(locale, "통합검색", "Search")} description={tx(locale, "교수, 연구, 교육과정, 학생활동, 공지 및 소식을 한 곳에서 찾습니다.", "Search faculty, research, academics, student activities, and notices in one place.")} /><section className="section content-section"><div className="container search-page"><form onSubmit={(event) => { event.preventDefault(); router.replace(`${hrefFor(locale, "/search")}?q=${encodeURIComponent(query)}`); }}><label htmlFor="search-page-input">{tx(locale, "검색어", "Search query")}</label><div><Search size={22} /><input id="search-page-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "검색어를 입력하세요", "Enter a search term")} /><button className="button primary" type="submit">{tx(locale, "검색", "Search")}</button></div></form>{normalized && <p className="search-summary"><strong>‘{query}’</strong> {tx(locale, `검색 결과 ${total}건`, `${total} results`)}</p>}{!normalized ? <div className="empty-state"><Search size={26} /><h3>{tx(locale, "검색어를 입력해 주세요", "Enter a search term")}</h3><p>{tx(locale, "교수명, 연구 키워드, 과목명, 동아리명, 공지 제목을 검색할 수 있습니다.", "Search by faculty, research keyword, course, student activity, or notice title.")}</p></div> : total === 0 ? <EmptyState locale={locale} /> : <div className="search-groups"><SearchGroup title={tx(locale, "교수진", "Faculty")} items={facultyResults.map((item) => ({ title: t(item.name, locale), description: item.researchKeywords[locale].join(" · "), path: `/faculty/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "연구", "Research")} items={researchResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/research/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "교육과정", "Academics")} items={courseResults.map((item) => ({ title: t(item.name, locale), description: `${item.code} · ${item.credits} ${tx(locale, "학점", "credits")}`, path: `/academics/courses/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "학생활동·동아리", "Student Activities")} items={studentActivityResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/about/student-activities/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "교수 초빙", "Faculty Recruitment")} items={facultyRecruitmentResults.map((item) => ({ title: t(item.title, locale), description: t(item.description, locale), path: "/news/faculty-recruitment" }))} locale={locale} /><SearchGroup title={tx(locale, "공지 및 소식", "News & Notices")} items={noticeResults.map((item) => ({ title: t(item.title, locale), description: item.publishedAt, path: `/news/notices/${item.slug}` }))} locale={locale} /></div>}</div></section></>;
+  return (
+    <>
+      <PageHeader eyebrow="SEARCH" title={tx(locale, "통합검색", "Search")} description={tx(locale, "교수, 연구, 교육과정, 학생활동, 뉴스와 소식을 한 곳에서 찾습니다.", "Search faculty, research, academics, student activities, news, and notices in one place.")} />
+      <section className="section content-section">
+        <div className="container search-page">
+          <form onSubmit={(event) => { event.preventDefault(); router.replace(`${hrefFor(locale, "/search")}?q=${encodeURIComponent(query)}`); }}>
+            <label htmlFor="search-page-input">{tx(locale, "검색어", "Search query")}</label>
+            <div><Search size={22} /><input id="search-page-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "검색어를 입력하세요", "Enter a search term")} /><button className="button primary" type="submit">{tx(locale, "검색", "Search")}</button></div>
+          </form>
+          {normalized && <p className="search-summary"><strong>‘{query}’</strong> {tx(locale, `검색 결과 ${total}건`, `${total} results`)}</p>}
+          {!normalized ? (
+            <div className="empty-state"><Search size={26} /><h3>{tx(locale, "검색어를 입력해 주세요", "Enter a search term")}</h3><p>{tx(locale, "교수명, 연구 키워드, 과목명, 동아리명, 뉴스와 공지 제목을 검색할 수 있습니다.", "Search by faculty, research keyword, course, student activity, news, or notice title.")}</p></div>
+          ) : total === 0 ? <EmptyState locale={locale} /> : (
+            <div className="search-groups">
+              <SearchGroup title={tx(locale, "교수진", "Faculty")} items={facultyResults.map((item) => ({ title: t(item.name, locale), description: item.researchKeywords[locale].join(" · "), path: `/faculty/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "연구", "Research")} items={researchResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/research/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "교육과정", "Academics")} items={courseResults.map((item) => ({ title: t(item.name, locale), description: `${item.code} · ${item.credits} ${tx(locale, "학점", "credits")}`, path: `/academics/courses/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "학생활동·동아리", "Student Activities")} items={studentActivityResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/about/student-activities/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "뉴스", "News")} items={newsContentResults.map((item) => ({ title: t(item.title, locale), description: t(item.summary, locale), path: `/news/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "세미나", "Seminars")} items={seminarContentResults.map((item) => ({ title: t(item.title, locale), description: `${t(item.category, locale)} · ${item.publishedAt}`, path: `/seminars/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "행사", "Events")} items={eventContentResults.map((item) => ({ title: t(item.title, locale), description: `${t(item.category, locale)} · ${item.publishedAt}`, path: `/events/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "교수 초빙", "Faculty Recruitment")} items={facultyRecruitmentResults.map((item) => ({ title: t(item.title, locale), description: t(item.description, locale), path: "/news/faculty-recruitment" }))} locale={locale} />
+              <SearchGroup title={tx(locale, "공지사항", "Notices")} items={noticeResults.map((item) => ({ title: t(item.title, locale), description: item.publishedAt, path: `/news/notices/${item.slug}` }))} locale={locale} />
+            </div>
+          )}
+        </div>
+      </section>
+    </>
+  );
 }
 
 function SearchGroup({ title, items, locale }: { title: string; items: { title: string; description: string; path: string }[]; locale: Locale }) {
@@ -3672,6 +3709,14 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "news" && second === "notices") page = <NoticeDirectory locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "calendar") page = <CalendarPage locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "faculty-recruitment") page = <FacultyRecruitmentPage locale={locale} />;
+  else if (section === "news" && second === "department") page = <NewsDirectoryPage locale={locale} searchParams={searchParams} />;
+  else if (section === "news" && second === "events") page = <EditorialBoardPage locale={locale} searchParams={searchParams} posts={eventPosts} type="event" />;
+  else if (section === "news" && second && getNewsBySlug(second)) page = <EditorialDetailPage locale={locale} post={getNewsBySlug(second)!} posts={newsPosts} />;
+  else if (section === "news" && !second) page = <NewsDirectoryPage locale={locale} searchParams={searchParams} />;
+  else if (section === "seminars" && second && getSeminarBySlug(second)) page = <EditorialDetailPage locale={locale} post={getSeminarBySlug(second)!} posts={seminarPosts} />;
+  else if (section === "seminars" && !second) page = <EditorialBoardPage locale={locale} searchParams={searchParams} posts={seminarPosts} type="seminar" />;
+  else if (section === "events" && second && getEventBySlug(second)) page = <EditorialDetailPage locale={locale} post={getEventBySlug(second)!} posts={eventPosts} />;
+  else if (section === "events" && !second) page = <EditorialBoardPage locale={locale} searchParams={searchParams} posts={eventPosts} type="event" />;
   else if (section === "search") page = <SearchPage locale={locale} searchParams={searchParams} />;
   else if (section === "promotion" && second === "instagram") page = <HomePage locale={locale} />;
   else page = <PlaceholderPage locale={locale} segments={segments} />;

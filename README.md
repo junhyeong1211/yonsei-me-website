@@ -70,6 +70,9 @@ public/
 | 취업 정보 | `app/data/careers.ts` | 채용·진로 게시 데이터 |
 | 학사일정 | `app/data/calendar.ts` | 정적 초기값과 fallback, 런타임 연동은 `app/api/calendar/route.ts` |
 | 공지사항 | `app/data/content.ts`의 `notices` | 현재 정적·샘플 공지 데이터 |
+| 뉴스 | `app/data/news.ts` | 뉴스 목록·상세 페이지의 정적 데이터 |
+| 세미나 | `app/data/seminars.ts` | 세미나 목록·상세 페이지의 정적 데이터 |
+| 행사 | `app/data/events.ts` | 행사 목록·상세 페이지의 정적 데이터 |
 
 `app/data/content.ts`는 공지사항, 메인 일정 미리보기, Hero, SNS와 일부 레거시 호환 데이터를 계속 관리합니다. 교수진·연구실·연구 분야·교육 데이터의 현재 페이지용 주 데이터는 위 전용 파일을 우선 사용합니다.
 
@@ -77,11 +80,22 @@ public/
 
 학생활동·동아리의 한국어 콘텐츠는 제공 자료를 반영했으며, 영문 문구와 향후 모집 정보는 공식 확인 전 상태입니다. 확인이 필요한 외부 채널은 링크를 추측하지 않고 `링크 확인 필요`로 표시합니다.
 
+### 뉴스·세미나·행사 게시글 추가
+
+뉴스, 세미나, 행사는 각각 `app/data/news.ts`, `app/data/seminars.ts`, `app/data/events.ts`의 배열에 게시글 객체를 추가합니다. 목록과 상세 페이지, 통합검색이 같은 정적 데이터를 사용하므로 `slug`는 유형 안에서 중복되지 않게 작성합니다. 공통 필드와 검색 규칙은 `app/data/editorialContent.ts`에서 관리합니다.
+
+- 뉴스 썸네일: `public/images/news/`
+- 게시글 첨부파일: `public/files/news/`
+- 제공되지 않은 본문, 작성자, 첨부파일과 외부 링크는 추측하지 않고 `null` 또는 빈 배열로 유지
+
+현재 게시글은 화면과 데이터 연결을 확인하기 위한 정적 데이터입니다. 운영 전 학부의 공식 검수를 거쳐야 하며, 추후 CMS나 API를 도입할 때는 전용 데이터 파일의 조회 부분을 교체해 동일한 UI를 계속 사용할 수 있습니다.
+
 ## 이미지 교체
 
 - 히어로와 Instagram 이미지는 `app/data/content.ts`의 URL을 교체합니다.
 - 교수 사진은 `public/images/faculty/`에 두고 `app/data/faculty.ts`의 `image` 경로와 연결합니다.
 - 학생활동 대표 이미지는 `public/images/clubs/`에 두고 `app/data/studentActivities.ts`의 `image` 경로와 연결합니다.
+- 뉴스 썸네일은 `public/images/news/`, 첨부파일은 `public/files/news/`에 두고 각 게시글 데이터의 `thumbnail`, `attachments`와 연결합니다.
 - 교수 사진은 4:5, 뉴스는 16:9, Instagram은 1:1 비율을 권장합니다.
 
 ## 한국어·영어 작성

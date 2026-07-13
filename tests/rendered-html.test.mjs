@@ -113,6 +113,45 @@ test("server-renders faculty recruitment and finds it through integrated search"
   }
 });
 
+test("server-renders news, seminars, events, and shared detail pages", async () => {
+  for (const pathname of ["/ko/news", "/en/news", "/ko/seminars", "/en/seminars", "/ko/events", "/en/events"]) {
+    const response = await render(pathname);
+    assert.equal(response.status, 200, pathname);
+  }
+
+  const newsDetail = await render("/ko/news/important-undergraduate-news-pending");
+  assert.equal(newsDetail.status, 200);
+  assert.match(await newsDetail.text(), /관련 외부 링크/);
+
+  const seminarDetail = await render("/ko/seminars/bk-seminar-hirai");
+  assert.equal(seminarDetail.status, 200);
+  assert.match(await seminarDetail.text(), /상세 내용 준비 중/);
+
+  const eventDetail = await render("/en/events/summer-session-event-july-24");
+  assert.equal(eventDetail.status, 200);
+  assert.match(await eventDetail.text(), /Back to list/);
+
+  const legacyNews = await render("/ko/news/department");
+  assert.equal(legacyNews.status, 200);
+  const legacyEvents = await render("/ko/news/events");
+  assert.equal(legacyEvents.status, 200);
+});
+
+test("searches news, seminar, and event data by content fields", async () => {
+  const cases = [
+    ["중요 학부공지", "뉴스"],
+    ["Robert G. Landers", "세미나"],
+    ["여름학기", "행사"],
+  ];
+
+  for (const [query, resultType] of cases) {
+    const response = await render(`/ko/search?q=${encodeURIComponent(query)}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, new RegExp(resultType));
+  }
+});
+
 test("redirects the retired academic information route", async () => {
   const response = await render("/ko/academics");
   assert.equal(response.status, 307);
