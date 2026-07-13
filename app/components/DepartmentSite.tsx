@@ -3344,7 +3344,7 @@ function StudentActivitiesPage({ locale }: { locale: Locale }) {
                   <p>{t(activity.category, locale)}</p>
                 </header>
                 <div className="student-activity-card-image">
-                  <Image src={activity.image.src} alt={t(activity.image.alt, locale)} fill sizes="(max-width: 1024px) 100vw, 50vw" />
+                  <Image src={activity.image.src} alt={t(activity.image.alt, locale)} fill sizes="(max-width: 1024px) 100vw, 50vw" unoptimized />
                 </div>
                 <div className="student-activity-card-content">
                   <h2>{t(activity.name, locale)}</h2>
@@ -3393,7 +3393,7 @@ function StudentActivityDetail({ locale, activity }: { locale: Locale; activity:
         <div className="container student-activity-detail-layout">
           <main>
             <figure className="student-activity-hero-image">
-              <Image src={activity.image.src} alt={t(activity.image.alt, locale)} fill sizes="(max-width: 1024px) 100vw, 70vw" priority />
+              <Image src={activity.image.src} alt={t(activity.image.alt, locale)} fill sizes="(max-width: 1024px) 100vw, 70vw" priority unoptimized />
             </figure>
             <section className="student-activity-detail-section student-activity-introduction">
               <p className="section-label">INTRODUCTION</p>
