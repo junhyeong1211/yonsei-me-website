@@ -143,6 +143,9 @@ import {
   type CurriculumSemester,
   type CurriculumTreeCourse,
 } from "../data/curriculumTree";
+import { researchVisionCapabilities } from "../data/researchVisionCapabilities";
+import { socialChallenges } from "../data/socialChallenges";
+import researchPageStyles from "./ResearchPages.module.css";
 
 type DepartmentSiteProps = {
   locale: Locale;
@@ -1165,6 +1168,143 @@ function FacultyDetail({ locale, person }: { locale: Locale; person: Faculty }) 
 
 const researchAreaName = (area: DirectoryResearchArea, locale: Locale) =>
   locale === "ko" ? area.nameKo : area.nameEn;
+
+function ResearchVisionCapabilitiesPage({ locale }: { locale: Locale }) {
+  const vision = researchVisionCapabilities.vision;
+  const capabilities = researchVisionCapabilities.capabilities;
+
+  return (
+    <>
+      <PageHeader
+        eyebrow={t(researchVisionCapabilities.eyebrow, locale)}
+        title={t(researchVisionCapabilities.title, locale)}
+        description={t(researchVisionCapabilities.description, locale)}
+      />
+      <main className={researchPageStyles.page}>
+        <section className={researchPageStyles.section} aria-labelledby="research-vision-heading">
+          <div className="container">
+            <header className={researchPageStyles.sectionHeader}>
+              <div>
+                <p className={researchPageStyles.eyebrow}>{t(vision.eyebrow, locale)}</p>
+                <h2 id="research-vision-heading">{t(vision.title, locale)}</h2>
+              </div>
+            </header>
+            <div className={researchPageStyles.visionGrid}>
+              {vision.items.map((item) => (
+                <article className={researchPageStyles.visionItem} key={item.number}>
+                  <span className={researchPageStyles.itemNumber}>{item.number}</span>
+                  <h3>{t(item.title, locale)}</h3>
+                  <p>{t(item.description, locale)}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={researchPageStyles.section} aria-labelledby="research-capabilities-heading">
+          <div className="container">
+            <header className={researchPageStyles.sectionHeader}>
+              <div>
+                <p className={researchPageStyles.eyebrow}>{t(capabilities.eyebrow, locale)}</p>
+                <h2 id="research-capabilities-heading">{t(capabilities.title, locale)}</h2>
+              </div>
+            </header>
+            <div className={researchPageStyles.capabilityGrid}>
+              {capabilities.items.map((item) => (
+                <article className={researchPageStyles.capabilityItem} key={item.number}>
+                  <span className={researchPageStyles.itemNumber}>{item.number}</span>
+                  <h3>{t(item.title, locale)}</h3>
+                  <p>{t(item.description, locale)}</p>
+                </article>
+              ))}
+            </div>
+            <nav className={researchPageStyles.relatedLinks} aria-label={tx(locale, "연구 역량 관련 페이지", "Research capability related pages")}>
+              {researchVisionCapabilities.relatedLinks.map((item) => (
+                <Link href={hrefFor(locale, item.path)} key={item.path}>
+                  {t(item.label, locale)}
+                  <ArrowRight size={17} aria-hidden="true" />
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </section>
+      </main>
+    </>
+  );
+}
+
+function SocialChallengesPage({ locale }: { locale: Locale }) {
+  const eligibleUse = socialChallenges.eligibleUse;
+  const process = socialChallenges.process;
+  const preparation = socialChallenges.preparation;
+
+  return (
+    <>
+      <PageHeader
+        eyebrow={t(socialChallenges.eyebrow, locale)}
+        title={t(socialChallenges.title, locale)}
+        description={t(socialChallenges.description, locale)}
+      />
+      <main className={researchPageStyles.page}>
+        <section className={researchPageStyles.section} aria-labelledby="social-challenge-eligible-heading">
+          <div className="container">
+            <header className={researchPageStyles.simpleHeader}>
+              <p className={researchPageStyles.eyebrow}>ELIGIBILITY</p>
+              <h2 id="social-challenge-eligible-heading">{t(eligibleUse.title, locale)}</h2>
+            </header>
+            <ul className={researchPageStyles.eligibleList}>
+              {eligibleUse.items.map((item) => <li key={item.title.ko}>{t(item.title, locale)}</li>)}
+            </ul>
+            <p className={researchPageStyles.reviewNotice}>{t(eligibleUse.notice, locale)}</p>
+          </div>
+        </section>
+
+        <section className={researchPageStyles.section} aria-labelledby="social-challenge-process-heading">
+          <div className="container">
+            <header className={researchPageStyles.simpleHeader}>
+              <p className={researchPageStyles.eyebrow}>PROCESS</p>
+              <h2 id="social-challenge-process-heading">{t(process.title, locale)}</h2>
+            </header>
+            <ol className={researchPageStyles.processGrid}>
+              {process.items.map((item) => (
+                <li key={item.number}>
+                  <span className={researchPageStyles.itemNumber}>{item.number}</span>
+                  <h3>{t(item.title, locale)}</h3>
+                  <p>{t(item.description!, locale)}</p>
+                </li>
+              ))}
+            </ol>
+            <div className={researchPageStyles.application}>
+              <a
+                className={researchPageStyles.applicationLink}
+                href={socialChallenges.application.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="사회난제 신문고 신청서 새 창에서 열기"
+              >
+                {t(socialChallenges.application.label, locale)}
+                <ExternalLink size={17} aria-hidden="true" />
+              </a>
+              <p>{t(socialChallenges.application.note, locale)}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className={researchPageStyles.section} aria-labelledby="social-challenge-preparation-heading">
+          <div className="container">
+            <header className={researchPageStyles.simpleHeader}>
+              <p className={researchPageStyles.eyebrow}>BEFORE APPLYING</p>
+              <h2 id="social-challenge-preparation-heading">{t(preparation.title, locale)}</h2>
+            </header>
+            <ul className={researchPageStyles.preparationGrid}>
+              {preparation.items.map((item) => <li key={item.title.ko}>{t(item.title, locale)}</li>)}
+            </ul>
+          </div>
+        </section>
+      </main>
+    </>
+  );
+}
 
 function ResearchFieldsPage({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
   const router = useRouter();
@@ -3262,6 +3402,8 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "faculty" && !second) page = <FacultyMemberDirectory locale={locale} />;
   else if (section === "faculty" && second && getFacultyBySlug(second)) page = <FacultyDetail locale={locale} person={getFacultyBySlug(second)!} />;
   else if (section === "research" && second === "fields") page = <ResearchFieldsPage locale={locale} searchParams={searchParams} />;
+  else if (section === "research" && second === "vision-capabilities") page = <ResearchVisionCapabilitiesPage locale={locale} />;
+  else if (section === "research" && second === "social-challenges") page = <SocialChallengesPage locale={locale} />;
   else if (section === "research" && second && getResearchAreaBySlug(second)) page = <ResearchDetail locale={locale} area={getResearchAreaBySlug(second)!} />;
   else if (section === "research" && !second) page = <ResearchFieldsPage locale={locale} searchParams={searchParams} />;
   else if (section === "labs" && second && getResearchLabBySlug(second)) page = <ResearchLabDetail locale={locale} lab={getResearchLabBySlug(second)!} />;

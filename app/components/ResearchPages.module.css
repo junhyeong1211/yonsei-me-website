@@ -1,0 +1,376 @@
+.page {
+  padding: 5.5rem 0 7rem;
+}
+
+.section + .section {
+  margin-top: 6.25rem;
+  padding-top: 6.25rem;
+  border-top: 1px solid #d7e0e9;
+}
+
+.sectionHeader {
+  display: grid;
+  grid-template-columns: minmax(10rem, 0.55fr) minmax(0, 1.45fr);
+  gap: 2rem;
+  align-items: end;
+  margin-bottom: 2.75rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  color: #1769a8;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.sectionHeader h2,
+.simpleHeader h2 {
+  margin: 0;
+  color: #071f3b;
+  font-size: clamp(2rem, 3vw, 3rem);
+  line-height: 1.15;
+}
+
+.sectionHeader > p {
+  max-width: 43rem;
+  margin: 0;
+  color: #53687c;
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.visionGrid,
+.capabilityGrid,
+.processGrid,
+.preparationGrid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.visionGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.capabilityGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid #cad7e4;
+}
+
+.visionItem,
+.capabilityItem {
+  min-width: 0;
+  border-top: 3px solid #0c2948;
+  padding: 1.35rem 0 0;
+}
+
+.visionItem {
+  padding-right: 1.5rem;
+}
+
+.capabilityItem {
+  border-top-width: 1px;
+  padding: 1.65rem 2.5rem 1.75rem 0;
+}
+
+.capabilityItem:nth-child(even) {
+  padding-left: 2.5rem;
+  padding-right: 0;
+  border-left: 1px solid #d7e0e9;
+}
+
+.itemNumber {
+  display: block;
+  margin-bottom: 1.35rem;
+  color: #1769a8;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.visionItem h3,
+.capabilityItem h3,
+.processGrid h3,
+.preparationGrid h3 {
+  margin: 0;
+  color: #071f3b;
+  font-size: 1.25rem;
+  line-height: 1.45;
+}
+
+.visionItem p,
+.capabilityItem p,
+.processGrid p {
+  margin: 0.85rem 0 0;
+  color: #5a6c7e;
+  font-size: 0.98rem;
+  line-height: 1.8;
+}
+
+.relatedLinks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 5rem;
+  border-top: 1px solid #0c2948;
+}
+
+.relatedLinks a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4.5rem;
+  border-bottom: 1px solid #d7e0e9;
+  color: #0c2948;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.relatedLinks a + a {
+  border-left: 1px solid #d7e0e9;
+  padding-left: 1.5rem;
+}
+
+.relatedLinks a:not(:last-child) {
+  padding-right: 1.5rem;
+}
+
+.relatedLinks a:hover,
+.relatedLinks a:focus-visible {
+  color: #1769a8;
+}
+
+.simpleHeader {
+  max-width: 47rem;
+  margin-bottom: 2.25rem;
+}
+
+.eligibleList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid #0c2948;
+}
+
+.eligibleList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  min-height: 5.25rem;
+  padding: 1.25rem 1.5rem 1.25rem 0;
+  border-bottom: 1px solid #d7e0e9;
+  color: #233d57;
+  line-height: 1.6;
+}
+
+.eligibleList li:nth-child(even) {
+  padding-left: 1.5rem;
+  padding-right: 0;
+  border-left: 1px solid #d7e0e9;
+}
+
+.eligibleList li::before {
+  flex: 0 0 auto;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-top: 0.55rem;
+  background: #1769a8;
+  content: "";
+}
+
+.reviewNotice {
+  margin: 1.5rem 0 0;
+  border-left: 4px solid #1769a8;
+  background: #f2f7fb;
+  padding: 1rem 1.25rem;
+  color: #334f69;
+  line-height: 1.7;
+}
+
+.processGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.processGrid li {
+  position: relative;
+  min-width: 0;
+  border-top: 2px solid #0c2948;
+  padding: 1.4rem 1.45rem 0 0;
+}
+
+.processGrid li:not(:last-child)::after {
+  position: absolute;
+  top: -0.65rem;
+  right: -0.4rem;
+  color: #1769a8;
+  content: "→";
+  font-size: 1.3rem;
+}
+
+.processGrid li + li {
+  padding-left: 1.45rem;
+}
+
+.application {
+  margin-top: 4.5rem;
+  border-top: 1px solid #d7e0e9;
+  border-bottom: 1px solid #d7e0e9;
+  padding: 2.75rem 0;
+  text-align: center;
+}
+
+.applicationLink {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  background: #0c2948;
+  padding: 0.75rem 1.2rem;
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.applicationLink:hover,
+.applicationLink:focus-visible {
+  background: #1769a8;
+}
+
+.application p {
+  margin: 0.85rem 0 0;
+  color: #647589;
+  font-size: 0.875rem;
+}
+
+.preparationGrid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-top: 1px solid #0c2948;
+}
+
+.preparationGrid li {
+  min-width: 0;
+  border-bottom: 1px solid #d7e0e9;
+  padding: 1.25rem 1.25rem 1.35rem 0;
+  color: #233d57;
+  font-weight: 700;
+  line-height: 1.55;
+  list-style: none;
+}
+
+.preparationGrid li + li {
+  border-left: 1px solid #d7e0e9;
+  padding-left: 1.25rem;
+}
+
+.page a:focus-visible {
+  outline: 2px solid #1769a8;
+  outline-offset: 3px;
+}
+
+@media (max-width: 1023px) {
+  .sectionHeader {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .visionGrid,
+  .processGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .processGrid li:nth-child(3) {
+    padding-left: 0;
+  }
+
+  .processGrid li:nth-child(2)::after {
+    display: none;
+  }
+
+  .preparationGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .preparationGrid li:nth-child(4) {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding: 3.75rem 0 5rem;
+  }
+
+  .section + .section {
+    margin-top: 4.25rem;
+    padding-top: 4.25rem;
+  }
+
+  .sectionHeader h2,
+  .simpleHeader h2 {
+    font-size: 2rem;
+  }
+
+  .visionGrid,
+  .capabilityGrid,
+  .processGrid,
+  .preparationGrid,
+  .eligibleList,
+  .relatedLinks {
+    grid-template-columns: 1fr;
+  }
+
+  .visionItem,
+  .capabilityItem,
+  .capabilityItem:nth-child(even),
+  .eligibleList li,
+  .eligibleList li:nth-child(even),
+  .processGrid li,
+  .processGrid li + li,
+  .preparationGrid li,
+  .preparationGrid li + li,
+  .preparationGrid li:nth-child(4) {
+    border-left: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .capabilityItem,
+  .processGrid li {
+    padding-top: 1.35rem;
+    padding-bottom: 1.35rem;
+  }
+
+  .processGrid li:not(:last-child)::after {
+    top: auto;
+    right: auto;
+    bottom: -1.05rem;
+    left: 0;
+    transform: rotate(90deg);
+  }
+
+  .processGrid li:nth-child(2)::after {
+    display: block;
+  }
+
+  .relatedLinks a + a {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .relatedLinks a:not(:last-child) {
+    padding-right: 0;
+  }
+
+  .application {
+    margin-top: 3rem;
+    padding: 2rem 1rem;
+  }
+}
