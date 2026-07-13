@@ -47,7 +47,6 @@ export const navigation: NavigationItem[] = [
       child("교과목 체계도", "Curriculum Tree", "/academics/curriculum-tree"),
       child("학부 졸업요건", "Undergraduate Graduation Requirements", "/academics/requirements"),
       child("대학원 교육과정", "Graduate Curriculum", "/academics/graduate"),
-      child("학사 안내", "Academic Information", "/academics"),
       child("장학 안내", "Scholarships", "/academics/scholarships"),
     ],
   },

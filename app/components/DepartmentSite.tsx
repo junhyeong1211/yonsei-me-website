@@ -160,8 +160,8 @@ const quickLinks = [
   { ko: "학부공지", en: "Notices", path: "/news/notices?audience=undergraduate", icon: MessageSquareText },
   { ko: "학사일정", en: "Calendar", path: "/news/calendar", icon: CalendarDays },
   { ko: "교과목 안내", en: "Courses", path: "/academics/courses", icon: BookOpen },
-  { ko: "대학원 입학", en: "Graduate Admission", path: "/admission/graduate", icon: GraduationCap, externalUrl: graduateAdmissionUrl, ariaLabel: "연세대학교 일반대학원 입학 안내 새 창에서 열기" },
-  { ko: "채용정보", en: "Careers", path: "/admission/careers", icon: BriefcaseBusiness },
+  { ko: "대학원 진학", en: "Graduate Admission", path: "/admission/graduate", icon: GraduationCap, externalUrl: graduateAdmissionUrl, ariaLabel: "연세대학교 일반대학원 입학 안내 새 창에서 열기" },
+  { ko: "취업 정보", en: "Careers", path: "/admission/careers", icon: BriefcaseBusiness },
   { ko: "오시는 길", en: "Directions", path: "/about/directions", icon: MapPin },
 ];
 
