@@ -1888,7 +1888,7 @@ function UndergraduateProgramPage({ locale }: { locale: Locale }) {
             <a href={undergraduateHandbookUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, "학부 수강편람 조회, 새 탭에서 열림", "Open the undergraduate course handbook in a new tab")}>{tx(locale, "학부 수강편람 조회", "Course Handbook")}<ExternalLink size={15} /></a>
           </nav>
 
-          <SectionHeading label="PROGRAM FLOW" title={tx(locale, "학년별 교육 흐름", "Program by Year")} />
+          <SectionHeading label="PROGRAM FLOW" title={tx(locale, "학년별 교육 과정", "Program by Academic Year")} />
           <div className="undergraduate-year-grid">
             {undergraduateProgramYears.map((item) => (
               <Link href={hrefFor(locale, `/academics/courses?tab=schedule&year=${item.year}`)} className="undergraduate-year" key={item.year}>
@@ -2037,7 +2037,7 @@ function GraduateCourseCatalog({ locale, searchParams }: { locale: Locale; searc
     if (next.credits !== "all") params.set("credits", next.credits);
     if (next.query.trim()) params.set("q", next.query.trim());
     const suffix = params.size ? `?${params.toString()}` : "";
-    router.replace(`${hrefFor(locale, "/academics/graduate")}${suffix}`);
+    router.replace(`${hrefFor(locale, "/academics/graduate")}${suffix}`, { scroll: false });
   };
 
   const updateLevel = (nextLevel: GraduateCourseLevelFilter) => {
@@ -2056,7 +2056,7 @@ function GraduateCourseCatalog({ locale, searchParams }: { locale: Locale; searc
     setLevel("all");
     setCredits("all");
     setQuery("");
-    router.replace(hrefFor(locale, "/academics/graduate"));
+    router.replace(hrefFor(locale, "/academics/graduate"), { scroll: false });
   };
   const hasFilters = level !== "all" || credits !== "all" || Boolean(query.trim());
 
