@@ -1079,6 +1079,7 @@ function FacultyMemberCard({ member, locale, variant = "directory" }: { member: 
 function FacultyMemberDetail({ locale, member }: { locale: Locale; member: FacultyMember }) {
   const name = facultyMemberName(member, locale);
   const alternateName = facultyMemberAlternateName(member, locale);
+  const laboratory = facultyMemberLaboratory(member);
 
   return (
     <>
@@ -1101,6 +1102,11 @@ function FacultyMemberDetail({ locale, member }: { locale: Locale; member: Facul
               <div><dt>{tx(locale, "연구실 위치", "Office")}</dt><dd>{member.office ?? tx(locale, "위치 확인 중", "Office information pending")}</dd></div>
               {member.profileUrl && <div><dt>{tx(locale, "외부 프로필", "External profile")}</dt><dd><a href={member.profileUrl} target="_blank" rel="noopener noreferrer">{member.profileUrl}<ExternalLink size={15} /></a></dd></div>}
             </dl>
+            {laboratory && (
+              <Link className="faculty-laboratory-view-link" href={hrefFor(locale, `/labs/${laboratory.slug}`)}>
+                {tx(locale, "연구실 보기", "View laboratory")}<ArrowRight size={17} aria-hidden="true" />
+              </Link>
+            )}
             <section className="detail-block faculty-member-research-placeholder"><p className="section-label">RESEARCH INFORMATION</p><h2>{tx(locale, "연구 정보", "Research Information")}</h2><p>{tx(locale, "상세 연구 정보는 추후 업데이트될 예정입니다.", "Detailed research information will be updated soon.")}</p></section>
           </main>
         </div>
@@ -1413,6 +1419,7 @@ function ResearchFieldsPage({ locale, searchParams }: { locale: Locale; searchPa
 
 function ResearchLabDirectory({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
   const router = useRouter();
+  const resultsRef = useRef<HTMLDivElement>(null);
   const initialArea = directoryResearchAreas.some((area) => area.slug === searchParams.area) ? searchParams.area : "all";
   const [area, setArea] = useState(initialArea);
   const [query, setQuery] = useState(searchParams.q ?? "");
@@ -1450,6 +1457,11 @@ function ResearchLabDirectory({ locale, searchParams }: { locale: Locale; search
   const updateArea = (nextArea: string) => {
     setArea(nextArea);
     syncUrl(nextArea, query);
+    const target = resultsRef.current;
+    if (target) {
+      const headerHeight = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-height")) || 0;
+      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - headerHeight - 24, behavior: "smooth" });
+    }
   };
 
   const reset = () => {
@@ -1484,8 +1496,10 @@ function ResearchLabDirectory({ locale, searchParams }: { locale: Locale; search
               {hasActiveFilters && <button className="laboratory-filter-reset" type="button" onClick={reset}>{tx(locale, "초기화", "Reset")}</button>}
             </form>
           </div>
-          <div className="laboratory-directory-summary"><p><strong>{results.length}</strong> {tx(locale, "개 연구실", "laboratories")}</p><span>{tx(locale, "주·관련 연구 분야 포함", "Primary and secondary areas included")}</span></div>
-          {results.length ? <div className="laboratory-directory-grid">{results.map((lab) => <LabCard key={lab.id} lab={lab} locale={locale} />)}</div> : <EmptyState locale={locale} />}
+          <div className="laboratory-directory-results" ref={resultsRef}>
+            <div className="laboratory-directory-summary"><p><strong>{results.length}</strong> {tx(locale, "개 연구실", "laboratories")}</p><span>{tx(locale, "주·관련 연구 분야 포함", "Primary and secondary areas included")}</span></div>
+            {results.length ? <div className="laboratory-directory-grid">{results.map((lab) => <LabCard key={lab.id} lab={lab} locale={locale} />)}</div> : <EmptyState locale={locale} />}
+          </div>
         </div>
       </section>
     </>
@@ -1522,6 +1536,7 @@ function ResearchLabDetail({ locale, lab }: { locale: Locale; lab: ResearchLab }
     .map((slug) => directoryResearchAreas.find((area) => area.slug === slug))
     .filter((area): area is DirectoryResearchArea => Boolean(area));
   const pendingMessage = "연구실 상세 소개는 추후 업데이트될 예정입니다.";
+  const facultyMember = facultyMembers.find((member) => member.nameKo === lab.professorKo);
 
   return (
     <>
@@ -1535,7 +1550,7 @@ function ResearchLabDetail({ locale, lab }: { locale: Locale; lab: ResearchLab }
               <dl className="research-lab-detail-list">
                 <div><dt>{tx(locale, "연구실명", "Laboratory")}</dt><dd>{lab.nameKo}</dd></div>
                 <div><dt>{tx(locale, "영문명", "English name")}</dt><dd>{lab.nameEn}</dd></div>
-                <div><dt>{tx(locale, "지도교수", "Faculty advisor")}</dt><dd>{lab.professorKo} · {lab.professorEn}</dd></div>
+                <div><dt>{tx(locale, "지도교수", "Faculty advisor")}</dt><dd>{facultyMember ? <Link href={hrefFor(locale, `/faculty/${facultyMember.slug}`)}>{lab.professorKo} · {lab.professorEn}</Link> : <>{lab.professorKo} · {lab.professorEn}</>}</dd></div>
                 <div><dt>{tx(locale, "주 연구 분야", "Primary research area")}</dt><dd>{primaryArea ? researchAreaName(primaryArea, locale) : "-"}</dd></div>
                 <div><dt>{tx(locale, "관련 연구 분야", "Related research areas")}</dt><dd>{secondaryAreas.length ? secondaryAreas.map((area) => researchAreaName(area, locale)).join(" · ") : "-"}</dd></div>
                 <div><dt>{tx(locale, "위치", "Location")}</dt><dd>{lab.location ?? "-"}</dd></div>

@@ -1262,6 +1262,20 @@ p {
   text-underline-offset: 3px;
 }
 
+.faculty-laboratory-view-link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 20px;
+  color: var(--color-yonsei-blue);
+  font-size: 13px;
+  font-weight: 720;
+  gap: 7px;
+}
+
+.faculty-laboratory-view-link:hover {
+  color: var(--color-navy-deep);
+}
+
 .faculty-image {
   display: flex;
   aspect-ratio: 4 / 5;
@@ -2523,6 +2537,17 @@ p {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 28px 24px;
+}
+
+.laboratory-directory-results {
+  scroll-margin-top: calc(var(--header-height) + 24px);
+}
+
+.laboratory-area-tabs button:focus-visible,
+.faculty-laboratory-view-link:focus-visible,
+.research-lab-detail-list a:focus-visible {
+  outline: 2px solid var(--color-yonsei-blue);
+  outline-offset: 3px;
 }
 
 .laboratory-directory-card {
