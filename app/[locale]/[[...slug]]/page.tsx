@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import DepartmentSite from "../../components/DepartmentSite";
 import type { Locale } from "../../data/content";
 
@@ -15,6 +16,9 @@ export default async function LocalePage({ params, searchParams }: PageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
   const locale: Locale = resolvedParams.locale === "en" ? "en" : "ko";
+  if (resolvedParams.slug?.length === 1 && resolvedParams.slug[0] === "academics") {
+    redirect(`/${locale}/academics/undergraduate`);
+  }
   const normalizedSearchParams = Object.fromEntries(
     Object.entries(resolvedSearchParams).map(([key, value]) => [
       key,

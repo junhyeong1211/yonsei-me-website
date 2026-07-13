@@ -9,6 +9,7 @@
 ├─ 학부 소개·비전
 ├─ 연혁
 ├─ 교직원
+├─ 학생활동·동아리
 ├─ 동문·대외협력
 └─ 연락처·오시는 길
 
@@ -71,6 +72,8 @@
 /[locale]/about
 /[locale]/about/history
 /[locale]/about/staff
+/[locale]/about/student-activities
+/[locale]/about/student-activities/[slug]
 /[locale]/about/alumni
 /[locale]/about/directions
 

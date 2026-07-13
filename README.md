@@ -65,6 +65,7 @@ public/
 | 장학 안내 | `app/data/scholarships.ts` | 장학 정보와 검수 상태 |
 | 연혁 | `app/data/history.ts` | 학부 연혁 |
 | 교직원 | `app/data/staff.ts` | 학부·대학원·BK21 행정 담당자 |
+| 학생활동·동아리 | `app/data/studentActivities.ts` | 동아리 목록·상세, 대표 이미지와 공식 검수 전 영문 문구 |
 | 입학 | `app/data/undergraduateAdmission.ts` | 학부 입학 콘텐츠와 공식 외부 URL |
 | 취업 정보 | `app/data/careers.ts` | 채용·진로 게시 데이터 |
 | 학사일정 | `app/data/calendar.ts` | 정적 초기값과 fallback, 런타임 연동은 `app/api/calendar/route.ts` |
@@ -78,6 +79,7 @@ public/
 
 - 히어로와 Instagram 이미지는 `app/data/content.ts`의 URL을 교체합니다.
 - 교수 사진은 `public/images/faculty/`에 두고 `app/data/faculty.ts`의 `image` 경로와 연결합니다.
+- 학생활동 대표 이미지는 `public/images/clubs/`에 두고 `app/data/studentActivities.ts`의 `image` 경로와 연결합니다.
 - 교수 사진은 4:5, 뉴스는 16:9, Instagram은 1:1 비율을 권장합니다.
 
 ## 한국어·영어 작성

@@ -22,6 +22,7 @@
 | 장학 안내 | `app/data/scholarships.ts` | 장학 분류와 확인 필요 정보 |
 | 연혁 | `app/data/history.ts` | 연혁 항목 |
 | 교직원 | `app/data/staff.ts` | 행정 담당, 연락처, 위치 |
+| 학생활동·동아리 | `app/data/studentActivities.ts` | 동아리 slug, 활동 요약, 대표 이미지, 외부 채널, `reviewNote` |
 | 입학·취업 | `app/data/undergraduateAdmission.ts`, `app/data/careers.ts` | 공식 외부 링크와 게시 데이터 |
 | 학사일정 | `app/data/calendar.ts`, `app/api/calendar/route.ts` | 초기값·fallback과 런타임 연동 |
 | 공지·메인 콘텐츠 | `app/data/content.ts` | 공지사항, Hero, SNS, 레거시 호환 데이터 |
@@ -43,6 +44,7 @@ Course.id ─────> 선수과목·교과목 체계도 관계
 
 - `reviewNote`, `verificationStatus`, `classificationStatus`가 있는 항목은 원문 확인 필요 여부와 검수 상태를 함께 기록합니다.
 - 전용 데이터 파일이 존재한다는 사실만으로 공식 검증이 끝난 것은 아닙니다.
+- 학생활동·동아리의 영문 문구는 제공 자료를 바탕으로 한 공식 검수 전 번역이며, 각 항목의 `reviewNote`로 확인합니다.
 - 샘플 공지, 일정, Hero·SNS 미리보기와 레거시 콘텐츠는 운영 전 학부가 확인한 최신 정보로 교체합니다.
 - 공식 데이터로 교체할 때는 기존 `id`와 `slug`를 유지하면 상세 경로와 연결된 링크를 안정적으로 유지할 수 있습니다.
 

@@ -44,6 +44,28 @@ test("server-renders a core directory route", async () => {
   assert.match(html, /강건욱/);
 });
 
+test("server-renders student activities and a club detail route", async () => {
+  const listResponse = await render("/ko/about/student-activities");
+  assert.equal(listResponse.status, 200);
+  const listHtml = await listResponse.text();
+  assert.match(listHtml, /학생활동·동아리/);
+  assert.match(listHtml, /연세드론/);
+  assert.match(listHtml, /MECar/);
+  assert.match(listHtml, /SPACE Y/);
+
+  const detailResponse = await render("/ko/about/student-activities/mecar");
+  assert.equal(detailResponse.status, 200);
+  const detailHtml = await detailResponse.text();
+  assert.match(detailHtml, /학생 자작자동차/);
+  assert.match(detailHtml, /주요 프로젝트/);
+});
+
+test("redirects the retired academic information route", async () => {
+  const response = await render("/ko/academics");
+  assert.equal(response.status, 307);
+  assert.equal(response.headers.get("location"), "http://localhost/ko/academics/undergraduate");
+});
+
 test("starter preview is removed and social image exists", async () => {
   const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(layout, /codex-preview|_sites-preview|Starter Project/);

@@ -104,6 +104,7 @@ import {
   aboutEducationalPurpose,
 } from "../data/about";
 import { administrativeStaff } from "../data/staff";
+import { getStudentActivityBySlug, studentActivities, type StudentActivity } from "../data/studentActivities";
 import { departmentHistory } from "../data/history";
 import {
   scholarshipCategoryLabels,
@@ -181,6 +182,7 @@ const routeLabels: Record<string, LocaleText> = {
   vision: { ko: "비전 및 교육목표", en: "Vision & Objectives" },
   history: { ko: "연혁", en: "History" },
   staff: { ko: "교직원", en: "Staff" },
+  "student-activities": { ko: "학생활동·동아리", en: "Student Activities" },
   alumni: { ko: "동문·대외협력", en: "Alumni & Partnerships" },
   contact: { ko: "조직 및 연락처", en: "Organization & Contact" },
   directions: { ko: "오시는 길", en: "Directions" },
@@ -239,6 +241,7 @@ function Breadcrumb({ locale, segments }: { locale: Locale; segments: string[] }
         const course = courses.find((item) => item.slug === segment);
         const notice = notices.find((item) => item.slug === segment);
         const career = getCareerPostBySlug(segment);
+        const studentActivity = getStudentActivityBySlug(segment);
         const admissionLabel = segments[0] === "admission" && index === 1
           ? ({
               undergraduate: { ko: "학부 입학", en: "Undergraduate Admission" },
@@ -260,11 +263,13 @@ function Breadcrumb({ locale, segments }: { locale: Locale; segments: string[] }
                 ? t(notice.title, locale)
                 : career
                   ? (locale === "ko" ? career.titleKo : career.titleEn)
-                : admissionLabel
-                  ? t(admissionLabel, locale)
-                : routeLabels[segment]
-                  ? t(routeLabels[segment], locale)
-                  : segment;
+                  : studentActivity
+                    ? t(studentActivity.name, locale)
+                    : admissionLabel
+                      ? t(admissionLabel, locale)
+                      : routeLabels[segment]
+                        ? t(routeLabels[segment], locale)
+                        : segment;
         const isLast = itemIndex === breadcrumbItems.length - 1;
         return (
           <span key={path} className={index > 1 && !isLast ? "breadcrumb-optional" : undefined}>
@@ -1871,7 +1876,6 @@ function UndergraduateProgramPage({ locale }: { locale: Locale }) {
     { label: tx(locale, "전공필수", "Required Courses"), path: "/academics/courses?tab=required" },
     { label: tx(locale, "전공선택", "Elective Courses"), path: "/academics/courses?tab=elective" },
     { label: tx(locale, "학부 졸업요건", "Graduation Requirements"), path: "/academics/requirements" },
-    { label: tx(locale, "학사 안내", "Academic Information"), path: "/academics" },
     { label: tx(locale, "장학 안내", "Scholarships"), path: "/academics/scholarships" },
   ];
 
@@ -2545,7 +2549,7 @@ function ScholarshipsPage({ locale, searchParams }: { locale: Locale; searchPara
 
           <nav className="scholarship-related-links" aria-label={tx(locale, "장학 관련 페이지", "Scholarship Related Pages")}>
             <Link href={hrefFor(locale, "/news/notices?audience=undergraduate")}>{tx(locale, "학부 공지사항", "Undergraduate Notices")}<ArrowRight size={17} /></Link>
-            <Link href={hrefFor(locale, "/academics")}>{tx(locale, "학사 안내", "Academic Information")}<ArrowRight size={17} /></Link>
+            <Link href={hrefFor(locale, "/academics/undergraduate")}>{tx(locale, "학부 교육과정", "Undergraduate Program")}<ArrowRight size={17} /></Link>
             <Link href={hrefFor(locale, "/academics/courses")}>{tx(locale, "교과목 안내", "Courses")}<ArrowRight size={17} /></Link>
           </nav>
         </div>
@@ -3302,6 +3306,123 @@ function HistoryPage({ locale }: { locale: Locale }) {
   );
 }
 
+function StudentActivitiesPage({ locale }: { locale: Locale }) {
+  const activities = studentActivities.slice().sort((a, b) => a.order - b.order);
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="STUDENT ACTIVITIES"
+        title={tx(locale, "학생활동·동아리", "Student Activities")}
+        description={tx(locale, "기계공학 지식을 실제 프로젝트와 대회 활동으로 확장하는 학생 동아리를 소개합니다.", "Meet student clubs that extend mechanical engineering knowledge through projects and competitions.")}
+      />
+      <section className="section student-activities-page">
+        <div className="container student-activities-grid">
+          {activities.map((activity) => (
+            <article className="student-activity-card" key={activity.id}>
+              <Link
+                href={hrefFor(locale, `/about/student-activities/${activity.slug}`)}
+                aria-label={tx(locale, `${t(activity.name, locale)} 자세히 보기`, `View ${t(activity.name, locale)} details`)}
+              >
+                <header className="student-activity-card-meta">
+                  <span>{String(activity.order).padStart(2, "0")}</span>
+                  <p>{t(activity.category, locale)}</p>
+                </header>
+                <div className="student-activity-card-image">
+                  <Image src={activity.image.src} alt={t(activity.image.alt, locale)} fill sizes="(max-width: 1024px) 100vw, 50vw" />
+                </div>
+                <div className="student-activity-card-content">
+                  <h2>{t(activity.name, locale)}</h2>
+                  <p>{t(activity.shortDescription, locale)}</p>
+                  <div className="student-activity-keywords" aria-label={tx(locale, `${t(activity.name, locale)} 주요 키워드`, `${t(activity.name, locale)} keywords`)}>
+                    {activity.keywords.map((keyword) => <span key={keyword.ko}>{t(keyword, locale)}</span>)}
+                  </div>
+                  <span className="student-activity-detail-link">{tx(locale, "자세히 보기", "View details")}<ArrowRight size={17} aria-hidden="true" /></span>
+                </div>
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+}
+
+function StudentActivityDetailSection({
+  label,
+  title,
+  items,
+  locale,
+}: {
+  label: string;
+  title: string;
+  items: LocaleText[];
+  locale: Locale;
+}) {
+  return (
+    <section className="student-activity-detail-section">
+      <p className="section-label">{label}</p>
+      <h2>{title}</h2>
+      {items.length ? <ul>{items.map((item) => <li key={item.ko}>{t(item, locale)}</li>)}</ul> : <p className="student-activity-pending">{tx(locale, "공식 정보를 확인한 뒤 업데이트합니다.", "This information will be updated after official confirmation.")}</p>}
+    </section>
+  );
+}
+
+function StudentActivityDetail({ locale, activity }: { locale: Locale; activity: StudentActivity }) {
+  const relatedActivities = studentActivities.filter((item) => item.id !== activity.id).sort((a, b) => a.order - b.order);
+
+  return (
+    <>
+      <PageHeader eyebrow="STUDENT ACTIVITIES" title={t(activity.name, locale)} description={t(activity.category, locale)} />
+      <section className="section student-activity-detail-page">
+        <div className="container student-activity-detail-layout">
+          <main>
+            <figure className="student-activity-hero-image">
+              <Image src={activity.image.src} alt={t(activity.image.alt, locale)} fill sizes="(max-width: 1024px) 100vw, 70vw" priority />
+            </figure>
+            <section className="student-activity-detail-section student-activity-introduction">
+              <p className="section-label">INTRODUCTION</p>
+              <h2>{tx(locale, "동아리 소개", "About the Club")}</h2>
+              <p>{t(activity.description, locale)}</p>
+            </section>
+            <div className="student-activity-detail-columns">
+              <StudentActivityDetailSection label="TEAM & ACTIVITIES" title={tx(locale, "팀·활동 분야", "Teams & Activities")} items={activity.teams} locale={locale} />
+              <StudentActivityDetailSection label="PROJECTS" title={tx(locale, "주요 프로젝트", "Key Projects")} items={activity.projects} locale={locale} />
+              <StudentActivityDetailSection label="ACHIEVEMENTS" title={tx(locale, "주요 성과", "Highlights")} items={activity.achievements} locale={locale} />
+              <section className="student-activity-detail-section">
+                <p className="section-label">EXTERNAL CHANNELS</p>
+                <h2>{tx(locale, "외부 채널", "External Channels")}</h2>
+                {activity.links.length ? (
+                  <ul className="student-activity-external-links">
+                    {activity.links.map((link) => (
+                      <li key={link.id}>
+                        <a
+                          href={link.url}
+                          target={link.kind === "external" ? "_blank" : undefined}
+                          rel={link.kind === "external" ? "noopener noreferrer" : undefined}
+                          aria-label={link.kind === "external" ? tx(locale, `${t(activity.name, locale)} ${t(link.label, locale)} 새 창에서 열기`, `Open ${t(activity.name, locale)} ${t(link.label, locale)} in a new tab`) : tx(locale, `${t(activity.name, locale)} 이메일 보내기`, `Email ${t(activity.name, locale)}`)}
+                        >
+                          {t(link.label, locale)}{link.kind === "external" && <ExternalLink size={15} aria-hidden="true" />}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : <p className="student-activity-pending">{tx(locale, "공식 외부 채널 정보를 확인한 뒤 업데이트합니다.", "Official external channels will be added after confirmation.")}</p>}
+              </section>
+            </div>
+            {locale === "en" && <p className="student-activity-language-note">{activity.reviewNote}</p>}
+          </main>
+          <aside className="student-activity-detail-nav">
+            <Link className="back-link" href={hrefFor(locale, "/about/student-activities")}><ArrowLeft size={16} />{tx(locale, "동아리 목록", "All student activities")}</Link>
+            <p>{tx(locale, "다른 학생활동", "Other Activities")}</p>
+            {relatedActivities.map((item) => <Link href={hrefFor(locale, `/about/student-activities/${item.slug}`)} key={item.id}><span>{String(item.order).padStart(2, "0")}</span>{t(item.name, locale)}<ArrowRight size={16} /></Link>)}
+          </aside>
+        </div>
+      </section>
+    </>
+  );
+}
+
 function StaffPage({ locale }: { locale: Locale }) {
   const staffGroups = administrativeStaff
     .slice()
@@ -3399,6 +3520,8 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "about" && !second) page = <AboutPage locale={locale} />;
   else if (section === "about" && second === "history") page = <HistoryPage locale={locale} />;
   else if (section === "about" && second === "staff") page = <StaffPage locale={locale} />;
+  else if (section === "about" && second === "student-activities" && third && getStudentActivityBySlug(third)) page = <StudentActivityDetail locale={locale} activity={getStudentActivityBySlug(third)!} />;
+  else if (section === "about" && second === "student-activities") page = <StudentActivitiesPage locale={locale} />;
   else if (section === "faculty" && second && getFacultyMemberBySlug(second)) page = <FacultyMemberDetail locale={locale} member={getFacultyMemberBySlug(second)!} />;
   else if (section === "faculty" && !second) page = <FacultyMemberDirectory locale={locale} />;
   else if (section === "faculty" && second && getFacultyBySlug(second)) page = <FacultyDetail locale={locale} person={getFacultyBySlug(second)!} />;
