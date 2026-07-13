@@ -3671,13 +3671,13 @@ p {
 
   .home-section-track {
     display: grid;
-    gap: 5px;
+    gap: 4px;
   }
 
   .home-section-track button {
     display: flex;
-    width: 24px;
-    height: 10px;
+    width: 18px;
+    height: 8px;
     align-items: center;
     padding: 0;
     background: transparent;
@@ -3685,8 +3685,8 @@ p {
   }
 
   .home-section-track button::before {
-    width: 18px;
-    height: 2px;
+    width: 14px;
+    height: 1px;
     content: "";
     background: var(--section-nav-line);
     transition: width 180ms ease, height 180ms ease, background-color 180ms ease;
@@ -3695,8 +3695,8 @@ p {
   .home-section-track button:hover::before,
   .home-section-track button:focus-visible::before,
   .home-section-track button.is-active::before {
-    width: 18px;
-    height: 3px;
+    width: 14px;
+    height: 2px;
     background: var(--section-nav-current);
   }
 }
