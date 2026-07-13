@@ -51,13 +51,42 @@ test("server-renders student activities and a club detail route", async () => {
   assert.match(listHtml, /학생활동·동아리/);
   assert.match(listHtml, /연세드론/);
   assert.match(listHtml, /MECar/);
+  assert.match(listHtml, /로보인/);
   assert.match(listHtml, /SPACE Y/);
 
   const detailResponse = await render("/ko/about/student-activities/mecar");
   assert.equal(detailResponse.status, 200);
   const detailHtml = await detailResponse.text();
-  assert.match(detailHtml, /학생 자작자동차/);
+  assert.match(detailHtml, /자작 자동차/);
   assert.match(detailHtml, /주요 프로젝트/);
+  assert.match(detailHtml, /링크 확인 필요/);
+  assert.match(detailHtml, /https:\/\/www\.instagram\.com\/yonseimecar\//);
+  assert.match(detailHtml, /target="_blank"/);
+
+  for (const slug of ["yonsei-drone", "roboin", "space-y"]) {
+    const response = await render(`/ko/about/student-activities/${slug}`);
+    assert.equal(response.status, 200);
+  }
+
+  const englishResponse = await render("/en/about/student-activities/yonsei-drone");
+  assert.equal(englishResponse.status, 200);
+});
+
+test("searches student activities from the shared data source", async () => {
+  const expectedResults = [
+    ["드론", "연세드론"],
+    ["자작 자동차", "MECar"],
+    ["로봇", "로보인"],
+    ["인공위성", "SPACE Y"],
+  ];
+
+  for (const [query, expected] of expectedResults) {
+    const response = await render(`/ko/search?q=${encodeURIComponent(query)}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, /학생활동·동아리/);
+    assert.match(html, new RegExp(expected));
+  }
 });
 
 test("redirects the retired academic information route", async () => {
@@ -70,5 +99,11 @@ test("starter preview is removed and social image exists", async () => {
   const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(layout, /codex-preview|_sites-preview|Starter Project/);
   await access(new URL("../public/og.png", import.meta.url));
+  await Promise.all([
+    "mecar.png",
+    "roboin.png",
+    "space-y.png",
+    "yonsei-drone.png",
+  ].map((name) => access(new URL(`../public/images/clubs/${name}`, import.meta.url))));
   await assert.rejects(access(new URL("../app/_sites-preview/SkeletonPreview.tsx", import.meta.url)));
 });

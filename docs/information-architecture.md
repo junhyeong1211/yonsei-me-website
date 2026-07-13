@@ -62,6 +62,7 @@
 | 장학 안내 확인 | 홈 → 교육·학사 → 장학 안내 | `/[locale]/academics/scholarships` |
 | 연구실 찾기 | 홈 → 연구·구성원 → 연구실 | `/[locale]/labs` |
 | 교수진 찾기 | 홈 → 연구·구성원 → 교수진 | `/[locale]/faculty` |
+| 학생활동 찾기 | 홈 → 학부 소개 → 학생활동·동아리 | `/[locale]/about/student-activities` |
 | 대학원 입학 확인 | 홈 → 입학·진로 → 대학원 진학 | 연세대학교 일반대학원 공식 외부 URL |
 | 취업 정보 확인 | 홈 → 입학·진로 → 취업 정보 | `/[locale]/admission/careers` |
 

@@ -6990,6 +6990,12 @@ p {
   text-decoration-color: currentcolor;
 }
 
+.student-activity-pending-link {
+  color: #7b8795;
+  font-size: 14px;
+  font-weight: 650;
+}
+
 .student-activity-language-note {
   margin: 22px 0 0;
   color: #748191;

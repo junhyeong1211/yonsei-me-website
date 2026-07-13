@@ -2998,8 +2998,23 @@ function SearchPage({ locale, searchParams }: { locale: Locale; searchParams: Re
   const researchResults = normalized ? researchAreas.filter((item) => `${item.name.ko} ${item.name.en} ${item.keywords.ko.join(" ")} ${item.keywords.en.join(" ")}`.toLowerCase().includes(normalized)) : [];
   const courseResults = normalized ? courses.filter((item) => `${item.code} ${item.name.ko} ${item.name.en}`.toLowerCase().includes(normalized)) : [];
   const noticeResults = normalized ? notices.filter((item) => `${item.title.ko} ${item.title.en}`.toLowerCase().includes(normalized)) : [];
-  const total = facultyResults.length + researchResults.length + courseResults.length + noticeResults.length;
-  return <><PageHeader eyebrow="SEARCH" title={tx(locale, "통합검색", "Search")} description={tx(locale, "교수, 연구, 교육과정, 공지 및 소식을 한 곳에서 찾습니다.", "Search faculty, research, academics, and notices in one place.")} /><section className="section content-section"><div className="container search-page"><form onSubmit={(event) => { event.preventDefault(); router.replace(`${hrefFor(locale, "/search")}?q=${encodeURIComponent(query)}`); }}><label htmlFor="search-page-input">{tx(locale, "검색어", "Search query")}</label><div><Search size={22} /><input id="search-page-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "검색어를 입력하세요", "Enter a search term")} /><button className="button primary" type="submit">{tx(locale, "검색", "Search")}</button></div></form>{normalized && <p className="search-summary"><strong>‘{query}’</strong> {tx(locale, `검색 결과 ${total}건`, `${total} results`)}</p>}{!normalized ? <div className="empty-state"><Search size={26} /><h3>{tx(locale, "검색어를 입력해 주세요", "Enter a search term")}</h3><p>{tx(locale, "교수명, 연구 키워드, 과목명, 공지 제목을 검색할 수 있습니다.", "Search by faculty, research keyword, course, or notice title.")}</p></div> : total === 0 ? <EmptyState locale={locale} /> : <div className="search-groups"><SearchGroup title={tx(locale, "교수진", "Faculty")} items={facultyResults.map((item) => ({ title: t(item.name, locale), description: item.researchKeywords[locale].join(" · "), path: `/faculty/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "연구", "Research")} items={researchResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/research/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "교육과정", "Academics")} items={courseResults.map((item) => ({ title: t(item.name, locale), description: `${item.code} · ${item.credits} ${tx(locale, "학점", "credits")}`, path: `/academics/courses/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "공지 및 소식", "News & Notices")} items={noticeResults.map((item) => ({ title: t(item.title, locale), description: item.publishedAt, path: `/news/notices/${item.slug}` }))} locale={locale} /></div>}</div></section></>;
+  const studentActivityResults = normalized ? studentActivities.filter((item) => [
+    item.name.ko,
+    item.name.en,
+    item.category.ko,
+    item.category.en,
+    item.shortDescription.ko,
+    item.shortDescription.en,
+    item.description.ko,
+    item.description.en,
+    ...item.teams.flatMap((entry) => [entry.ko, entry.en]),
+    ...item.projects.flatMap((entry) => [entry.ko, entry.en]),
+    ...item.achievements.flatMap((entry) => [entry.ko, entry.en]),
+    ...item.keywords.flatMap((entry) => [entry.ko, entry.en]),
+  ].join(" ").toLowerCase().includes(normalized)) : [];
+  const total = facultyResults.length + researchResults.length + courseResults.length + noticeResults.length + studentActivityResults.length;
+
+  return <><PageHeader eyebrow="SEARCH" title={tx(locale, "통합검색", "Search")} description={tx(locale, "교수, 연구, 교육과정, 학생활동, 공지 및 소식을 한 곳에서 찾습니다.", "Search faculty, research, academics, student activities, and notices in one place.")} /><section className="section content-section"><div className="container search-page"><form onSubmit={(event) => { event.preventDefault(); router.replace(`${hrefFor(locale, "/search")}?q=${encodeURIComponent(query)}`); }}><label htmlFor="search-page-input">{tx(locale, "검색어", "Search query")}</label><div><Search size={22} /><input id="search-page-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "검색어를 입력하세요", "Enter a search term")} /><button className="button primary" type="submit">{tx(locale, "검색", "Search")}</button></div></form>{normalized && <p className="search-summary"><strong>‘{query}’</strong> {tx(locale, `검색 결과 ${total}건`, `${total} results`)}</p>}{!normalized ? <div className="empty-state"><Search size={26} /><h3>{tx(locale, "검색어를 입력해 주세요", "Enter a search term")}</h3><p>{tx(locale, "교수명, 연구 키워드, 과목명, 동아리명, 공지 제목을 검색할 수 있습니다.", "Search by faculty, research keyword, course, student activity, or notice title.")}</p></div> : total === 0 ? <EmptyState locale={locale} /> : <div className="search-groups"><SearchGroup title={tx(locale, "교수진", "Faculty")} items={facultyResults.map((item) => ({ title: t(item.name, locale), description: item.researchKeywords[locale].join(" · "), path: `/faculty/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "연구", "Research")} items={researchResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/research/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "교육과정", "Academics")} items={courseResults.map((item) => ({ title: t(item.name, locale), description: `${item.code} · ${item.credits} ${tx(locale, "학점", "credits")}`, path: `/academics/courses/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "학생활동·동아리", "Student Activities")} items={studentActivityResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/about/student-activities/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "공지 및 소식", "News & Notices")} items={noticeResults.map((item) => ({ title: t(item.title, locale), description: item.publishedAt, path: `/news/notices/${item.slug}` }))} locale={locale} /></div>}</div></section></>;
 }
 
 function SearchGroup({ title, items, locale }: { title: string; items: { title: string; description: string; path: string }[]; locale: Locale }) {
@@ -3396,14 +3411,16 @@ function StudentActivityDetail({ locale, activity }: { locale: Locale; activity:
                   <ul className="student-activity-external-links">
                     {activity.links.map((link) => (
                       <li key={link.id}>
-                        <a
-                          href={link.url}
-                          target={link.kind === "external" ? "_blank" : undefined}
-                          rel={link.kind === "external" ? "noopener noreferrer" : undefined}
-                          aria-label={link.kind === "external" ? tx(locale, `${t(activity.name, locale)} ${t(link.label, locale)} 새 창에서 열기`, `Open ${t(activity.name, locale)} ${t(link.label, locale)} in a new tab`) : tx(locale, `${t(activity.name, locale)} 이메일 보내기`, `Email ${t(activity.name, locale)}`)}
-                        >
-                          {t(link.label, locale)}{link.kind === "external" && <ExternalLink size={15} aria-hidden="true" />}
-                        </a>
+                        {link.kind === "pending" ? <span className="student-activity-pending-link">{t(link.label, locale)}</span> : (
+                          <a
+                            href={link.url}
+                            target={link.kind === "external" ? "_blank" : undefined}
+                            rel={link.kind === "external" ? "noopener noreferrer" : undefined}
+                            aria-label={link.kind === "external" ? tx(locale, `${t(activity.name, locale)} ${t(link.label, locale)} 새 창에서 열기`, `Open ${t(activity.name, locale)} ${t(link.label, locale)} in a new tab`) : tx(locale, `${t(activity.name, locale)} 이메일 보내기`, `Email ${t(activity.name, locale)}`)}
+                          >
+                            {t(link.label, locale)}{link.kind === "external" && <ExternalLink size={15} aria-hidden="true" />}
+                          </a>
+                        )}
                       </li>
                     ))}
                   </ul>
