@@ -103,6 +103,7 @@ import {
   aboutEducationalGoals,
   aboutEducationalPurpose,
 } from "../data/about";
+import { administrativeStaff } from "../data/staff";
 import { departmentHistory } from "../data/history";
 import {
   scholarshipCategoryLabels,
@@ -168,6 +169,7 @@ const routeLabels: Record<string, LocaleText> = {
   greeting: { ko: "학부장 인사말", en: "Chair's Message" },
   vision: { ko: "비전 및 교육목표", en: "Vision & Objectives" },
   history: { ko: "연혁", en: "History" },
+  staff: { ko: "교직원", en: "Staff" },
   alumni: { ko: "동문·대외협력", en: "Alumni & Partnerships" },
   contact: { ko: "조직 및 연락처", en: "Organization & Contact" },
   directions: { ko: "오시는 길", en: "Directions" },
@@ -2879,6 +2881,70 @@ function HistoryPage({ locale }: { locale: Locale }) {
   );
 }
 
+function StaffPage({ locale }: { locale: Locale }) {
+  const staffGroups = administrativeStaff
+    .slice()
+    .sort((a, b) => a.displayOrder - b.displayOrder)
+    .reduce<{ departmentKo: string; departmentEn: string | null; members: typeof administrativeStaff }[]>((groups, member) => {
+      const group = groups.find((entry) => entry.departmentKo === member.departmentKo);
+      if (group) group.members.push(member);
+      else groups.push({ departmentKo: member.departmentKo, departmentEn: member.departmentEn, members: [member] });
+      return groups;
+    }, []);
+  const relatedLinks = [
+    { title: tx(locale, "학부 소개·비전", "About & Vision"), path: "/about" },
+    { title: tx(locale, "연혁", "History"), path: "/about/history" },
+    { title: tx(locale, "동문·대외협력", "Alumni & Partnerships"), path: "/about/alumni" },
+    { title: tx(locale, "연락처·오시는 길", "Contact & Directions"), path: "/about/directions" },
+  ];
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="ADMINISTRATIVE STAFF"
+        title={tx(locale, "교직원", "Staff")}
+        description={tx(locale, "기계공학부 학부·대학원 행정과 BK21 교육연구단의 담당자 및 연락처를 안내합니다.", "Administrative contacts for undergraduate and graduate affairs, and the BK21 education and research group.")}
+      />
+      <section className="section staff-page">
+        <div className="container staff-page-content">
+          <header className="staff-page-intro">
+            <p className="section-label">CONTACT DIRECTORY</p>
+            <h2>{tx(locale, "교직원 연락처", "Staff Contacts")}</h2>
+          </header>
+          <div className="staff-group-list">
+            {staffGroups.map((group) => (
+              <section className="staff-group" key={group.departmentKo} aria-labelledby={`staff-${group.departmentKo}`}>
+                <h3 id={`staff-${group.departmentKo}`}>{locale === "en" ? group.departmentEn ?? group.departmentKo : group.departmentKo}</h3>
+                <div className="staff-directory" role="table" aria-label={tx(locale, `${group.departmentKo} 교직원 연락처`, `${group.departmentKo} staff contacts`)}>
+                  <div className="staff-directory-head" role="row">
+                    <span role="columnheader">{tx(locale, "담당", "Responsibility")}</span>
+                    <span role="columnheader">{tx(locale, "성명", "Name")}</span>
+                    <span role="columnheader">{tx(locale, "교내 전화", "Telephone")}</span>
+                    <span role="columnheader">{tx(locale, "이메일", "Email")}</span>
+                    <span role="columnheader">{tx(locale, "위치", "Office")}</span>
+                  </div>
+                  {group.members.map((member) => (
+                    <article className="staff-directory-row" role="row" key={member.id}>
+                      <div className="staff-responsibility" role="cell"><span>{tx(locale, "담당", "Responsibility")}</span><strong>{locale === "en" ? member.responsibilityEn ?? member.responsibilityKo : member.responsibilityKo}</strong></div>
+                      <div className="staff-name" role="cell"><span>{tx(locale, "성명", "Name")}</span><strong>{locale === "en" ? member.nameEn ?? member.nameKo : member.nameKo}</strong></div>
+                      <div role="cell"><span>{tx(locale, "교내 전화", "Telephone")}</span><a href={`tel:${member.phone.replaceAll("-", "")}`} aria-label={tx(locale, `${member.nameKo} 전화 ${member.phone}`, `Call ${member.nameKo} at ${member.phone}`)}>{member.phone}</a></div>
+                      <div role="cell"><span>{tx(locale, "이메일", "Email")}</span><a href={`mailto:${member.email}`} aria-label={tx(locale, `${member.nameKo} 이메일 ${member.email}`, `Email ${member.nameKo} at ${member.email}`)}>{member.email}</a></div>
+                      <div role="cell"><span>{tx(locale, "위치", "Office")}</span><p>{locale === "en" ? member.officeEn ?? member.officeKo : member.officeKo}</p></div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+          <nav className="staff-related-links" aria-label={tx(locale, "교직원 관련 페이지", "Related staff pages")}>
+            {relatedLinks.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{item.title}<ArrowRight size={17} aria-hidden="true" /></Link>)}
+          </nav>
+        </div>
+      </section>
+    </>
+  );
+}
+
 export default function DepartmentSite({ locale, segments, searchParams }: DepartmentSiteProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -2911,6 +2977,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   if (!section) page = <HomePage locale={locale} />;
   else if (section === "about" && !second) page = <AboutPage locale={locale} />;
   else if (section === "about" && second === "history") page = <HistoryPage locale={locale} />;
+  else if (section === "about" && second === "staff") page = <StaffPage locale={locale} />;
   else if (section === "faculty" && second && getFacultyMemberBySlug(second)) page = <FacultyMemberDetail locale={locale} member={getFacultyMemberBySlug(second)!} />;
   else if (section === "faculty" && !second) page = <FacultyMemberDirectory locale={locale} />;
   else if (section === "faculty" && second && getFacultyBySlug(second)) page = <FacultyDetail locale={locale} person={getFacultyBySlug(second)!} />;

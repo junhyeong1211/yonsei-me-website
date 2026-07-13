@@ -6734,6 +6734,226 @@ p {
   color: var(--color-yonsei-blue);
 }
 
+.staff-page {
+  background: #f8fafb;
+}
+
+.staff-page-content {
+  padding-top: 4px;
+}
+
+.staff-page-intro {
+  max-width: 760px;
+  padding-bottom: 46px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.staff-page-intro .section-label {
+  margin-bottom: 16px;
+}
+
+.staff-page-intro h2 {
+  margin: 0;
+  color: var(--color-navy-deep);
+  font-size: 34px;
+  line-height: 1.35;
+}
+
+.staff-group-list {
+  display: grid;
+  margin-top: 62px;
+  gap: 50px;
+}
+
+.staff-group h3 {
+  margin: 0 0 16px;
+  color: var(--color-yonsei-blue);
+  font-size: 14px;
+  font-weight: 760;
+}
+
+.staff-directory {
+  border-top: 1px solid var(--color-navy-deep);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.staff-directory-head,
+.staff-directory-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(92px, 0.7fr) minmax(132px, 0.95fr) minmax(220px, 1.65fr) minmax(150px, 1.1fr);
+  gap: 20px;
+}
+
+.staff-directory-head {
+  min-height: 48px;
+  align-items: center;
+  padding: 0 20px;
+  color: var(--color-muted);
+  background: #f2f5f7;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.staff-directory-row {
+  align-items: center;
+  min-height: 78px;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.staff-directory-row:last-child {
+  border-bottom: 0;
+}
+
+.staff-directory-row > div {
+  min-width: 0;
+}
+
+.staff-directory-row > div > span {
+  display: none;
+}
+
+.staff-directory-row strong,
+.staff-directory-row p,
+.staff-directory-row a {
+  margin: 0;
+  color: #485867;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.staff-directory-row .staff-responsibility strong,
+.staff-directory-row .staff-name strong {
+  color: var(--color-navy-deep);
+  font-weight: 730;
+}
+
+.staff-directory-row .staff-name strong {
+  font-size: 16px;
+}
+
+.staff-directory-row a {
+  text-decoration: underline;
+  text-decoration-color: #b7c4ce;
+  text-underline-offset: 3px;
+  transition: color 180ms ease, text-decoration-color 180ms ease;
+}
+
+.staff-directory-row a:hover,
+.staff-directory-row a:focus-visible {
+  color: var(--color-yonsei-blue);
+  text-decoration-color: currentcolor;
+}
+
+.staff-related-links {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 92px;
+  border-top: 1px solid var(--color-navy-deep);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.staff-related-links a {
+  display: flex;
+  min-height: 70px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  border-right: 1px solid var(--color-border);
+  color: var(--color-navy-deep);
+  font-size: 12px;
+  font-weight: 720;
+  gap: 12px;
+  transition: color 180ms ease;
+}
+
+.staff-related-links a:last-child {
+  border-right: 0;
+}
+
+.staff-related-links a:hover,
+.staff-related-links a:focus-visible {
+  color: var(--color-yonsei-blue);
+}
+
+@media (max-width: 900px) {
+  .staff-directory-head {
+    display: none;
+  }
+
+  .staff-directory-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    min-height: 0;
+    padding: 22px 18px;
+    gap: 21px 28px;
+  }
+
+  .staff-directory-row > div > span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 750;
+  }
+
+  .staff-related-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .staff-related-links a:nth-child(2) {
+    border-right: 0;
+  }
+
+  .staff-related-links a:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
+@media (max-width: 680px) {
+  .staff-page-intro h2 {
+    font-size: 27px;
+  }
+
+  .staff-group-list {
+    margin-top: 48px;
+    gap: 42px;
+  }
+
+  .staff-group h3 {
+    margin-bottom: 12px;
+  }
+
+  .staff-directory-row {
+    grid-template-columns: 1fr;
+    padding: 22px 0;
+    gap: 16px;
+  }
+
+  .staff-directory-row .staff-responsibility,
+  .staff-directory-row .staff-name {
+    padding-bottom: 4px;
+  }
+
+  .staff-directory-row .staff-name strong {
+    font-size: 17px;
+  }
+
+  .staff-related-links {
+    grid-template-columns: 1fr;
+    margin-top: 66px;
+  }
+
+  .staff-related-links a,
+  .staff-related-links a:nth-child(2) {
+    min-height: 62px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
 @media (max-width: 900px) {
   .history-timeline-item article {
     grid-template-columns: 125px minmax(0, 1fr);

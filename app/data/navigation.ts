@@ -31,8 +31,8 @@ export const navigation: NavigationItem[] = [
     children: [
       child("학부 소개·비전", "About & Vision", "/about"),
       child("연혁", "History", "/about/history"),
+      child("교직원", "Staff", "/about/staff"),
       child("동문·대외협력", "Alumni & Partnerships", "/about/alumni"),
-      child("교직원", "Staff", "/about/contact"),
       child("연락처·오시는 길", "Contact & Directions", "/about/directions"),
     ],
   },
