@@ -287,7 +287,7 @@ function FacultyCard({ item, locale }: { item: Faculty; locale: Locale }) {
 function ResearchCard({ area, locale }: { area: DirectoryResearchArea; locale: Locale }) {
   return (
     <Link
-      href={hrefFor(locale, `/research/fields?area=${area.slug}`)}
+      href={hrefFor(locale, `/research/fields?area=${area.slug}#research-laboratories`)}
       className="research-card"
       aria-label={tx(locale, `${area.nameKo} 연구실 목록 보기`, `View laboratories in ${area.nameEn}`)}
     >
@@ -1113,6 +1113,7 @@ const researchAreaName = (area: DirectoryResearchArea, locale: Locale) =>
 
 function ResearchFieldsPage({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
   const router = useRouter();
+  const pendingAreaScroll = useRef<string | null>(null);
   const selectedArea = directoryResearchAreas.find((area) => area.slug === searchParams.area);
   const primaryLabCounts = useMemo(
     () => new Map(directoryResearchAreas.map((area) => [area.slug, researchLabs.filter((lab) => lab.primaryArea === area.slug).length])),
@@ -1122,8 +1123,35 @@ function ResearchFieldsPage({ locale, searchParams }: { locale: Locale; searchPa
     ? researchLabs.filter((lab) => lab.primaryArea === selectedArea.slug || lab.secondaryAreas.includes(selectedArea.slug))
     : [];
 
+  const scrollToLaboratories = () => {
+    document.getElementById("research-laboratories")?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      block: "start",
+    });
+  };
+
+  useEffect(() => {
+    if (!selectedArea || pendingAreaScroll.current !== selectedArea.slug) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      scrollToLaboratories();
+      pendingAreaScroll.current = null;
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [selectedArea]);
+
   const selectArea = (slug: string) => {
-    router.replace(`${hrefFor(locale, "/research/fields")}?area=${encodeURIComponent(slug)}`);
+    const target = `${hrefFor(locale, "/research/fields")}?area=${encodeURIComponent(slug)}#research-laboratories`;
+
+    if (selectedArea?.slug === slug) {
+      window.history.replaceState(null, "", target);
+      scrollToLaboratories();
+      return;
+    }
+
+    pendingAreaScroll.current = slug;
+    router.replace(target);
   };
 
   return (
@@ -1158,7 +1186,7 @@ function ResearchFieldsPage({ locale, searchParams }: { locale: Locale; searchPa
           </div>
 
           {selectedArea ? (
-            <section className="research-fields-results" aria-live="polite">
+            <section id="research-laboratories" className="research-fields-results" aria-live="polite" tabIndex={-1}>
               <SectionHeading
                 label="LABORATORIES"
                 title={tx(locale, `${selectedArea.nameKo} 관련 연구실`, `${selectedArea.nameEn} Laboratories`)}
@@ -1327,7 +1355,7 @@ function ResearchLabDetail({ locale, lab }: { locale: Locale; lab: ResearchLab }
           </main>
           <aside className="detail-nav">
             <p>{tx(locale, "연구 분야", "Research areas")}</p>
-            {directoryResearchAreas.map((area) => <Link href={hrefFor(locale, `/research/fields?area=${area.slug}`)} key={area.id}><span>{String(area.displayOrder).padStart(2, "0")}</span>{researchAreaName(area, locale)}</Link>)}
+            {directoryResearchAreas.map((area) => <Link href={hrefFor(locale, `/research/fields?area=${area.slug}#research-laboratories`)} key={area.id}><span>{String(area.displayOrder).padStart(2, "0")}</span>{researchAreaName(area, locale)}</Link>)}
           </aside>
         </div>
       </section>

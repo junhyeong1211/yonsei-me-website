@@ -2330,6 +2330,7 @@ p {
 
 .research-fields-results {
   margin-top: 68px;
+  scroll-margin-top: calc(var(--header-height) + 28px);
 }
 
 .research-fields-results .section-heading {
