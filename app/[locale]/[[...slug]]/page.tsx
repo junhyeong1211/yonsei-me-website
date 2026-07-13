@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import DepartmentSite from "../../components/DepartmentSite";
 import type { Locale } from "../../data/content";
+import { getNewsTypeFromSegment, getPostBySlug } from "../../data/newsPosts";
 
 type PageProps = {
   params: Promise<{ locale: string; slug?: string[] }>;
@@ -15,6 +17,11 @@ export default async function LocalePage({ params, searchParams }: PageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
   const locale: Locale = resolvedParams.locale === "en" ? "en" : "ko";
+  const segments = resolvedParams.slug ?? [];
+  if (segments[0] === "news" && segments[1] && segments[2]) {
+    const newsType = getNewsTypeFromSegment(segments[1]);
+    if (newsType && !getPostBySlug(newsType, segments[2])) notFound();
+  }
   const normalizedSearchParams = Object.fromEntries(
     Object.entries(resolvedSearchParams).map(([key, value]) => [
       key,
@@ -25,7 +32,7 @@ export default async function LocalePage({ params, searchParams }: PageProps) {
   return (
     <DepartmentSite
       locale={locale}
-      segments={resolvedParams.slug ?? []}
+      segments={segments}
       searchParams={normalizedSearchParams}
     />
   );

@@ -27,6 +27,7 @@ export const navigation: NavigationItem[] = [
     children: [
       child("학부 소개·비전", "About & Vision", "/about"),
       child("연혁", "History", "/about/history"),
+      child("교직원", "Staff", "/about/staff"),
       child("동문·대외협력", "Alumni & Partnerships", "/about/alumni"),
       child("연락처·오시는 길", "Contact & Directions", "/about/directions"),
     ],
@@ -40,7 +41,7 @@ export const navigation: NavigationItem[] = [
       child("학부 교육과정", "Undergraduate Curriculum", "/academics/undergraduate"),
       child("대학원 교육과정", "Graduate Curriculum", "/academics/graduate"),
       child("졸업 요건", "Graduation Requirements", "/academics/requirements"),
-      child("교과목 체계도", "Curriculum Map", "/academics/undergraduate#curriculum-map"),
+      child("교과목 체계도", "Curriculum Map", "/academics/curriculum-map"),
       child("학사 안내", "Academic Information", "/academics"),
       child("장학 안내", "Scholarships", "/academics/scholarships"),
     ],
@@ -67,8 +68,7 @@ export const navigation: NavigationItem[] = [
       child("공지사항", "Notices", "/news/notices"),
       child("뉴스", "News", "/news/department"),
       child("세미나·행사", "Seminars & Events", "/news/events"),
-      child("교수 초빙", "Faculty Recruitment", "/news/careers"),
-      child("학사일정", "Academic Calendar", "/news/calendar"),
+      child("교수 초빙", "Faculty Recruitment", "/news/faculty-recruitment"),
     ],
   },
   {

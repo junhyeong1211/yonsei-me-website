@@ -18,7 +18,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Download,
   ExternalLink,
   FlaskConical,
   GraduationCap,
@@ -33,7 +32,6 @@ import {
 } from "lucide-react";
 import {
   courses,
-  events,
   faculty,
   heroSlides,
   instagramPosts,
@@ -46,7 +44,6 @@ import {
   type Lab,
   type Locale,
   type LocaleText,
-  type Notice,
   type ResearchArea,
 } from "../data/content";
 import { calendarEventsByMonth, type CalendarEvent } from "../data/calendar";
@@ -102,7 +99,19 @@ import {
   type Scholarship,
   type ScholarshipCategory,
 } from "../data/scholarships";
+import { administrativeStaffGroups } from "../data/administrativeStaff";
+import {
+  getLocalizedPostTitle,
+  getNewsCategoryLabel,
+  getNewsPostPath,
+  getNewsTypeFromSegment,
+  getPostByAnySlug,
+  getPostsByType,
+  type NewsPost,
+} from "../data/newsPosts";
 import { getActiveNavigationItem, navigation } from "../data/navigation";
+import { NewsDetailPage, NewsListPage } from "./news/NewsSystem";
+import { CurriculumTreePage } from "./curriculum/CurriculumTreePage";
 import {
   getCourseBySlug,
   getCoursesForArea,
@@ -110,7 +119,6 @@ import {
   getFacultyForArea,
   getLabBySlug,
   getLabsForArea,
-  getNoticeBySlug,
   getResearchAreaBySlug,
 } from "../lib/content";
 import { departmentDirections } from "../data/directions";
@@ -123,6 +131,7 @@ type DepartmentSiteProps = {
 
 const t = (value: LocaleText, locale: Locale) => value[locale];
 const tx = (locale: Locale, ko: string, en: string) => (locale === "ko" ? ko : en);
+const staffText = (locale: Locale, ko: string, en: string | null) => (locale === "en" && en ? en : ko);
 const hrefFor = (locale: Locale, path = "") => `/${locale}${path}`;
 const quickLinks = [
   { ko: "학부공지", en: "Notices", path: "/news/notices?audience=undergraduate", icon: MessageSquareText },
@@ -135,7 +144,7 @@ const quickLinks = [
 
 const homeSectionNavigation = [
   { code: "HOME", ko: "메인", en: "Home" },
-  { code: "NOTICE", ko: "공지·일정", en: "Notices and calendar" },
+  { code: "NOTICE", ko: "학사일정", en: "Academic calendar" },
   { code: "RESEARCH", ko: "주요 연구 분야", en: "Research areas" },
   { code: "FACULTY", ko: "교수진", en: "Faculty" },
   { code: "EDUCATION", ko: "교육과정", en: "Curriculum" },
@@ -148,6 +157,7 @@ const routeLabels: Record<string, LocaleText> = {
   greeting: { ko: "학부장 인사말", en: "Chair's Message" },
   vision: { ko: "비전 및 교육목표", en: "Vision & Objectives" },
   history: { ko: "연혁", en: "History" },
+  staff: { ko: "교직원", en: "Staff" },
   alumni: { ko: "동문·대외협력", en: "Alumni & Partnerships" },
   contact: { ko: "조직 및 연락처", en: "Organization & Contact" },
   directions: { ko: "오시는 길", en: "Directions" },
@@ -159,6 +169,7 @@ const routeLabels: Record<string, LocaleText> = {
   "social-challenges": { ko: "사회난제 신문고", en: "Social Challenges" },
   academics: { ko: "교육과정", en: "Academics" },
   undergraduate: { ko: "학부 교육과정", en: "Undergraduate Program" },
+  "curriculum-map": { ko: "교과목 체계도", en: "Curriculum Map" },
   graduate: { ko: "대학원과정", en: "Graduate" },
   courses: { ko: "교과목 안내", en: "Courses" },
   requirements: { ko: "졸업요건", en: "Requirements" },
@@ -166,9 +177,10 @@ const routeLabels: Record<string, LocaleText> = {
   news: { ko: "학과소식", en: "News" },
   department: { ko: "뉴스", en: "News" },
   notices: { ko: "공지사항", en: "Notices" },
-  events: { ko: "행사", en: "Events" },
+  events: { ko: "세미나·행사", en: "Seminars & Events" },
+  "faculty-recruitment": { ko: "교수 초빙", en: "Faculty Recruitment" },
   calendar: { ko: "학사일정", en: "Academic Calendar" },
-  careers: { ko: "채용정보", en: "Careers" },
+  careers: { ko: "취업 정보", en: "Career Information" },
   admission: { ko: "입학", en: "Admissions" },
   promotion: { ko: "홍보", en: "Promotion" },
   instagram: { ko: "Instagram", en: "Instagram" },
@@ -202,7 +214,7 @@ function Breadcrumb({ locale, segments }: { locale: Locale; segments: string[] }
         const facultyMember = getFacultyMemberBySlug(segment);
         const person = faculty.find((item) => item.slug === segment);
         const course = courses.find((item) => item.slug === segment);
-        const notice = notices.find((item) => item.slug === segment);
+        const newsPost = getPostByAnySlug(segment);
         const label = area
           ? t(area.name, locale)
           : researchLab
@@ -213,8 +225,8 @@ function Breadcrumb({ locale, segments }: { locale: Locale; segments: string[] }
             ? t(person.name, locale)
             : course
               ? t(course.name, locale)
-              : notice
-                ? t(notice.title, locale)
+              : newsPost
+                ? getLocalizedPostTitle(newsPost, locale)
                 : routeLabels[segment]
                   ? t(routeLabels[segment], locale)
                   : segment;
@@ -284,10 +296,11 @@ function ResearchCard({ area, locale }: { area: DirectoryResearchArea; locale: L
       className="research-card"
       aria-label={tx(locale, `${area.nameKo} 연구실 목록 보기`, `View laboratories in ${area.nameEn}`)}
     >
-      <span className="research-card-number" aria-hidden="true">{String(area.displayOrder).padStart(2, "0")}</span>
+      <span className="research-number" aria-hidden="true">{String(area.displayOrder).padStart(2, "0")}</span>
       <h3>{locale === "ko" ? area.nameKo : area.nameEn}</h3>
       <p className="research-en">{locale === "ko" ? area.nameEn : area.nameKo}</p>
-      <ArrowUpRight className="research-card-arrow" size={19} aria-hidden="true" />
+      <p>{area.shortDescription}</p>
+      <ArrowRight size={20} aria-hidden="true" />
     </Link>
   );
 }
@@ -624,7 +637,8 @@ function HomePage({ locale }: { locale: Locale }) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [activeHomeSection, setActiveHomeSection] = useState(0);
   const homeRef = useRef<HTMLDivElement>(null);
-  const filteredNotices = notices.filter((notice) => notice.audience === noticeTab).slice(0, 5);
+  const filteredNotices = getPostsByType("notice").filter((post) => post.audience === noticeTab || post.audience === "all").slice(0, 3);
+  const homeEvents = getPostsByType("event").slice(0, 4);
 
   useEffect(() => {
     document.documentElement.classList.add("home-snap-page");
@@ -820,13 +834,13 @@ function HomePage({ locale }: { locale: Locale }) {
                 <button type="button" role="tab" aria-selected={noticeTab === "graduate"} onClick={() => setNoticeTab("graduate")}>{tx(locale, "대학원공지", "Graduate")}</button>
               </div>
               <div className="notice-list">
-                {filteredNotices.map((notice) => <NoticeRow key={notice.id} notice={notice} locale={locale} />)}
+                {filteredNotices.map((notice) => <HomeNoticeRow key={notice.id} post={notice} locale={locale} />)}
               </div>
             </div>
             <div className="calendar-preview">
-              <SectionHeading label="ACADEMIC CALENDAR" title={tx(locale, "학사일정", "Academic Calendar")} link={<Link className="section-more" href={hrefFor(locale, "/news/calendar")} aria-label={tx(locale, "학사일정 전체보기", "View full calendar")}><ArrowRight size={21} /></Link>} />
+              <SectionHeading label="SEMINARS & EVENTS" title={tx(locale, "세미나·행사", "Seminars & Events")} link={<Link className="section-more" href={hrefFor(locale, "/news/events")} aria-label={tx(locale, "세미나·행사 전체보기", "View all seminars and events")}><ArrowRight size={21} /></Link>} />
               <div className="event-list compact">
-                {events.slice(0, 4).map((event) => <EventRow key={event.id} event={event} locale={locale} />)}
+                {homeEvents.map((event) => <HomeEventRow key={event.id} post={event} locale={locale} />)}
               </div>
             </div>
           </div>
@@ -834,19 +848,9 @@ function HomePage({ locale }: { locale: Locale }) {
       </div>
 
       <section className="research-section section" data-home-section>
-        <div className="container">
-          <div className="research-index-layout" data-reveal>
-            <header className="research-index-header">
-              <div>
-                <p className="section-label">RESEARCH</p>
-                <h2>{tx(locale, "주요 연구 분야", "Research Areas")}</h2>
-              </div>
-              <Link className="research-all-link" href={hrefFor(locale, "/labs")}>{tx(locale, "연구실 전체보기", "All laboratories")}<ArrowRight size={17} aria-hidden="true" /></Link>
-            </header>
-            <nav className="research-grid" aria-label={tx(locale, "주요 연구 분야", "Research areas")}>
-              {directoryResearchAreas.map((area) => <ResearchCard key={area.id} area={area} locale={locale} />)}
-            </nav>
-          </div>
+        <div className="container" data-reveal>
+          <SectionHeading label="RESEARCH" title={tx(locale, "주요 연구 분야", "Research Areas")} link={<Link className="text-button light" href={hrefFor(locale, "/labs")}>{tx(locale, "연구실 전체보기", "All laboratories")}<ArrowRight size={17} /></Link>} />
+          <div className="research-grid home-stagger">{directoryResearchAreas.map((area) => <ResearchCard key={area.id} area={area} locale={locale} />)}</div>
         </div>
       </section>
 
@@ -902,24 +906,25 @@ function EducationPanel({ locale, type }: { locale: Locale; type: "undergraduate
   );
 }
 
-function NoticeRow({ notice, locale }: { notice: Notice; locale: Locale }) {
+function HomeNoticeRow({ post, locale }: { post: NewsPost; locale: Locale }) {
   return (
-    <Link className="notice-row" href={hrefFor(locale, `/news/notices/${notice.slug}`)}>
-      <span className={`notice-category ${notice.isImportant ? "important" : ""}`}>{notice.isImportant ? tx(locale, "중요", "Important") : notice.category}</span>
-      <strong>{t(notice.title, locale)}</strong>
-      <time dateTime={notice.publishedAt}>{notice.publishedAt.replaceAll("-", ".")}</time>
+    <Link className="notice-row" href={getNewsPostPath(locale, post)}>
+      <span className={`notice-category ${post.isPinned ? "important" : ""}`}>{post.isPinned ? tx(locale, "고정", "Pinned") : getNewsCategoryLabel(post.category, locale)}</span>
+      <strong>{getLocalizedPostTitle(post, locale)}</strong>
+      <time dateTime={post.publishedAt}>{post.publishedAt.replaceAll("-", ".")}</time>
     </Link>
   );
 }
 
-function EventRow({ event, locale }: { event: (typeof events)[number]; locale: Locale }) {
-  const date = new Date(`${event.startDate}T00:00:00`);
-  const label = event.time ? `${event.category} · ${t(event.time, locale)}` : event.category;
+function HomeEventRow({ post, locale }: { post: NewsPost; locale: Locale }) {
+  const dateValue = post.eventDate ?? post.publishedAt;
+  const date = new Date(`${dateValue}T00:00:00`);
+  const label = [getNewsCategoryLabel(post.category, locale), post.eventTime].filter(Boolean).join(" · ");
   return (
-    <div className="event-row">
+    <Link className="event-row" href={getNewsPostPath(locale, post)}>
       <div className="event-date"><span>{date.toLocaleString("en", { month: "short" }).toUpperCase()}</span><strong>{String(date.getDate()).padStart(2, "0")}</strong></div>
-      <div><span>{label}</span><h3>{t(event.title, locale)}</h3></div>
-    </div>
+      <div><span>{label}</span><h3>{getLocalizedPostTitle(post, locale)}</h3></div>
+    </Link>
   );
 }
 
@@ -1010,6 +1015,7 @@ function FacultyMemberCard({ member, locale, variant = "directory" }: { member: 
 function FacultyMemberDetail({ locale, member }: { locale: Locale; member: FacultyMember }) {
   const name = facultyMemberName(member, locale);
   const alternateName = facultyMemberAlternateName(member, locale);
+  const laboratory = facultyMemberLaboratory(member);
 
   return (
     <>
@@ -1032,6 +1038,12 @@ function FacultyMemberDetail({ locale, member }: { locale: Locale; member: Facul
               <div><dt>{tx(locale, "연구실 위치", "Office")}</dt><dd>{member.office ?? tx(locale, "위치 확인 중", "Office information pending")}</dd></div>
               {member.profileUrl && <div><dt>{tx(locale, "외부 프로필", "External profile")}</dt><dd><a href={member.profileUrl} target="_blank" rel="noopener noreferrer">{member.profileUrl}<ExternalLink size={15} /></a></dd></div>}
             </dl>
+            {laboratory ? (
+              <Link className="faculty-laboratory-view-link" href={hrefFor(locale, `/labs/${laboratory.slug}`)}>
+                {tx(locale, "연구실 보기", "View laboratory")}
+                <ArrowRight size={17} aria-hidden="true" />
+              </Link>
+            ) : null}
             <section className="detail-block faculty-member-research-placeholder"><p className="section-label">RESEARCH INFORMATION</p><h2>{tx(locale, "연구 정보", "Research Information")}</h2><p>{tx(locale, "상세 연구 정보는 추후 업데이트될 예정입니다.", "Detailed research information will be updated soon.")}</p></section>
           </main>
         </div>
@@ -1179,6 +1191,7 @@ function ResearchFieldsPage({ locale, searchParams }: { locale: Locale; searchPa
 
 function ResearchLabDirectory({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
   const router = useRouter();
+  const resultsRef = useRef<HTMLDivElement>(null);
   const initialArea = directoryResearchAreas.some((area) => area.slug === searchParams.area) ? searchParams.area : "all";
   const [area, setArea] = useState(initialArea);
   const [query, setQuery] = useState(searchParams.q ?? "");
@@ -1191,6 +1204,16 @@ function ResearchLabDirectory({ locale, searchParams }: { locale: Locale; search
     setArea(initialArea);
     setQuery(searchParams.q ?? "");
   }, [initialArea, searchParams.q]);
+
+  const scrollToResults = () => {
+    window.requestAnimationFrame(() => {
+      const target = resultsRef.current;
+      if (!target) return;
+      const headerHeight = document.querySelector<HTMLElement>(".site-header")?.getBoundingClientRect().height ?? 84;
+      const top = target.getBoundingClientRect().top + window.scrollY - headerHeight - 24;
+      window.scrollTo({ top, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    });
+  };
 
   const results = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -1216,6 +1239,7 @@ function ResearchLabDirectory({ locale, searchParams }: { locale: Locale; search
   const updateArea = (nextArea: string) => {
     setArea(nextArea);
     syncUrl(nextArea, query);
+    scrollToResults();
   };
 
   const reset = () => {
@@ -1250,8 +1274,10 @@ function ResearchLabDirectory({ locale, searchParams }: { locale: Locale; search
               {hasActiveFilters && <button className="laboratory-filter-reset" type="button" onClick={reset}>{tx(locale, "초기화", "Reset")}</button>}
             </form>
           </div>
-          <div className="laboratory-directory-summary"><p><strong>{results.length}</strong> {tx(locale, "개 연구실", "laboratories")}</p><span>{tx(locale, "주·관련 연구 분야 포함", "Primary and secondary areas included")}</span></div>
-          {results.length ? <div className="laboratory-directory-grid">{results.map((lab) => <LabCard key={lab.id} lab={lab} locale={locale} />)}</div> : <EmptyState locale={locale} />}
+          <div className="laboratory-directory-results" id="laboratory-results" ref={resultsRef}>
+            <div className="laboratory-directory-summary"><p><strong>{results.length}</strong> {tx(locale, "개 연구실", "laboratories")}</p><span>{tx(locale, "주·관련 연구 분야 포함", "Primary and secondary areas included")}</span></div>
+            {results.length ? <div className="laboratory-directory-grid">{results.map((lab) => <LabCard key={lab.id} lab={lab} locale={locale} />)}</div> : <EmptyState locale={locale} />}
+          </div>
         </div>
       </section>
     </>
@@ -1287,6 +1313,7 @@ function ResearchLabDetail({ locale, lab }: { locale: Locale; lab: ResearchLab }
   const secondaryAreas = lab.secondaryAreas
     .map((slug) => directoryResearchAreas.find((area) => area.slug === slug))
     .filter((area): area is DirectoryResearchArea => Boolean(area));
+  const labProfessor = facultyMembers.find((member) => member.nameKo === lab.professorKo);
   const pendingMessage = "연구실 상세 소개는 추후 업데이트될 예정입니다.";
 
   return (
@@ -1301,7 +1328,7 @@ function ResearchLabDetail({ locale, lab }: { locale: Locale; lab: ResearchLab }
               <dl className="research-lab-detail-list">
                 <div><dt>{tx(locale, "연구실명", "Laboratory")}</dt><dd>{lab.nameKo}</dd></div>
                 <div><dt>{tx(locale, "영문명", "English name")}</dt><dd>{lab.nameEn}</dd></div>
-                <div><dt>{tx(locale, "지도교수", "Faculty advisor")}</dt><dd>{lab.professorKo} · {lab.professorEn}</dd></div>
+                <div><dt>{tx(locale, "지도교수", "Faculty advisor")}</dt><dd>{labProfessor ? <Link href={hrefFor(locale, `/faculty/${labProfessor.slug}`)}>{locale === "ko" ? lab.professorKo : lab.professorEn}</Link> : `${lab.professorKo} · ${lab.professorEn}`}</dd></div>
                 <div><dt>{tx(locale, "주 연구 분야", "Primary research area")}</dt><dd>{primaryArea ? researchAreaName(primaryArea, locale) : "-"}</dd></div>
                 <div><dt>{tx(locale, "관련 연구 분야", "Related research areas")}</dt><dd>{secondaryAreas.length ? secondaryAreas.map((area) => researchAreaName(area, locale)).join(" · ") : "-"}</dd></div>
                 <div><dt>{tx(locale, "위치", "Location")}</dt><dd>{lab.location ?? "-"}</dd></div>
@@ -1363,10 +1390,12 @@ const undergraduateHandbookUrl = "https://underwood1.yonsei.ac.kr/com/lgin/SsoCt
 
 function UndergraduateProgramPage({ locale }: { locale: Locale }) {
   const quickLinks = [
+    { label: tx(locale, "교과목 트리", "Curriculum Tree"), path: "/academics/curriculum-map" },
     { label: tx(locale, "교과목 안내", "Courses"), path: "/academics/courses" },
     { label: tx(locale, "학부 졸업요건", "Graduation Requirements"), path: "/academics/requirements" },
   ];
   const lowerLinks = [
+    { label: tx(locale, "교과목 체계도", "Curriculum Map"), path: "/academics/curriculum-map" },
     { label: tx(locale, "전체 교과목 조회", "All Courses"), path: "/academics/courses?tab=schedule" },
     { label: tx(locale, "전공필수", "Required Courses"), path: "/academics/courses?tab=required" },
     { label: tx(locale, "전공선택", "Elective Courses"), path: "/academics/courses?tab=elective" },
@@ -1873,20 +1902,6 @@ function ScholarshipsPage({ locale, searchParams }: { locale: Locale; searchPara
 function CourseDetail({ locale, course }: { locale: Locale; course: Course }) {
   const areas = researchAreas.filter((area) => course.researchAreaIds.includes(area.id));
   return <><PageHeader eyebrow={`${course.code} · COURSE`} title={t(course.name, locale)} description={locale === "ko" ? course.name.en : course.name.ko} /><section className="section content-section"><div className="container detail-layout"><main><section className="detail-block first"><p className="section-label">COURSE OVERVIEW</p><h2>{tx(locale, "교과목 설명", "Course Description")}</h2><p>{t(course.description, locale)}</p></section><section className="detail-block"><p className="section-label">INFORMATION</p><h2>{tx(locale, "교과목 정보", "Course Information")}</h2><dl className="course-detail-grid"><div><dt>{tx(locale, "학정번호", "Code")}</dt><dd>{course.code}</dd></div><div><dt>{tx(locale, "과정", "Program")}</dt><dd>{course.program === "undergraduate" ? tx(locale, "학부", "Undergraduate") : tx(locale, "대학원", "Graduate")}</dd></div><div><dt>{tx(locale, "학년", "Year")}</dt><dd>{course.year ?? "-"}</dd></div><div><dt>{tx(locale, "학기", "Semester")}</dt><dd>{course.semester}</dd></div><div><dt>{tx(locale, "구분", "Category")}</dt><dd>{course.category}</dd></div><div><dt>{tx(locale, "학점", "Credits")}</dt><dd>{course.credits}</dd></div></dl></section><RelatedLinks locale={locale} items={areas.map((area) => ({ title: t(area.name, locale), path: `/research/${area.slug}` }))} /></main><aside className="detail-nav"><Link className="back-link" href={hrefFor(locale, "/academics/courses")}><ArrowLeft size={16} />{tx(locale, "교과목 목록", "Course list")}</Link><p>{tx(locale, "관련 연구분야", "Related Areas")}</p>{areas.map((area) => <Link href={hrefFor(locale, `/research/${area.slug}`)} key={area.id}><span>{area.number}</span>{t(area.name, locale)}</Link>)}</aside></div></section></>;
-}
-
-function NoticeDirectory({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
-  const [audience, setAudience] = useState(searchParams.audience ?? "all");
-  const [query, setQuery] = useState(searchParams.query ?? "");
-  const results = notices.filter((notice) => (audience === "all" || notice.audience === audience) && (!query || t(notice.title, locale).toLowerCase().includes(query.toLowerCase())));
-  return <><PageHeader eyebrow="NOTICE" title={tx(locale, "공지사항", "Notices")} description={tx(locale, "학부와 대학원 주요 안내를 빠르게 확인하세요.", "Find undergraduate and graduate announcements.")} /><section className="section content-section"><div className="container"><div className="notice-toolbar"><div className="tabs" role="tablist" aria-label={tx(locale, "공지 구분", "Notice audience")}><button type="button" role="tab" aria-selected={audience === "all"} onClick={() => setAudience("all")}>{tx(locale, "전체", "All")}</button><button type="button" role="tab" aria-selected={audience === "undergraduate"} onClick={() => setAudience("undergraduate")}>{tx(locale, "학부공지", "Undergraduate")}</button><button type="button" role="tab" aria-selected={audience === "graduate"} onClick={() => setAudience("graduate")}>{tx(locale, "대학원공지", "Graduate")}</button></div><label className="inline-search"><span className="sr-only">{tx(locale, "공지 검색", "Search notices")}</span><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "제목 검색", "Search by title")} /></label></div><div className="notice-table"><div className="notice-table-head"><span>{tx(locale, "구분", "Category")}</span><span>{tx(locale, "제목", "Title")}</span><span>{tx(locale, "게시일", "Date")}</span></div>{results.map((notice) => <NoticeRow key={notice.id} notice={notice} locale={locale} />)}</div><nav className="pagination" aria-label={tx(locale, "페이지", "Pagination")}><button type="button" aria-label={tx(locale, "이전 페이지", "Previous page")}><ChevronLeft size={18} /></button><button type="button" aria-current="page">1</button><button type="button">2</button><button type="button" aria-label={tx(locale, "다음 페이지", "Next page")}><ChevronRight size={18} /></button></nav></div></section></>;
-}
-
-function NoticeDetail({ locale, notice }: { locale: Locale; notice: Notice }) {
-  const index = notices.findIndex((item) => item.id === notice.id);
-  const previous = notices[index - 1];
-  const next = notices[index + 1];
-  return <><PageHeader eyebrow="NOTICE" title={t(notice.title, locale)} description={`${notice.category} · ${notice.publishedAt.replaceAll("-", ".")}`} /><section className="section content-section"><article className="container article-detail"><div className="article-meta"><span>{notice.audience === "undergraduate" ? tx(locale, "학부공지", "Undergraduate") : tx(locale, "대학원공지", "Graduate")}</span><time>{notice.publishedAt}</time></div><div className="article-body"><p>{t(notice.body, locale)}</p><p>{tx(locale, "현재 공지는 화면 구성 확인을 위한 샘플입니다. 게시 전 공식 내용과 일정, 담당 부서 정보를 확인해 주세요.", "This notice is sample content for layout review. Verify all official details before publishing.")}</p></div>{notice.attachments && <div className="attachments"><h2>{tx(locale, "첨부파일", "Attachments")}</h2>{notice.attachments.map((attachment) => <a href={attachment.url} key={attachment.id}><Download size={18} />{t(attachment.name, locale)}</a>)}</div>}<div className="article-navigation">{previous ? <Link href={hrefFor(locale, `/news/notices/${previous.slug}`)}><ChevronLeft size={18} /><span><small>{tx(locale, "이전글", "Previous")}</small>{t(previous.title, locale)}</span></Link> : <span />}{next ? <Link href={hrefFor(locale, `/news/notices/${next.slug}`)}><span><small>{tx(locale, "다음글", "Next")}</small>{t(next.title, locale)}</span><ChevronRight size={18} /></Link> : <span />}</div><Link className="button outline article-list-button" href={hrefFor(locale, "/news/notices")}><ArrowLeft size={17} />{tx(locale, "목록으로", "Back to list")}</Link></article></section></>;
 }
 
 function getCalendarDays(year: number, month: number) {
@@ -2435,6 +2450,91 @@ function HistoryPage({ locale }: { locale: Locale }) {
   );
 }
 
+function StaffPage({ locale }: { locale: Locale }) {
+  const languageNotice = locale === "en" ? "Official staff names, roles, and office information are currently provided in Korean." : null;
+  const relatedLinks = [
+    { title: tx(locale, "학부 소개·비전", "About & Vision"), path: "/about" },
+    { title: tx(locale, "연혁", "History"), path: "/about/history" },
+    { title: tx(locale, "연락처·오시는 길", "Contact & Directions"), path: "/about/directions" },
+  ];
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="ADMINISTRATIVE STAFF"
+        title="교직원"
+        description="기계공학부 학부·대학원 행정과 BK21 교육연구단의 담당자 및 연락처를 안내합니다."
+      />
+      <section className="section content-section staff-page">
+        <div className="container">
+          {languageNotice && <p className="staff-language-notice">{languageNotice}</p>}
+          <div className="staff-directory">
+            {administrativeStaffGroups.map((group) => {
+              const groupTitle = staffText(locale, group.departmentKo, group.departmentEn);
+              const headingId = `staff-group-${group.id}`;
+              return (
+                <section className="staff-group" aria-labelledby={headingId} key={group.id}>
+                  <header>
+                    <p className="section-label">ADMINISTRATIVE CONTACT</p>
+                    <h2 id={headingId}>{groupTitle}</h2>
+                  </header>
+                  <div className="staff-table-wrap">
+                    <table className="staff-table">
+                      <caption className="sr-only">{groupTitle} 교직원 연락처</caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">{tx(locale, "담당", "Role")}</th>
+                          <th scope="col">{tx(locale, "성명", "Name")}</th>
+                          <th scope="col">{tx(locale, "교내 전화", "Telephone")}</th>
+                          <th scope="col">{tx(locale, "위치", "Office")}</th>
+                          <th scope="col">{tx(locale, "이메일", "Email")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {group.members.map((member) => {
+                          const role = staffText(locale, member.departmentKo, member.departmentEn);
+                          const name = staffText(locale, member.nameKo, member.nameEn);
+                          const office = staffText(locale, member.officeKo, member.officeEn);
+                          return <tr key={member.id}>
+                            <td>{role}</td>
+                            <th scope="row">{name}</th>
+                            <td><a className="staff-contact-link" href={`tel:${member.phone.replaceAll("-", "")}`} aria-label={tx(locale, `${name} 교내 전화 ${member.phone}`, `Call ${name} at ${member.phone}`)}>{member.phone}</a></td>
+                            <td>{office}</td>
+                            <td><a className="staff-contact-link" href={`mailto:${member.email}`} aria-label={tx(locale, `${name} 이메일 ${member.email}`, `Email ${name} at ${member.email}`)}>{member.email}</a></td>
+                          </tr>;
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="staff-mobile-list">
+                    {group.members.map((member) => {
+                      const role = staffText(locale, member.departmentKo, member.departmentEn);
+                      const name = staffText(locale, member.nameKo, member.nameEn);
+                      const office = staffText(locale, member.officeKo, member.officeEn);
+                      return <article key={member.id}>
+                        <p>{role}</p>
+                        <h3>{name}</h3>
+                        <dl>
+                          <div><dt>{tx(locale, "교내 전화", "Telephone")}</dt><dd><a className="staff-contact-link" href={`tel:${member.phone.replaceAll("-", "")}`} aria-label={tx(locale, `${name} 교내 전화 ${member.phone}`, `Call ${name} at ${member.phone}`)}>{member.phone}</a></dd></div>
+                          <div><dt>{tx(locale, "위치", "Office")}</dt><dd>{office}</dd></div>
+                          <div><dt>{tx(locale, "이메일", "Email")}</dt><dd><a className="staff-contact-link" href={`mailto:${member.email}`} aria-label={tx(locale, `${name} 이메일 ${member.email}`, `Email ${name} at ${member.email}`)}>{member.email}</a></dd></div>
+                        </dl>
+                      </article>;
+                    })}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+          <nav className="staff-related-links" aria-label={tx(locale, "교직원 관련 페이지", "Related staff pages")}>
+            {relatedLinks.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}>{item.title}<ArrowRight size={17} aria-hidden="true" /></Link>)}
+          </nav>
+        </div>
+      </section>
+    </>
+  );
+}
+
 export default function DepartmentSite({ locale, segments, searchParams }: DepartmentSiteProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -2463,10 +2563,12 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   }, [mobileOpen, searchOpen]);
 
   const [section, second, third] = segments;
+  const newsType = section === "news" && second ? getNewsTypeFromSegment(second) : null;
   let page: ReactNode;
   if (!section) page = <HomePage locale={locale} />;
   else if (section === "about" && !second) page = <AboutPage locale={locale} />;
   else if (section === "about" && second === "history") page = <HistoryPage locale={locale} />;
+  else if (section === "about" && second === "staff") page = <StaffPage locale={locale} />;
   else if (section === "faculty" && second && getFacultyMemberBySlug(second)) page = <FacultyMemberDetail locale={locale} member={getFacultyMemberBySlug(second)!} />;
   else if (section === "faculty" && !second) page = <FacultyMemberDirectory locale={locale} />;
   else if (section === "faculty" && second && getFacultyBySlug(second)) page = <FacultyDetail locale={locale} person={getFacultyBySlug(second)!} />;
@@ -2479,11 +2581,12 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "about" && second === "directions") page = <DirectionsPage locale={locale} />;
   else if (section === "academics" && second === "scholarships") page = <ScholarshipsPage locale={locale} searchParams={searchParams} />;
   else if (section === "academics" && second === "requirements") page = <GraduationRequirementsPage locale={locale} searchParams={searchParams} />;
+  else if (section === "academics" && second === "curriculum-map") page = <CurriculumTreePage locale={locale} />;
   else if (section === "academics" && second === "undergraduate") page = <UndergraduateProgramPage locale={locale} />;
   else if (section === "academics" && second === "courses" && third && getCourseBySlug(third)) page = <CourseDetail locale={locale} course={getCourseBySlug(third)!} />;
   else if (section === "academics" && second === "courses") page = <CourseDirectory locale={locale} searchParams={searchParams} />;
-  else if (section === "news" && second === "notices" && third && getNoticeBySlug(third)) page = <NoticeDetail locale={locale} notice={getNoticeBySlug(third)!} />;
-  else if (section === "news" && second === "notices") page = <NoticeDirectory locale={locale} searchParams={searchParams} />;
+  else if (section === "news" && newsType && third) page = <NewsDetailPage locale={locale} type={newsType} slug={third} />;
+  else if (section === "news" && newsType) page = <NewsListPage locale={locale} type={newsType} searchParams={searchParams} />;
   else if (section === "news" && second === "calendar") page = <CalendarPage locale={locale} searchParams={searchParams} />;
   else if (section === "search") page = <SearchPage locale={locale} searchParams={searchParams} />;
   else if (section === "promotion" && second === "instagram") page = <HomePage locale={locale} />;

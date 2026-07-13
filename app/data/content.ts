@@ -1,3 +1,5 @@
+import { getNewsCategoryLabel, getPostsByType } from "./newsPosts";
+
 export type Locale = "ko" | "en";
 
 export type LocaleText = {
@@ -312,49 +314,32 @@ export const courses: Course[] = [
   isActive: true,
 }));
 
-export const notices: Notice[] = [
-  {
-    id: "notice-01",
-    slug: "notice-01",
-    title: { ko: "[중요 학부공지 제목 입력 예정]", en: "[Important undergraduate notice]" },
-    body: { ko: "공지 본문과 안내 사항을 입력할 예정입니다.", en: "The official notice body will be added." },
-    audience: "undergraduate",
-    category: "학사",
-    publishedAt: "2026-07-08",
-    isImportant: true,
-    attachments: [{ id: "file-01", name: { ko: "[첨부파일 입력 예정]", en: "[Attachment]" }, url: "#" }],
-  },
-  {
-    id: "notice-02",
-    slug: "notice-02",
-    title: { ko: "[대학원공지 제목 입력 예정]", en: "[Graduate notice title]" },
-    body: { ko: "대학원 공지 본문을 입력할 예정입니다.", en: "The graduate notice body will be added." },
-    audience: "graduate",
-    category: "대학원",
-    publishedAt: "2026-07-03",
-    isImportant: false,
-  },
-  ...Array.from({ length: 4 }, (_, index): Notice => ({
-    id: `notice-0${index + 3}`,
-    slug: `notice-0${index + 3}`,
-    title: { ko: `[공지 제목 ${index + 3} 입력 예정]`, en: `[Notice title ${index + 3}]` },
-    body: { ko: "확정된 공지 내용으로 교체해야 하는 샘플입니다.", en: "Replace this sample with verified notice content." },
-    audience: index % 2 === 0 ? "undergraduate" : "graduate",
-    category: index % 2 === 0 ? "행사" : "장학",
-    publishedAt: `2026-06-${String(28 - index * 3).padStart(2, "0")}`,
-    isImportant: false,
+export const notices: Notice[] = getPostsByType("notice").map((post) => ({
+  id: post.id,
+  slug: post.slug,
+  title: { ko: post.titleKo, en: post.titleEn },
+  body: { ko: post.contentKo.join("\n"), en: post.contentEn.join("\n") },
+  audience: post.audience,
+  category: getNewsCategoryLabel(post.category, "ko"),
+  publishedAt: post.publishedAt,
+  isImportant: post.isPinned,
+  attachments: post.attachments.map((attachment, index) => ({
+    id: `${post.id}-attachment-${index + 1}`,
+    name: { ko: attachment.name, en: attachment.name },
+    url: attachment.url,
   })),
-];
+}));
 
-export const events: Event[] = [
-  { id: "event-01", slug: "bk-seminar-lee-ji-hyun", title: { ko: "이지현 교수", en: "Prof. Lee Ji-hyun" }, startDate: "2026-07-14", time: { ko: "오전 11:00", en: "11:00 AM" }, category: "BK 세미나" },
-  { id: "event-02", slug: "bk-seminar-robert-landers", title: { ko: "Prof. Robert G. Landers", en: "Prof. Robert G. Landers" }, startDate: "2026-07-15", time: { ko: "오전 10:30", en: "10:30 AM" }, category: "BK 세미나" },
-  { id: "event-03", slug: "summer-intensive-series-01", title: { ko: "여름학기 해외집중강의 시리즈(2차)", en: "Summer Intensive Lecture Series (Round 2)" }, startDate: "2026-07-20", time: { ko: "오후 2:00", en: "2:00 PM" }, category: "여름학기" },
-  { id: "event-04", slug: "summer-intensive-series-02", title: { ko: "여름학기 해외집중강의 시리즈(2차)", en: "Summer Intensive Lecture Series (Round 2)" }, startDate: "2026-07-21", time: { ko: "오후 2:00", en: "2:00 PM" }, category: "여름학기" },
-  { id: "event-05", slug: "summer-intensive-series-03", title: { ko: "여름학기 해외집중강의 시리즈(2차)", en: "Summer Intensive Lecture Series (Round 2)" }, startDate: "2026-07-23", time: { ko: "오후 2:00", en: "2:00 PM" }, category: "여름학기" },
-  { id: "event-06", slug: "summer-intensive-series-04", title: { ko: "여름학기 해외집중강의 시리즈(2차)", en: "Summer Intensive Lecture Series (Round 2)" }, startDate: "2026-07-24", time: { ko: "오후 2:00", en: "2:00 PM" }, category: "여름학기" },
-  { id: "event-07", slug: "bk-seminar-hirai", title: { ko: "히라이 교수", en: "Prof. Hirai" }, startDate: "2026-07-31", time: { ko: "오후 5:00", en: "5:00 PM" }, category: "BK 세미나" },
-];
+export const events: Event[] = getPostsByType("event").map((post) => ({
+  id: post.id,
+  slug: post.slug,
+  title: { ko: post.titleKo, en: post.titleEn },
+  startDate: post.eventDate ?? post.publishedAt,
+  time: post.eventTime ? { ko: post.eventTime, en: post.eventTime } : undefined,
+  endDate: post.eventEndDate ?? undefined,
+  location: post.location?.ko || post.location?.en ? { ko: post.location.ko ?? post.location.en ?? "", en: post.location.en ?? post.location.ko ?? "" } : undefined,
+  category: getNewsCategoryLabel(post.category, "ko"),
+}));
 
 export const instagramPosts = [
   {
