@@ -1,8 +1,11 @@
 import type { LocaleText } from "./content";
+import { graduateAdmissionUrl } from "./undergraduateAdmission";
 
 export type NavigationChild = {
   label: LocaleText;
   path: string;
+  externalUrl?: string;
+  ariaLabel?: string;
 };
 
 export type NavigationItem = {
@@ -13,9 +16,10 @@ export type NavigationItem = {
   children: NavigationChild[];
 };
 
-const child = (ko: string, en: string, path: string): NavigationChild => ({
+const child = (ko: string, en: string, path: string, options?: Pick<NavigationChild, "externalUrl" | "ariaLabel">): NavigationChild => ({
   label: { ko, en },
   path,
+  ...options,
 });
 
 export const navigation: NavigationItem[] = [
@@ -67,7 +71,7 @@ export const navigation: NavigationItem[] = [
       child("공지사항", "Notices", "/news/notices"),
       child("뉴스", "News", "/news/department"),
       child("세미나·행사", "Seminars & Events", "/news/events"),
-      child("교수 초빙", "Faculty Recruitment", "/news/careers"),
+      child("교수 초빙", "Faculty Recruitment", "/news/faculty-recruitment"),
       child("학사일정", "Academic Calendar", "/news/calendar"),
     ],
   },
@@ -75,11 +79,14 @@ export const navigation: NavigationItem[] = [
     key: "admission-careers",
     label: { ko: "입학·진로", en: "Admissions & Careers" },
     path: "/admission/undergraduate",
-    activePaths: ["/admission", "/news/careers"],
+    activePaths: ["/admission"],
     children: [
       child("학부 입학", "Undergraduate Admission", "/admission/undergraduate"),
-      child("대학원 진학", "Graduate Admission", "/admission/graduate"),
-      child("취업 정보", "Career Information", "/news/careers"),
+      child("대학원 진학", "Graduate Admission", "/admission/graduate", {
+        externalUrl: graduateAdmissionUrl,
+        ariaLabel: "연세대학교 일반대학원 입학 안내 새 창에서 열기",
+      }),
+      child("취업 정보", "Career Information", "/admission/careers"),
     ],
   },
 ];

@@ -25,6 +25,7 @@ import {
   MapPin,
   Menu,
   MessageSquareText,
+  Paperclip,
   RotateCcw,
   Search,
   TrainFront,
@@ -121,6 +122,18 @@ import {
   getResearchAreaBySlug,
 } from "../lib/content";
 import { departmentDirections } from "../data/directions";
+import {
+  graduateAdmissionUrl,
+  undergraduateAdmission,
+  undergraduateAdmissionUrl,
+} from "../data/undergraduateAdmission";
+import {
+  careerCategoryLabels,
+  careerPosts,
+  getCareerPostBySlug,
+  type CareerCategory,
+  type CareerPost,
+} from "../data/careers";
 
 type DepartmentSiteProps = {
   locale: Locale;
@@ -135,8 +148,8 @@ const quickLinks = [
   { ko: "학부공지", en: "Notices", path: "/news/notices?audience=undergraduate", icon: MessageSquareText },
   { ko: "학사일정", en: "Calendar", path: "/news/calendar", icon: CalendarDays },
   { ko: "교과과정", en: "Curriculum", path: "/academics/courses", icon: BookOpen },
-  { ko: "대학원 입학", en: "Graduate Admission", path: "/admission/graduate", icon: GraduationCap },
-  { ko: "채용정보", en: "Careers", path: "/news/careers", icon: BriefcaseBusiness },
+  { ko: "대학원 입학", en: "Graduate Admission", path: "/admission/graduate", icon: GraduationCap, externalUrl: graduateAdmissionUrl, ariaLabel: "연세대학교 일반대학원 입학 안내 새 창에서 열기" },
+  { ko: "채용정보", en: "Careers", path: "/admission/careers", icon: BriefcaseBusiness },
   { ko: "오시는 길", en: "Directions", path: "/about/directions", icon: MapPin },
 ];
 
@@ -146,7 +159,7 @@ const homeSectionNavigation = [
   { code: "RESEARCH", ko: "주요 연구 분야", en: "Research areas" },
   { code: "FACULTY", ko: "교수진", en: "Faculty" },
   { code: "EDUCATION", ko: "교육과정", en: "Curriculum" },
-  { code: "TODAY", ko: "학부 소식", en: "Department stories" },
+  { code: "TODAY", ko: "학부 SNS", en: "Department social media" },
   { code: "FOOTER", ko: "하단 정보", en: "Footer information" },
 ];
 
@@ -174,8 +187,9 @@ const routeLabels: Record<string, LocaleText> = {
   department: { ko: "뉴스", en: "News" },
   notices: { ko: "공지사항", en: "Notices" },
   events: { ko: "행사", en: "Events" },
+  "faculty-recruitment": { ko: "교수 초빙", en: "Faculty Recruitment" },
   calendar: { ko: "학사일정", en: "Academic Calendar" },
-  careers: { ko: "채용정보", en: "Careers" },
+  careers: { ko: "취업 정보", en: "Career Information" },
   admission: { ko: "입학", en: "Admissions" },
   promotion: { ko: "홍보", en: "Promotion" },
   instagram: { ko: "Instagram", en: "Instagram" },
@@ -210,6 +224,14 @@ function Breadcrumb({ locale, segments }: { locale: Locale; segments: string[] }
         const person = faculty.find((item) => item.slug === segment);
         const course = courses.find((item) => item.slug === segment);
         const notice = notices.find((item) => item.slug === segment);
+        const career = getCareerPostBySlug(segment);
+        const admissionLabel = segments[0] === "admission" && index === 1
+          ? ({
+              undergraduate: { ko: "학부 입학", en: "Undergraduate Admission" },
+              graduate: { ko: "대학원 진학", en: "Graduate Admission" },
+              careers: { ko: "취업 정보", en: "Career Information" },
+            } as Record<string, LocaleText>)[segment]
+          : undefined;
         const label = area
           ? t(area.name, locale)
           : researchLab
@@ -222,6 +244,10 @@ function Breadcrumb({ locale, segments }: { locale: Locale; segments: string[] }
               ? t(course.name, locale)
               : notice
                 ? t(notice.title, locale)
+                : career
+                  ? (locale === "ko" ? career.titleKo : career.titleEn)
+                : admissionLabel
+                  ? t(admissionLabel, locale)
                 : routeLabels[segment]
                   ? t(routeLabels[segment], locale)
                   : segment;
@@ -405,7 +431,7 @@ function SiteHeader({
                 <span aria-hidden="true">|</span>
                 <Link href={`/en${localeSuffix}`} lang="en" aria-current={locale === "en" ? "page" : undefined} onClick={() => setOpenMenu(null)}>EN</Link>
               </div>
-              <a href="https://www.instagram.com/yonsei_mech/" target="_blank" rel="noreferrer" className="icon-button" aria-label="Yonsei Mechanical Engineering Instagram" title="Instagram">
+              <a href="https://www.instagram.com/yonsei_mech/" target="_blank" rel="noopener noreferrer" className="icon-button" aria-label="Yonsei Mechanical Engineering Instagram" title="Instagram">
                 <FaInstagram size={19} aria-hidden="true" />
               </a>
               <button type="button" className="icon-button" aria-label={tx(locale, "검색 열기", "Open search")} title={tx(locale, "검색", "Search")} onClick={() => setSearchOpen(true)}>
@@ -445,7 +471,19 @@ function SiteHeader({
                     {t(item.label, locale)}
                   </Link>
                   <div className="mega-menu-links">
-                    {item.children.map((child) => (
+                    {item.children.map((child) => child.externalUrl ? (
+                      <a
+                        key={`${item.key}-${child.path}`}
+                        href={child.externalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={child.ariaLabel}
+                        onClick={() => setOpenMenu(null)}
+                        onFocus={() => setOpenMenu(item.key)}
+                      >
+                        {t(child.label, locale)}<ExternalLink size={13} aria-hidden="true" />
+                      </a>
+                    ) : (
                       <Link
                         key={`${item.key}-${child.path}`}
                         href={hrefFor(locale, child.path)}
@@ -480,7 +518,11 @@ function SiteHeader({
                 </button>
                 {mobileSection === item.key && (
                   <div className="mobile-nav-links" id={`mobile-section-${item.key}`}>
-                    {item.children.map((child) => (
+                    {item.children.map((child) => child.externalUrl ? (
+                      <a href={child.externalUrl} target="_blank" rel="noopener noreferrer" aria-label={child.ariaLabel} key={child.path} onClick={() => { setMobileOpen(false); setMobileSection(null); }}>
+                        {t(child.label, locale)}<ExternalLink size={14} aria-hidden="true" />
+                      </a>
+                    ) : (
                       <Link href={hrefFor(locale, child.path)} key={child.path} onClick={() => { setMobileOpen(false); setMobileSection(null); }}>
                         {t(child.label, locale)}
                       </Link>
@@ -494,7 +536,7 @@ function SiteHeader({
             <Link href={`/ko${localeSuffix}`} lang="ko" aria-current={locale === "ko" ? "page" : undefined}>KR</Link>
             <span aria-hidden="true">|</span>
             <Link href={`/en${localeSuffix}`} lang="en" aria-current={locale === "en" ? "page" : undefined}>EN</Link>
-            <a href="https://www.instagram.com/yonsei_mech/" target="_blank" rel="noreferrer" aria-label="Yonsei Mechanical Engineering Instagram">Instagram <ExternalLink size={14} /></a>
+            <a href="https://www.instagram.com/yonsei_mech/" target="_blank" rel="noopener noreferrer" aria-label="Yonsei Mechanical Engineering Instagram">Instagram <ExternalLink size={14} /></a>
           </div>
         </div>
       )}
@@ -814,7 +856,9 @@ function HomePage({ locale }: { locale: Locale }) {
           <div className="container quick-links-grid" data-reveal>
             {quickLinks.map((item) => {
               const Icon = item.icon;
-              return <Link href={hrefFor(locale, item.path)} key={item.path}><Icon size={23} strokeWidth={1.5} /><span>{locale === "ko" ? item.ko : item.en}</span><ArrowRight size={16} /></Link>;
+              return item.externalUrl ? (
+                <a href={item.externalUrl} target="_blank" rel="noopener noreferrer" aria-label={item.ariaLabel} key={item.path}><Icon size={23} strokeWidth={1.5} /><span>{locale === "ko" ? item.ko : item.en}</span><ExternalLink size={16} /></a>
+              ) : <Link href={hrefFor(locale, item.path)} key={item.path}><Icon size={23} strokeWidth={1.5} /><span>{locale === "ko" ? item.ko : item.en}</span><ArrowRight size={16} /></Link>;
             })}
           </div>
         </nav>
@@ -875,10 +919,10 @@ function HomePage({ locale }: { locale: Locale }) {
 
       <section className="section instagram-section" data-home-section>
         <div className="container" data-reveal>
-          <SectionHeading label="TODAY" title={tx(locale, "기계공학부의 오늘", "Inside Mechanical Engineering")} link={<a className="text-button" href="https://www.instagram.com/" target="_blank" rel="noreferrer">@YONSEI_ME<ExternalLink size={15} /></a>} />
+          <SectionHeading label="SOCIAL MEDIA" title={tx(locale, "기계공학부 SNS", "Mechanical Engineering SNS")} link={<a className="text-button" href="https://www.instagram.com/yonsei_mech/" target="_blank" rel="noopener noreferrer" aria-label="Yonsei Mechanical Engineering Instagram, opens in a new tab">@YONSEI_MECH<ExternalLink size={15} /></a>} />
           <div className="instagram-grid home-stagger">
             {instagramPosts.map((post) => (
-              <a className="instagram-card" href="https://www.instagram.com/" target="_blank" rel="noreferrer" key={post.id}>
+              <a className="instagram-card" href="https://www.instagram.com/yonsei_mech/" target="_blank" rel="noopener noreferrer" aria-label={`${t(post.caption, locale)} · Instagram`} key={post.id}>
                 <div className="instagram-image"><Image src={post.image} alt="" fill sizes="(max-width: 680px) 44vw, (max-width: 940px) 50vw, 33vw" /><span><Camera size={23} /></span></div>
                 <div><p>{t(post.caption, locale)}</p><time>{post.publishedAt}</time></div>
               </a>
@@ -2092,6 +2136,197 @@ function CourseDetail({ locale, course }: { locale: Locale; course: Course }) {
   return <><PageHeader eyebrow={`${course.code} · COURSE`} title={t(course.name, locale)} description={locale === "ko" ? course.name.en : course.name.ko} /><section className="section content-section"><div className="container detail-layout"><main><section className="detail-block first"><p className="section-label">COURSE OVERVIEW</p><h2>{tx(locale, "교과목 설명", "Course Description")}</h2><p>{t(course.description, locale)}</p></section><section className="detail-block"><p className="section-label">INFORMATION</p><h2>{tx(locale, "교과목 정보", "Course Information")}</h2><dl className="course-detail-grid"><div><dt>{tx(locale, "학정번호", "Code")}</dt><dd>{course.code}</dd></div><div><dt>{tx(locale, "과정", "Program")}</dt><dd>{course.program === "undergraduate" ? tx(locale, "학부", "Undergraduate") : tx(locale, "대학원", "Graduate")}</dd></div><div><dt>{tx(locale, "학년", "Year")}</dt><dd>{course.year ?? "-"}</dd></div><div><dt>{tx(locale, "학기", "Semester")}</dt><dd>{course.semester}</dd></div><div><dt>{tx(locale, "구분", "Category")}</dt><dd>{course.category}</dd></div><div><dt>{tx(locale, "학점", "Credits")}</dt><dd>{course.credits}</dd></div></dl></section><RelatedLinks locale={locale} items={areas.map((area) => ({ title: t(area.name, locale), path: `/research/${area.slug}` }))} /></main><aside className="detail-nav"><Link className="back-link" href={hrefFor(locale, "/academics/courses")}><ArrowLeft size={16} />{tx(locale, "교과목 목록", "Course list")}</Link><p>{tx(locale, "관련 연구분야", "Related Areas")}</p>{areas.map((area) => <Link href={hrefFor(locale, `/research/${area.slug}`)} key={area.id}><span>{area.number}</span>{t(area.name, locale)}</Link>)}</aside></div></section></>;
 }
 
+function UndergraduateAdmissionPage({ locale }: { locale: Locale }) {
+  const data = undergraduateAdmission;
+
+  return (
+    <>
+      <PageHeader eyebrow="UNDERGRADUATE ADMISSION" title={t(data.pageTitle, locale)} description={t(data.description, locale)} />
+      <section className="section content-section admission-page">
+        <div className="container">
+          <div className="admission-page-actions">
+            <a className="button primary" href={data.officialAdmissionUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, "연세대학교 입학처 새 창에서 열기", "Open Yonsei University Admissions in a new tab")}>
+              {tx(locale, "연세대학교 입학처 바로가기", "Visit Yonsei University Admissions")}<ExternalLink size={16} aria-hidden="true" />
+            </a>
+          </div>
+
+          <p className="admission-reference-notice">{t(data.admissionNotice, locale)}</p>
+
+          <section className="admission-section">
+            <SectionHeading label="ADMISSION GUIDE" title={tx(locale, "입학전형 확인", "Admission Guide")} />
+            <div className="admission-type-grid">
+              {data.admissionTypes.map((item) => (
+                <article key={item.id}>
+                  <h3>{t(item.title, locale)}</h3>
+                  <p>{t(item.description, locale)}</p>
+                  <a href={data.officialAdmissionUrl} target="_blank" rel="noopener noreferrer" aria-label={`${t(item.linkLabel, locale)} ${tx(locale, "새 창에서 열기", "opens in a new tab")}`}>
+                    {t(item.linkLabel, locale)}<ExternalLink size={15} aria-hidden="true" />
+                  </a>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="admission-section">
+            <SectionHeading label="APPLICATION PROCESS" title={tx(locale, "지원 절차", "Application Process")} />
+            <ol className="admission-process-list">
+              {data.applicationSteps.map((step) => <li key={step.number}><span>{step.number}</span><p>{t(step.text, locale)}</p></li>)}
+            </ol>
+          </section>
+
+          <section className="admission-section">
+            <SectionHeading label="EXPLORE THE DEPARTMENT" title={tx(locale, "기계공학부 미리보기", "Explore Mechanical Engineering")} />
+            <div className="admission-preview-grid">
+              {data.relatedLinks.map((item) => <Link href={hrefFor(locale, item.path)} key={item.id}><div><h3>{t(item.title, locale)}</h3><p>{t(item.description, locale)}</p></div><ArrowRight size={18} aria-hidden="true" /></Link>)}
+            </div>
+          </section>
+
+          <section className="admission-section admission-faq">
+            <SectionHeading label="FAQ" title={tx(locale, "자주 묻는 질문", "Frequently Asked Questions")} />
+            <div>
+              {data.faq.map((item, index) => (
+                <details key={item.question.ko}>
+                  <summary><span>{String(index + 1).padStart(2, "0")}</span>{t(item.question, locale)}<ChevronDown size={18} aria-hidden="true" /></summary>
+                  <p>{t(item.answer, locale)}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+
+          <RelatedLinks locale={locale} items={data.relatedLinks.map((item) => ({ title: t(item.title, locale), path: item.path }))} />
+        </div>
+      </section>
+    </>
+  );
+}
+
+function GraduateAdmissionRedirect({ locale }: { locale: Locale }) {
+  useEffect(() => {
+    window.location.replace(graduateAdmissionUrl);
+  }, []);
+
+  return (
+    <>
+      <PageHeader eyebrow="GRADUATE ADMISSION" title={tx(locale, "대학원 진학", "Graduate Admission")} description={tx(locale, "연세대학교 일반대학원 입학 안내로 이동합니다.", "Opening Yonsei University Graduate School admissions information.")} />
+      <section className="section content-section external-destination-page">
+        <div className="container">
+          <p>{tx(locale, "자동으로 이동하지 않으면 아래 링크를 선택해 주세요.", "If you are not redirected automatically, use the link below.")}</p>
+          <a className="button primary" href={graduateAdmissionUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, "연세대학교 일반대학원 입학 안내 새 창에서 열기", "Open Yonsei University Graduate School admissions in a new tab")}>
+            {tx(locale, "연세대학교 일반대학원 입학 안내", "Yonsei Graduate School Admissions")}<ExternalLink size={16} aria-hidden="true" />
+          </a>
+        </div>
+      </section>
+    </>
+  );
+}
+
+const careerCategories: Array<"all" | CareerCategory> = ["all", "company-recruitment", "research-position", "internship", "career-event", "other"];
+
+const careerDateLabel = (value: string | null, locale: Locale) => value ? value.replaceAll("-", ".") : tx(locale, "미정", "TBA");
+
+function CareerDirectory({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
+  const router = useRouter();
+  const [category, setCategory] = useState<"all" | CareerCategory>(careerCategories.includes(searchParams.category as CareerCategory) ? searchParams.category as "all" | CareerCategory : "all");
+  const [query, setQuery] = useState(searchParams.q ?? "");
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredPosts = careerPosts
+    .filter((post) => category === "all" || post.category === category)
+    .filter((post) => !normalizedQuery || `${post.titleKo} ${post.titleEn} ${post.company?.ko ?? ""} ${post.company?.en ?? ""} ${post.summaryKo} ${post.summaryEn} ${post.contentKo} ${post.contentEn} ${post.tags.map((tag) => `${tag.ko} ${tag.en}`).join(" ")}`.toLowerCase().includes(normalizedQuery))
+    .sort((a, b) => Number(b.isPinned) - Number(a.isPinned) || b.publishedAt.localeCompare(a.publishedAt));
+  const hasFilters = category !== "all" || Boolean(query.trim());
+
+  const syncUrl = (nextCategory: "all" | CareerCategory, nextQuery: string) => {
+    const params = new URLSearchParams();
+    if (nextCategory !== "all") params.set("category", nextCategory);
+    if (nextQuery.trim()) params.set("q", nextQuery.trim());
+    const suffix = params.size ? `?${params.toString()}` : "";
+    router.replace(`${hrefFor(locale, "/admission/careers")}${suffix}`);
+  };
+
+  const selectCategory = (nextCategory: "all" | CareerCategory) => {
+    setCategory(nextCategory);
+    syncUrl(nextCategory, query);
+  };
+
+  const reset = () => {
+    setCategory("all");
+    setQuery("");
+    syncUrl("all", "");
+  };
+
+  return (
+    <>
+      <PageHeader eyebrow="CAREER OPPORTUNITIES" title={tx(locale, "취업 정보", "Career Information")} description={tx(locale, "기업 채용, 연구원·인턴 모집 및 취업 관련 행사 정보를 확인할 수 있습니다.", "Find company recruitment, research and internship positions, and career-related events.")} />
+      <section className="section content-section career-page">
+        <div className="container">
+          <div className="career-service-row">
+            <p>{tx(locale, "채용정보, 진로상담, 취업 멘토링 및 경력개발 서비스는 커리어연세에서 추가로 확인할 수 있습니다.", "Career Yonsei provides additional recruitment, counselling, mentoring, and career development services.")}</p>
+            <a className="text-button" href="https://career.yonsei.ac.kr/nonIndex.do" target="_blank" rel="noopener noreferrer" aria-label={tx(locale, "커리어연세 새 창에서 열기", "Open Career Yonsei in a new tab")}>{tx(locale, "커리어연세 바로가기", "Visit Career Yonsei")}<ExternalLink size={15} aria-hidden="true" /></a>
+          </div>
+
+          <div className="career-toolbar">
+            <div className="career-category-tabs" role="tablist" aria-label={tx(locale, "취업 정보 구분", "Career categories")}>
+              {careerCategories.map((item) => <button type="button" role="tab" aria-selected={category === item} key={item} onClick={() => selectCategory(item)}>{item === "all" ? tx(locale, "전체", "All") : t(careerCategoryLabels[item], locale)}</button>)}
+            </div>
+            <form className="career-search" onSubmit={(event) => { event.preventDefault(); syncUrl(category, query); }}>
+              <label className="sr-only" htmlFor="career-query">{tx(locale, "취업 정보 검색", "Search career information")}</label>
+              <div><Search size={18} aria-hidden="true" /><input id="career-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "제목, 회사·기관명, 본문, 태그 검색", "Search title, organization, content, or tags")} /><button type="submit">{tx(locale, "검색", "Search")}</button></div>
+              {hasFilters && <button type="button" onClick={reset}>{tx(locale, "초기화", "Reset")}</button>}
+            </form>
+          </div>
+
+          <div className="career-results-summary"><p><strong>{filteredPosts.length}</strong> {tx(locale, "건", "posts")}</p><span>{tx(locale, "샘플 게시글은 실제 공고가 아닙니다.", "Sample posts are not actual job announcements.")}</span></div>
+          <div className="career-table">
+            <div className="career-table-head"><span>{tx(locale, "구분", "Category")}</span><span>{tx(locale, "제목", "Title")}</span><span>{tx(locale, "회사·기관명", "Organization")}</span><span>{tx(locale, "게시일", "Date")}</span><span>{tx(locale, "접수마감일", "Deadline")}</span><span>{tx(locale, "첨부", "Files")}</span></div>
+            {filteredPosts.map((post) => <CareerRow key={post.id} locale={locale} post={post} />)}
+          </div>
+          {!filteredPosts.length && <EmptyState locale={locale} />}
+        </div>
+      </section>
+    </>
+  );
+}
+
+function CareerRow({ locale, post }: { locale: Locale; post: CareerPost }) {
+  return (
+    <Link className="career-row" href={hrefFor(locale, `/admission/careers/${post.slug}`)}>
+      <span className="career-row-category">{post.isPinned ? tx(locale, "고정", "Pinned") : t(careerCategoryLabels[post.category], locale)}</span>
+      <strong>{locale === "ko" ? post.titleKo : post.titleEn}</strong>
+      <span>{post.company ? t(post.company, locale) : "-"}</span>
+      <time dateTime={post.publishedAt}>{careerDateLabel(post.publishedAt, locale)}</time>
+      <span>{careerDateLabel(post.applicationDeadline, locale)}</span>
+      <span className="career-row-file">{post.attachments.length > 0 && <Paperclip size={15} aria-label={tx(locale, "첨부파일 있음", "Attachment available")} />}</span>
+    </Link>
+  );
+}
+
+function CareerDetail({ locale, post }: { locale: Locale; post: CareerPost }) {
+  const orderedPosts = [...careerPosts].sort((a, b) => Number(b.isPinned) - Number(a.isPinned) || b.publishedAt.localeCompare(a.publishedAt));
+  const index = orderedPosts.findIndex((item) => item.id === post.id);
+  const previous = orderedPosts[index - 1];
+  const next = orderedPosts[index + 1];
+  const title = locale === "ko" ? post.titleKo : post.titleEn;
+  const summary = locale === "ko" ? post.summaryKo : post.summaryEn;
+  const content = locale === "ko" ? post.contentKo : post.contentEn;
+
+  return (
+    <>
+      <PageHeader eyebrow="CAREER OPPORTUNITIES" title={title} description={`${t(careerCategoryLabels[post.category], locale)} · ${careerDateLabel(post.publishedAt, locale)}`} />
+      <section className="section content-section career-detail-page">
+        <article className="container article-detail">
+          <div className="career-detail-meta"><span>{t(careerCategoryLabels[post.category], locale)}</span><span>{post.company ? t(post.company, locale) : tx(locale, "기관 정보 확인 중", "Organization pending")}</span><time dateTime={post.publishedAt}>{tx(locale, "게시일", "Posted")} {careerDateLabel(post.publishedAt, locale)}</time><span>{tx(locale, "접수마감일", "Deadline")} {careerDateLabel(post.applicationDeadline, locale)}</span></div>
+          {post.isDemo && <p className="sample-data-note">{tx(locale, "이 게시글은 취업 정보 화면 구성 확인을 위한 샘플이며 실제 공고가 아닙니다.", "This is a sample post for reviewing the career page and is not an actual announcement.")}</p>}
+          <div className="article-body"><p>{summary}</p><p>{content}</p></div>
+          {post.attachments.length > 0 && <div className="attachments"><h2>{tx(locale, "첨부파일", "Attachments")}</h2>{post.attachments.map((attachment) => <a href={attachment.url} key={attachment.id}><Download size={18} />{t(attachment.name, locale)}</a>)}</div>}
+          {post.externalUrl && <a className="button primary career-apply-link" href={post.externalUrl} target="_blank" rel="noopener noreferrer">{tx(locale, "외부 지원 링크", "External application link")}<ExternalLink size={16} /></a>}
+          <div className="article-navigation">{previous ? <Link href={hrefFor(locale, `/admission/careers/${previous.slug}`)}><ChevronLeft size={18} /><span><small>{tx(locale, "이전글", "Previous")}</small>{locale === "ko" ? previous.titleKo : previous.titleEn}</span></Link> : <span />}{next ? <Link href={hrefFor(locale, `/admission/careers/${next.slug}`)}><span><small>{tx(locale, "다음글", "Next")}</small>{locale === "ko" ? next.titleKo : next.titleEn}</span><ChevronRight size={18} /></Link> : <span />}</div>
+          <Link className="button outline article-list-button" href={hrefFor(locale, "/admission/careers")}><ArrowLeft size={17} />{tx(locale, "목록으로 돌아가기", "Back to list")}</Link>
+        </article>
+      </section>
+    </>
+  );
+}
+
 function NoticeDirectory({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
   const [audience, setAudience] = useState(searchParams.audience ?? "all");
   const [query, setQuery] = useState(searchParams.query ?? "");
@@ -2692,6 +2927,12 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "academics" && second === "graduate") page = <GraduateProgramPage locale={locale} searchParams={searchParams} />;
   else if (section === "academics" && second === "courses" && third && getCourseBySlug(third)) page = <CourseDetail locale={locale} course={getCourseBySlug(third)!} />;
   else if (section === "academics" && second === "courses") page = <CourseDirectory locale={locale} searchParams={searchParams} />;
+  else if (section === "admission" && second === "undergraduate") page = <UndergraduateAdmissionPage locale={locale} />;
+  else if (section === "admission" && second === "graduate") page = <GraduateAdmissionRedirect locale={locale} />;
+  else if (section === "admission" && second === "careers" && third && getCareerPostBySlug(third)) page = <CareerDetail locale={locale} post={getCareerPostBySlug(third)!} />;
+  else if (section === "admission" && second === "careers") page = <CareerDirectory locale={locale} searchParams={searchParams} />;
+  else if (section === "news" && second === "careers" && third && getCareerPostBySlug(third)) page = <CareerDetail locale={locale} post={getCareerPostBySlug(third)!} />;
+  else if (section === "news" && second === "careers") page = <CareerDirectory locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "notices" && third && getNoticeBySlug(third)) page = <NoticeDetail locale={locale} notice={getNoticeBySlug(third)!} />;
   else if (section === "news" && second === "notices") page = <NoticeDirectory locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "calendar") page = <CalendarPage locale={locale} searchParams={searchParams} />;
