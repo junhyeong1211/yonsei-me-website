@@ -135,6 +135,14 @@ import {
   type CareerCategory,
   type CareerPost,
 } from "../data/careers";
+import {
+  curriculumSemesters,
+  curriculumTreeCourses,
+  curriculumTreeSource,
+  liberalEducationAreas,
+  type CurriculumSemester,
+  type CurriculumTreeCourse,
+} from "../data/curriculumTree";
 
 type DepartmentSiteProps = {
   locale: Locale;
@@ -185,6 +193,7 @@ const routeLabels: Record<string, LocaleText> = {
   courses: { ko: "교과목 안내", en: "Courses" },
   requirements: { ko: "졸업요건", en: "Requirements" },
   scholarships: { ko: "장학 안내", en: "Scholarships" },
+  "curriculum-tree": { ko: "교과목 체계도", en: "Curriculum Tree" },
   news: { ko: "학과소식", en: "News" },
   department: { ko: "뉴스", en: "News" },
   notices: { ko: "공지사항", en: "Notices" },
@@ -1440,6 +1449,277 @@ function LabDetail({ locale, lab }: { locale: Locale; lab: Lab }) {
 }
 
 const undergraduateHandbookUrl = "https://underwood1.yonsei.ac.kr/com/lgin/SsoCtr/initExtPageWork.do?link=handbList&locale=ko";
+
+type CurriculumSemesterFilter = "all" | CurriculumSemester;
+
+function curriculumSemesterLabel(semester: CurriculumSemester) {
+  return curriculumSemesters.find((item) => item.id === semester)?.labelKo ?? semester;
+}
+
+function CurriculumTreeCourseCard({
+  course,
+  activeSemester,
+  selectedCourseId,
+  prerequisiteIds,
+  onSelect,
+}: {
+  course: CurriculumTreeCourse;
+  activeSemester: CurriculumSemesterFilter;
+  selectedCourseId: string | null;
+  prerequisiteIds: string[];
+  onSelect: (id: string) => void;
+}) {
+  const prerequisiteNames = course.prerequisiteIds
+    .map((id) => curriculumTreeCourses.find((item) => item.id === id)?.nameKo)
+    .filter((name): name is string => Boolean(name));
+  const isDimmed = activeSemester !== "all" && course.semester !== null && course.semester !== activeSemester;
+  const isSelected = selectedCourseId === course.id;
+  const isPrerequisite = prerequisiteIds.includes(course.id);
+  const ariaLabel = [
+    course.nameKo,
+    course.semester ? curriculumSemesterLabel(course.semester) : "개설 학기 확인 필요",
+    course.required ? "필수" : "선택 이수",
+    prerequisiteNames.length ? `선수과목: ${prerequisiteNames.join(", ")}` : null,
+  ].filter(Boolean).join(", ");
+
+  return (
+    <button
+      type="button"
+      className={`curriculum-course-card${course.required ? " is-required" : ""}${isSelected ? " is-selected" : ""}${isPrerequisite ? " is-prerequisite" : ""}${isDimmed ? " is-dimmed" : ""}`}
+      aria-label={ariaLabel}
+      aria-pressed={isSelected}
+      disabled={isDimmed}
+      onClick={() => onSelect(course.id)}
+    >
+      <span className="curriculum-course-name">{course.nameKo}</span>
+      {course.required && <span className="curriculum-course-required">필수</span>}
+      {isPrerequisite && <span className="curriculum-course-prerequisite">선수과목</span>}
+      {prerequisiteNames.length > 0 && <small>선수: {prerequisiteNames.join(", ")}</small>}
+    </button>
+  );
+}
+
+function CurriculumTreeCourseList({
+  courses,
+  activeSemester,
+  selectedCourseId,
+  prerequisiteIds,
+  onSelect,
+}: {
+  courses: CurriculumTreeCourse[];
+  activeSemester: CurriculumSemesterFilter;
+  selectedCourseId: string | null;
+  prerequisiteIds: string[];
+  onSelect: (id: string) => void;
+}) {
+  const standaloneCourses = courses.filter((course) => !course.chooseOneGroup);
+  const choiceGroups = Array.from(new Map(
+    courses
+      .filter((course) => course.chooseOneGroup)
+      .map((course) => [course.chooseOneGroup!, courses.filter((item) => item.chooseOneGroup === course.chooseOneGroup)]),
+  ).values());
+
+  return (
+    <ul className="curriculum-course-list">
+      {standaloneCourses.map((course) => (
+        <li key={course.id}><CurriculumTreeCourseCard course={course} activeSemester={activeSemester} selectedCourseId={selectedCourseId} prerequisiteIds={prerequisiteIds} onSelect={onSelect} /></li>
+      ))}
+      {choiceGroups.map((group) => (
+        <li className="curriculum-choice-group" key={group[0].chooseOneGroup}>
+          <span>택 1</span>
+          <ul>{group.map((course) => <li key={course.id}><CurriculumTreeCourseCard course={course} activeSemester={activeSemester} selectedCourseId={selectedCourseId} prerequisiteIds={prerequisiteIds} onSelect={onSelect} /></li>)}</ul>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function CurriculumTreeSemesterGrid({
+  courses,
+  activeSemester,
+  selectedCourseId,
+  prerequisiteIds,
+  onSelect,
+}: {
+  courses: CurriculumTreeCourse[];
+  activeSemester: CurriculumSemesterFilter;
+  selectedCourseId: string | null;
+  prerequisiteIds: string[];
+  onSelect: (id: string) => void;
+}) {
+  const coursesBySemester = (semester: CurriculumSemester) => courses.filter((course) => course.semester === semester);
+  const years = [1, 2, 3, 4] as const;
+
+  return (
+    <>
+      <div className="curriculum-semester-scroll">
+        <div className="curriculum-semester-grid">
+          <span className="curriculum-entry-boundary is-year-two" data-label="2학년 진입 전 필수" aria-hidden="true" />
+          <span className="curriculum-entry-boundary is-year-three" data-label="3학년 진입 전 필수" aria-hidden="true" />
+          {curriculumSemesters.map((semester) => (
+            <section className={`curriculum-semester-column${activeSemester !== "all" && activeSemester !== semester.id ? " is-dimmed" : ""}`} key={semester.id}>
+              <h3>{semester.id}</h3>
+              <CurriculumTreeCourseList courses={coursesBySemester(semester.id)} activeSemester={activeSemester} selectedCourseId={selectedCourseId} prerequisiteIds={prerequisiteIds} onSelect={onSelect} />
+            </section>
+          ))}
+        </div>
+      </div>
+      <div className="curriculum-mobile-years">
+        {years.map((year) => {
+          const yearSemesters = curriculumSemesters.filter((semester) => semester.year === year);
+          const shouldOpen = activeSemester === "all" ? year === 1 : yearSemesters.some((semester) => semester.id === activeSemester);
+          return (
+            <div key={year}>
+              <details open={shouldOpen}>
+                <summary>{year}학년 <span>{yearSemesters.map((semester) => semester.id).join(" · ")}</span></summary>
+                <div className="curriculum-mobile-semesters">
+                  {yearSemesters.map((semester) => (
+                    <section className={activeSemester !== "all" && activeSemester !== semester.id ? "is-dimmed" : ""} key={semester.id}>
+                      <h3>{semester.id}</h3>
+                      <CurriculumTreeCourseList courses={coursesBySemester(semester.id)} activeSemester={activeSemester} selectedCourseId={selectedCourseId} prerequisiteIds={prerequisiteIds} onSelect={onSelect} />
+                    </section>
+                  ))}
+                </div>
+              </details>
+              {year === 1 && <p className="curriculum-mobile-entry">2학년 진입 전 필수</p>}
+              {year === 2 && <p className="curriculum-mobile-entry">3학년 진입 전 필수</p>}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+function CurriculumTreeSection({ code, title, children }: { code: string; title: string; children: ReactNode }) {
+  return (
+    <section className="curriculum-tree-section">
+      <header><span>{code}</span></header>
+      <div className="curriculum-tree-section-content">
+        <h2>{title}</h2>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function CurriculumTreePage({ locale }: { locale: Locale }) {
+  const [activeSemester, setActiveSemester] = useState<CurriculumSemesterFilter>("all");
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const selectedCourse = curriculumTreeCourses.find((course) => course.id === selectedCourseId) ?? null;
+  const prerequisiteIds = selectedCourse?.prerequisiteIds ?? [];
+  const prerequisiteCourses = prerequisiteIds
+    .map((id) => curriculumTreeCourses.find((course) => course.id === id))
+    .filter((course): course is CurriculumTreeCourse => Boolean(course));
+  const mscCourses = curriculumTreeCourses.filter((course) => course.area === "msc" && course.placement === "semester-grid");
+  const majorFoundationCourses = curriculumTreeCourses.filter((course) => course.area === "major" && course.placement === "semester-grid");
+  const completionCourses = curriculumTreeCourses.filter((course) => course.placement === "completion");
+  const seminarCourses = curriculumTreeCourses.filter((course) => course.placement === "seminar");
+  const commonGeCourses = curriculumTreeCourses.filter((course) => course.placement === "ge-common");
+  const recommendedGeCourses = curriculumTreeCourses.filter((course) => course.placement === "ge-recommended");
+  const semesterOptions: { id: CurriculumSemesterFilter; label: string }[] = [
+    { id: "all", label: tx(locale, "전체", "All") },
+    ...curriculumSemesters.map((semester) => ({ id: semester.id, label: semester.id })),
+  ];
+  const selectionAnnouncement = selectedCourse
+    ? selectedCourse.prerequisiteIds.length
+      ? `${selectedCourse.nameKo}의 선수과목: ${prerequisiteCourses.map((course) => `${course.nameKo} (${course.semester ? curriculumSemesterLabel(course.semester) : "학기 확인 필요"})`).join(", ")}`
+      : `${selectedCourse.nameKo}에 등록된 선수과목이 없습니다.`
+    : "";
+
+  useEffect(() => {
+    const clearSelection = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedCourseId(null);
+    };
+    document.addEventListener("keydown", clearSelection);
+    return () => document.removeEventListener("keydown", clearSelection);
+  }, []);
+
+  const selectCourse = (id: string) => setSelectedCourseId((current) => current === id ? null : id);
+  const renderCourses = (courses: CurriculumTreeCourse[]) => (
+    <CurriculumTreeCourseList courses={courses} activeSemester={activeSemester} selectedCourseId={selectedCourseId} prerequisiteIds={prerequisiteIds} onSelect={selectCourse} />
+  );
+
+  return (
+    <div className="curriculum-tree-page">
+      <div className="container curriculum-tree-header">
+        <div>
+          <p className="section-label">CURRICULUM TREE</p>
+          <h1>{tx(locale, "기계공학부 교과목 트리", "Mechanical Engineering Curriculum Tree")}</h1>
+          <p>{tx(locale, "학년·학기별 교과목의 이수 흐름과 선수관계를 확인할 수 있습니다.", "Review course progression and prerequisites by academic year and semester.")}</p>
+        </div>
+        <div className="curriculum-tree-actions">
+          {curriculumTreeSource.originalPdfUrl ? (
+            <a className="curriculum-print-button" href={curriculumTreeSource.originalPdfUrl} target="_blank" rel="noopener noreferrer"><Download size={16} />{tx(locale, "인쇄용 PDF 다운로드", "Download printable PDF")}</a>
+          ) : (
+            <button className="curriculum-print-button" type="button" onClick={() => window.print()}><Download size={16} />{tx(locale, "인쇄용 PDF 다운로드", "Save as printable PDF")}</button>
+          )}
+          <a className="curriculum-source-link" href={curriculumTreeSource.originalChartUrl} target="_blank" rel="noopener noreferrer">{tx(locale, "원본 체계도 보기", "View original chart")}<ExternalLink size={15} aria-hidden="true" /></a>
+        </div>
+      </div>
+
+      <main className="curriculum-tree-main">
+        <div className="container">
+          <aside className="curriculum-requirements-banner">
+            <p>{tx(locale, "학번마다 교과목 체계가 다르니, 상세 정보를 위해 각 학번의 졸업 요건을 확인하시기 바랍니다.", "Course structures vary by admission year. Confirm the graduation requirements for your admission year.")}</p>
+            <Link href={hrefFor(locale, "/academics/requirements")}>{tx(locale, "학번별 졸업요건 보기", "View graduation requirements")}<ArrowRight size={16} /></Link>
+          </aside>
+
+          <div className="curriculum-legend" aria-label={tx(locale, "교과목 트리 범례", "Curriculum tree legend")}>
+            <span className="is-required">{tx(locale, "필수", "Required")}</span>
+            <span>{tx(locale, "선택 이수", "Elective")}</span>
+            <span className="is-choice">{tx(locale, "택 1", "Choose one")}</span>
+            <span className="is-prerequisite">→ {tx(locale, "선수과목 · 과목 클릭", "Prerequisite · select a course")}</span>
+          </div>
+
+          <div className="curriculum-semester-tabs" role="tablist" aria-label={tx(locale, "학기 필터", "Semester filter")}>
+            {semesterOptions.map((option) => <button type="button" role="tab" aria-selected={activeSemester === option.id} onClick={() => { setActiveSemester(option.id); setSelectedCourseId(null); }} key={option.id}>{option.label}</button>)}
+          </div>
+
+          <div className="sr-only" aria-live="polite">{selectionAnnouncement}</div>
+
+          <div className="curriculum-tree-sections">
+            <CurriculumTreeSection code="MSC" title={tx(locale, "MSC", "MSC")}>
+              <CurriculumTreeSemesterGrid courses={mscCourses} activeSemester={activeSemester} selectedCourseId={selectedCourseId} prerequisiteIds={prerequisiteIds} onSelect={selectCourse} />
+            </CurriculumTreeSection>
+
+            <CurriculumTreeSection code="MAJOR" title={tx(locale, "전공", "Major")}>
+              <section className="curriculum-subsection">
+                <header><p>MAJOR FOUNDATION</p><h3>{tx(locale, "전공 기초 · 2학년", "Major Foundations · Year 2")}</h3></header>
+                <CurriculumTreeSemesterGrid courses={majorFoundationCourses} activeSemester={activeSemester} selectedCourseId={selectedCourseId} prerequisiteIds={prerequisiteIds} onSelect={selectCourse} />
+              </section>
+              <div className="curriculum-major-strips">
+                <section><header><p>GRADUATION REQUIRED</p><h3>{tx(locale, "졸업 필수", "Graduation Required")}</h3></header>{renderCourses(completionCourses)}</section>
+                <section><header><p>SEMINAR</p><h3>{tx(locale, "세미나", "Seminar")}</h3></header>{renderCourses(seminarCourses)}</section>
+              </div>
+              <section className="curriculum-advanced-section">
+                <header><p>ADVANCED STUDY</p><h3>{tx(locale, "전공 심화 · 3~4학년", "Advanced Study · Years 3–4")}</h3></header>
+                <div className="curriculum-advanced-panels">
+                  <section><h4>{tx(locale, "1학기 개설", "First semester")}</h4><div><div>{renderCourses(curriculumTreeCourses.filter((course) => course.placement === "advanced-first-primary"))}</div><div>{renderCourses(curriculumTreeCourses.filter((course) => course.placement === "advanced-first-secondary"))}</div></div></section>
+                  <section><h4>{tx(locale, "2학기 개설", "Second semester")}</h4><div><div>{renderCourses(curriculumTreeCourses.filter((course) => course.placement === "advanced-second-primary"))}</div><div>{renderCourses(curriculumTreeCourses.filter((course) => course.placement === "advanced-second-secondary"))}</div></div></section>
+                </div>
+              </section>
+              <Link className="curriculum-special-track" href={hrefFor(locale, "/academics/courses?tab=elective")}><span>{tx(locale, "스페셜 트랙", "Special Track")}</span><strong>{tx(locale, "세부 구성 과목은 학과 확인 후 안내합니다.", "Detailed course composition will be updated after departmental confirmation.")}</strong><ArrowRight size={17} /></Link>
+            </CurriculumTreeSection>
+
+            <CurriculumTreeSection code="GE" title={tx(locale, "교양", "General Education")}>
+              <div className="curriculum-ge-top">
+                <section><header><p>COMMON GENERAL EDUCATION</p><h3>{tx(locale, "공통 교양 · 필수 이수", "Common General Education · Required")}</h3></header>{renderCourses(commonGeCourses)}</section>
+                <section><header><p>RECOMMENDED</p><h3>{tx(locale, "공학 관련 권장 교양", "Recommended Engineering-related Electives")}</h3></header><div className="curriculum-recommended-chips">{recommendedGeCourses.map((course) => <span key={course.id}>{course.nameKo}</span>)}</div><p>{tx(locale, "졸업 필수요건 아님 · 이수 권장", "Not a graduation requirement · recommended")}</p></section>
+              </div>
+              <section className="curriculum-liberal-requirements">
+                <header><p>LIBERAL EDUCATION REQUIREMENTS</p><h3>{tx(locale, "교양 영역 이수요건", "Liberal Education Requirements")}</h3></header>
+                <div className="curriculum-liberal-area-chips">{liberalEducationAreas.map((area) => <span className={area === "정보와기술" ? "is-legacy" : ""} key={area}>{area}{area === "정보와기술" && <small>21학번까지만 해당</small>}</span>)}</div>
+                <div className="curriculum-requirement-strips"><article><strong>5</strong><p>{tx(locale, "21학번 포함 이전", "Through class of 2021")}<span>{tx(locale, "7개 영역 중 5개 영역에서 각 1과목씩 이수 필수", "Complete one course in each of five of seven areas")}</span></p></article><article><strong>4</strong><p>{tx(locale, "22학번 포함 이후", "Class of 2022 and after")}<span>{tx(locale, "6개 영역 중 4개 영역에서 각 1과목씩 이수 필수", "Complete one course in each of four of six areas")}</span></p></article></div>
+                <p className="curriculum-liberal-note">* {tx(locale, "22학번부터 정보와기술 영역이 제외되어 이수 영역이 5개에서 4개로 변경됩니다.", "From the class of 2022, Information and Technology is excluded and the required number of areas changes from five to four.")}</p>
+              </section>
+            </CurriculumTreeSection>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
 
 function UndergraduateProgramPage({ locale }: { locale: Locale }) {
   const quickLinks = [
@@ -2990,6 +3270,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "about" && second === "directions") page = <DirectionsPage locale={locale} />;
   else if (section === "academics" && second === "scholarships") page = <ScholarshipsPage locale={locale} searchParams={searchParams} />;
   else if (section === "academics" && second === "requirements") page = <GraduationRequirementsPage locale={locale} searchParams={searchParams} />;
+  else if (section === "academics" && second === "curriculum-tree") page = <CurriculumTreePage locale={locale} />;
   else if (section === "academics" && second === "undergraduate") page = <UndergraduateProgramPage locale={locale} />;
   else if (section === "academics" && second === "graduate") page = <GraduateProgramPage locale={locale} searchParams={searchParams} />;
   else if (section === "academics" && second === "courses" && third && getCourseBySlug(third)) page = <CourseDetail locale={locale} course={getCourseBySlug(third)!} />;
