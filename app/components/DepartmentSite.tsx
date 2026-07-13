@@ -159,7 +159,7 @@ const hrefFor = (locale: Locale, path = "") => `/${locale}${path}`;
 const quickLinks = [
   { ko: "학부공지", en: "Notices", path: "/news/notices?audience=undergraduate", icon: MessageSquareText },
   { ko: "학사일정", en: "Calendar", path: "/news/calendar", icon: CalendarDays },
-  { ko: "교과과정", en: "Curriculum", path: "/academics/courses", icon: BookOpen },
+  { ko: "교과목 안내", en: "Courses", path: "/academics/courses", icon: BookOpen },
   { ko: "대학원 입학", en: "Graduate Admission", path: "/admission/graduate", icon: GraduationCap, externalUrl: graduateAdmissionUrl, ariaLabel: "연세대학교 일반대학원 입학 안내 새 창에서 열기" },
   { ko: "채용정보", en: "Careers", path: "/admission/careers", icon: BriefcaseBusiness },
   { ko: "오시는 길", en: "Directions", path: "/about/directions", icon: MapPin },
@@ -961,7 +961,7 @@ function EducationPanel({ locale, type }: { locale: Locale; type: "undergraduate
         <li>{tx(locale, "실험 및 설계", "Experimentation and design")}</li>
         <li>{tx(locale, "연구분야 연계", "Research-area pathways")}</li>
       </ul>
-      <Link className="text-button" href={hrefFor(locale, undergraduate ? "/academics/undergraduate" : "/academics/graduate")}><ArrowLink>{undergraduate ? tx(locale, "교과과정 보기", "View curriculum") : tx(locale, "대학원 안내", "Graduate information")}</ArrowLink></Link>
+      <Link className="text-button" href={hrefFor(locale, undergraduate ? "/academics/undergraduate" : "/academics/graduate")}><ArrowLink>{undergraduate ? tx(locale, "학부 교육과정 보기", "View undergraduate program") : tx(locale, "대학원 안내", "Graduate information")}</ArrowLink></Link>
     </article>
   );
 }
@@ -1867,11 +1867,12 @@ function UndergraduateProgramPage({ locale }: { locale: Locale }) {
     { label: tx(locale, "학부 졸업요건", "Graduation Requirements"), path: "/academics/requirements" },
   ];
   const lowerLinks = [
-    { label: tx(locale, "전체 교과목 조회", "All Courses"), path: "/academics/courses?tab=schedule" },
+    { label: tx(locale, "교과목 안내", "Courses"), path: "/academics/courses?tab=schedule" },
     { label: tx(locale, "전공필수", "Required Courses"), path: "/academics/courses?tab=required" },
     { label: tx(locale, "전공선택", "Elective Courses"), path: "/academics/courses?tab=elective" },
     { label: tx(locale, "학부 졸업요건", "Graduation Requirements"), path: "/academics/requirements" },
-    { label: tx(locale, "학사·장학 안내", "Academic Information & Scholarships"), path: "/academics" },
+    { label: tx(locale, "학사 안내", "Academic Information"), path: "/academics" },
+    { label: tx(locale, "장학 안내", "Scholarships"), path: "/academics/scholarships" },
   ];
 
   return (

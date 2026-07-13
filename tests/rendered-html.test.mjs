@@ -30,7 +30,7 @@ test("server-renders the Korean department home", async () => {
 
   const html = await response.text();
   assert.match(html, /연세대학교 기계공학부/);
-  assert.match(html, /미래의 움직임을 설계합니다/);
+  assert.match(html, /기계공학으로 더 나은 움직임을 만듭니다/);
   assert.match(html, /연구분야/);
   assert.match(html, /교수진/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
@@ -40,8 +40,8 @@ test("server-renders a core directory route", async () => {
   const response = await render("/ko/faculty");
   assert.equal(response.status, 200);
   const html = await response.text();
-  assert.match(html, /연구분야와 키워드로 교수진/);
-  assert.match(html, /faculty-query/);
+  assert.match(html, /33/);
+  assert.match(html, /강건욱/);
 });
 
 test("starter preview is removed and social image exists", async () => {

@@ -1,8 +1,8 @@
 # 연세대학교 기계공학부 홈페이지 프론트엔드
 
-연세대학교 기계공학부 공식 홈페이지 운영을 위한 반응형 프론트엔드 기본 구조입니다. 한국어와 영어를 같은 정보 구조로 제공하며, 교수진·연구분야·연구실·교과목·공지사항·학사일정·통합검색 흐름을 정적 샘플 데이터로 구현했습니다.
+연세대학교 기계공학부 공식 홈페이지 운영을 위한 반응형 프론트엔드 기본 구조입니다. 한국어와 영어를 같은 정보 구조로 제공하며, 교수진·연구 분야·연구실·교육과정·공지사항·학사일정·통합검색 흐름을 구현했습니다.
 
-> 현재 교수명, 연락처, 교과목, 공지, 일정은 레이아웃과 기능 확인용 샘플입니다. 운영 전에 반드시 학부가 확인한 공식 데이터로 교체해야 합니다.
+> 데이터별 공식 검수 상태는 `reviewNote`, `verificationStatus`, `classificationStatus`를 확인합니다. 샘플 공지·일정·레거시 데이터는 운영 전에 학부가 확인한 정보로 교체해야 합니다.
 
 ## 기술 스택
 
@@ -36,7 +36,7 @@ npm test
 app/
   [locale]/[[...slug]]/page.tsx  locale 기반 공통 라우트
   components/DepartmentSite.tsx 전체 레이아웃과 페이지 템플릿
-  data/content.ts                샘플 콘텐츠와 TypeScript 타입
+  data/                          도메인별 TypeScript 콘텐츠 데이터
   lib/content.ts                 데이터 조회 함수
   globals.css                    디자인 토큰과 반응형 스타일
 docs/
@@ -46,25 +46,38 @@ public/
   og.png                         소셜 미리보기 이미지
 ```
 
-## 콘텐츠 수정
+## 콘텐츠 데이터 관리
 
-모든 샘플 콘텐츠는 `app/data/content.ts`에서 관리합니다.
+콘텐츠는 `app/data` 아래에서 도메인별 파일로 나누어 관리합니다. 페이지에 같은 데이터를 직접 반복 작성하지 말고 아래 파일을 수정합니다.
 
-- 교수: `faculty`
-- 연구분야: `researchAreas`
-- 연구실: `labs`
-- 교과목: `courses`
-- 공지사항: `notices`
-- 학사일정: `events`
-- Instagram 미리보기: `instagramPosts`
-- 히어로 이미지: `heroImage`
+| 콘텐츠 | 주 관리 파일 | 비고 |
+| --- | --- | --- |
+| 교수진 | `app/data/faculty.ts` | 교수진 목록과 상세 페이지의 주 데이터 |
+| 연구실 | `app/data/labs.ts` | 연구실 목록과 상세 페이지의 주 데이터 |
+| 연구 분야 | `app/data/researchAreas.ts` | 6개 연구 분야 탐색 분류 |
+| 학부 교육과정 | `app/data/undergraduateProgram.ts` | 학년별 교육 과정과 학습 경험 |
+| 학부 교과목 개설 목록 | `app/data/undergraduateCourseOfferings.ts` | 학년·학기·과목 구분 필터 데이터 |
+| 학부 전공필수·전공선택 상세 | `app/data/undergraduateCourseDetails.ts` | 전공 교과목 상세 데이터 |
+| 교과목 체계도 | `app/data/curriculumTree.ts` | 이수 흐름, 선수과목, 원본 체계도 연결 |
+| 대학원 교과목 | `app/data/graduateCourses.ts` | 대학원 교과목과 코드 수준 필터 |
+| 학부 졸업요건 | `app/data/undergraduateGraduationRequirements.ts` | 학번별 요건과 검수 상태 |
+| 대학원 졸업요건 | `app/data/graduateGraduationRequirements.ts` | 대학원 이수요건 |
+| 장학 안내 | `app/data/scholarships.ts` | 장학 정보와 검수 상태 |
+| 연혁 | `app/data/history.ts` | 학부 연혁 |
+| 교직원 | `app/data/staff.ts` | 학부·대학원·BK21 행정 담당자 |
+| 입학 | `app/data/undergraduateAdmission.ts` | 학부 입학 콘텐츠와 공식 외부 URL |
+| 취업 정보 | `app/data/careers.ts` | 채용·진로 게시 데이터 |
+| 학사일정 | `app/data/calendar.ts` | 정적 초기값과 fallback, 런타임 연동은 `app/api/calendar/route.ts` |
+| 공지사항 | `app/data/content.ts`의 `notices` | 현재 정적·샘플 공지 데이터 |
 
-교수, 연구분야, 연구실, 교과목은 `id` 또는 `slug`로 연결됩니다. 연결을 변경할 때는 화면에 같은 정보를 직접 반복 입력하지 말고 각 레코드의 참조 ID를 수정합니다.
+`app/data/content.ts`는 공지사항, 메인 일정 미리보기, Hero, SNS와 일부 레거시 호환 데이터를 계속 관리합니다. 교수진·연구실·연구 분야·교육 데이터의 현재 페이지용 주 데이터는 위 전용 파일을 우선 사용합니다.
+
+`reviewNote`, `verificationStatus`, `classificationStatus`가 있는 항목은 공식 검증 상태를 함께 나타냅니다. 파일이 존재한다는 사실만으로 공식 검증이 완료된 것은 아니며, 샘플 공지·일정·레거시 데이터는 운영 전에 학부가 확인한 정보로 교체해야 합니다.
 
 ## 이미지 교체
 
 - 히어로와 Instagram 이미지는 `app/data/content.ts`의 URL을 교체합니다.
-- 교수 사진을 추가할 때는 `Faculty.profileImage`에 경로를 추가하고 `FacultyCard`와 상세 화면의 placeholder를 이미지 렌더링으로 전환합니다.
+- 교수 사진은 `public/images/faculty/`에 두고 `app/data/faculty.ts`의 `image` 경로와 연결합니다.
 - 교수 사진은 4:5, 뉴스는 16:9, Instagram은 1:1 비율을 권장합니다.
 
 ## 한국어·영어 작성
@@ -79,7 +92,7 @@ public/
 
 ## API 또는 CMS 연결
 
-화면은 `app/lib/content.ts`의 조회 함수를 통해 데이터에 접근합니다. 향후 REST API나 Headless CMS를 연결할 때 이 함수의 구현을 교체하고, `app/data/content.ts`의 타입을 API 응답 타입과 맞춥니다. 현재 단계에서는 D1이나 R2를 사용하지 않습니다.
+화면은 `app/lib/content.ts`와 각 전용 데이터 파일을 통해 데이터에 접근합니다. 향후 REST API나 Headless CMS를 연결할 때 조회 함수와 도메인별 타입을 API 응답 타입에 맞춥니다. 현재 단계에서는 D1이나 R2를 사용하지 않습니다.
 
 ## 디자인 기준
 
