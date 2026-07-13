@@ -89,6 +89,30 @@ test("searches student activities from the shared data source", async () => {
   }
 });
 
+test("server-renders faculty recruitment and finds it through integrated search", async () => {
+  const koreanResponse = await render("/ko/news/faculty-recruitment");
+  assert.equal(koreanResponse.status, 200);
+  const koreanHtml = await koreanResponse.text();
+  assert.match(koreanHtml, /교수 초빙/);
+  assert.match(koreanHtml, /mech@yonsei\.ac\.kr/);
+  assert.match(koreanHtml, /yonsei\.ac\.kr\/me-faculty-application/);
+  assert.match(koreanHtml, /target="_blank"/);
+
+  const englishResponse = await render("/en/news/faculty-recruitment");
+  assert.equal(englishResponse.status, 200);
+  const englishHtml = await englishResponse.text();
+  assert.match(englishHtml, /Faculty Recruitment/);
+  assert.match(englishHtml, /tenure-track faculty/);
+
+  for (const query of ["교수 초빙", "교수 채용", "Faculty Recruitment", "Faculty Application", "tenure-track", "mech@yonsei.ac.kr"]) {
+    const response = await render(`/ko/search?q=${encodeURIComponent(query)}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, /교수 초빙/);
+    assert.match(html, /\/ko\/news\/faculty-recruitment/);
+  }
+});
+
 test("redirects the retired academic information route", async () => {
   const response = await render("/ko/academics");
   assert.equal(response.status, 307);

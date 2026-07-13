@@ -105,6 +105,7 @@ import {
 } from "../data/about";
 import { administrativeStaff } from "../data/staff";
 import { getStudentActivityBySlug, studentActivities, type StudentActivity } from "../data/studentActivities";
+import { facultyRecruitment } from "../data/facultyRecruitment";
 import { departmentHistory } from "../data/history";
 import {
   scholarshipCategoryLabels,
@@ -3005,6 +3006,86 @@ function CalendarPage({ locale, searchParams }: { locale: Locale; searchParams: 
   );
 }
 
+function FacultyRecruitmentPage({ locale }: { locale: Locale }) {
+  const { application, areas, contact, description, overview, scopeNote, title } = facultyRecruitment;
+
+  return (
+    <>
+      <PageHeader eyebrow="FACULTY RECRUITMENT" title={t(title, locale)} description={t(description, locale)} />
+      <main className="faculty-recruitment-page">
+        <section className="section faculty-recruitment-overview">
+          <div className="container faculty-recruitment-container">
+            <header className="faculty-recruitment-section-heading">
+              <p className="section-label">RECRUITMENT OVERVIEW</p>
+              <h2>{tx(locale, "모집 안내", "Recruitment Overview")}</h2>
+            </header>
+            <ul className="faculty-recruitment-summary">
+              {overview.map((item) => <li key={item.ko}>{t(item, locale)}</li>)}
+            </ul>
+          </div>
+        </section>
+
+        <section className="section faculty-recruitment-areas" aria-labelledby="faculty-recruitment-areas-title">
+          <div className="container faculty-recruitment-container">
+            <header className="faculty-recruitment-section-heading">
+              <p className="section-label">RESEARCH AREAS</p>
+              <h2 id="faculty-recruitment-areas-title">{tx(locale, "주요 관심 연구 분야", "Areas of Interest")}</h2>
+            </header>
+            <div className="faculty-recruitment-area-grid">
+              {areas.map((area) => (
+                <article key={area.title.en}>
+                  <h3>{t(area.title, locale)}</h3>
+                  {area.subareas && <ul>{area.subareas.map((subarea) => <li key={subarea.en}>{t(subarea, locale)}</li>)}</ul>}
+                </article>
+              ))}
+            </div>
+            <p className="faculty-recruitment-scope-note">{t(scopeNote, locale)}</p>
+          </div>
+        </section>
+
+        <section className="section faculty-recruitment-application" aria-labelledby="faculty-recruitment-application-title">
+          <div className="container faculty-recruitment-container faculty-recruitment-application-inner">
+            <div>
+              <p className="section-label">APPLICATION</p>
+              <h2 id="faculty-recruitment-application-title">{tx(locale, "지원 방법", "How to Apply")}</h2>
+              <p>{t(application.instruction, locale)}</p>
+            </div>
+            <a
+              className="button primary faculty-recruitment-apply-link"
+              href={application.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${t(application.buttonLabel, locale)}${tx(locale, " (새 창)", " (opens in a new window)")}`}
+            >
+              {t(application.buttonLabel, locale)}
+              <ExternalLink size={17} aria-hidden="true" />
+            </a>
+          </div>
+        </section>
+
+        <section className="section faculty-recruitment-contact" aria-labelledby="faculty-recruitment-contact-title">
+          <div className="container faculty-recruitment-container">
+            <header className="faculty-recruitment-section-heading">
+              <p className="section-label">CONTACT</p>
+              <h2 id="faculty-recruitment-contact-title">{tx(locale, "문의", "Contact")}</h2>
+            </header>
+            <dl>
+              <div>
+                <dt>{tx(locale, "담당", "Committee")}</dt>
+                <dd>{contact.committee}</dd>
+              </div>
+              <div>
+                <dt>{tx(locale, "이메일", "Email")}</dt>
+                <dd><a href={`mailto:${contact.email}`} aria-label={`${contact.committee} ${contact.email}`}>{contact.email}</a></dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+      </main>
+    </>
+  );
+}
+
 function SearchPage({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
   const router = useRouter();
   const [query, setQuery] = useState(searchParams.q ?? "");
@@ -3027,9 +3108,17 @@ function SearchPage({ locale, searchParams }: { locale: Locale; searchParams: Re
     ...item.achievements.flatMap((entry) => [entry.ko, entry.en]),
     ...item.keywords.flatMap((entry) => [entry.ko, entry.en]),
   ].join(" ").toLowerCase().includes(normalized)) : [];
-  const total = facultyResults.length + researchResults.length + courseResults.length + noticeResults.length + studentActivityResults.length;
+  const facultyRecruitmentResults = normalized && [
+    facultyRecruitment.title.ko,
+    facultyRecruitment.title.en,
+    facultyRecruitment.description.ko,
+    facultyRecruitment.description.en,
+    ...facultyRecruitment.searchKeywords,
+    facultyRecruitment.contact.email,
+  ].join(" ").toLowerCase().includes(normalized) ? [facultyRecruitment] : [];
+  const total = facultyResults.length + researchResults.length + courseResults.length + noticeResults.length + studentActivityResults.length + facultyRecruitmentResults.length;
 
-  return <><PageHeader eyebrow="SEARCH" title={tx(locale, "통합검색", "Search")} description={tx(locale, "교수, 연구, 교육과정, 학생활동, 공지 및 소식을 한 곳에서 찾습니다.", "Search faculty, research, academics, student activities, and notices in one place.")} /><section className="section content-section"><div className="container search-page"><form onSubmit={(event) => { event.preventDefault(); router.replace(`${hrefFor(locale, "/search")}?q=${encodeURIComponent(query)}`); }}><label htmlFor="search-page-input">{tx(locale, "검색어", "Search query")}</label><div><Search size={22} /><input id="search-page-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "검색어를 입력하세요", "Enter a search term")} /><button className="button primary" type="submit">{tx(locale, "검색", "Search")}</button></div></form>{normalized && <p className="search-summary"><strong>‘{query}’</strong> {tx(locale, `검색 결과 ${total}건`, `${total} results`)}</p>}{!normalized ? <div className="empty-state"><Search size={26} /><h3>{tx(locale, "검색어를 입력해 주세요", "Enter a search term")}</h3><p>{tx(locale, "교수명, 연구 키워드, 과목명, 동아리명, 공지 제목을 검색할 수 있습니다.", "Search by faculty, research keyword, course, student activity, or notice title.")}</p></div> : total === 0 ? <EmptyState locale={locale} /> : <div className="search-groups"><SearchGroup title={tx(locale, "교수진", "Faculty")} items={facultyResults.map((item) => ({ title: t(item.name, locale), description: item.researchKeywords[locale].join(" · "), path: `/faculty/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "연구", "Research")} items={researchResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/research/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "교육과정", "Academics")} items={courseResults.map((item) => ({ title: t(item.name, locale), description: `${item.code} · ${item.credits} ${tx(locale, "학점", "credits")}`, path: `/academics/courses/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "학생활동·동아리", "Student Activities")} items={studentActivityResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/about/student-activities/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "공지 및 소식", "News & Notices")} items={noticeResults.map((item) => ({ title: t(item.title, locale), description: item.publishedAt, path: `/news/notices/${item.slug}` }))} locale={locale} /></div>}</div></section></>;
+  return <><PageHeader eyebrow="SEARCH" title={tx(locale, "통합검색", "Search")} description={tx(locale, "교수, 연구, 교육과정, 학생활동, 공지 및 소식을 한 곳에서 찾습니다.", "Search faculty, research, academics, student activities, and notices in one place.")} /><section className="section content-section"><div className="container search-page"><form onSubmit={(event) => { event.preventDefault(); router.replace(`${hrefFor(locale, "/search")}?q=${encodeURIComponent(query)}`); }}><label htmlFor="search-page-input">{tx(locale, "검색어", "Search query")}</label><div><Search size={22} /><input id="search-page-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "검색어를 입력하세요", "Enter a search term")} /><button className="button primary" type="submit">{tx(locale, "검색", "Search")}</button></div></form>{normalized && <p className="search-summary"><strong>‘{query}’</strong> {tx(locale, `검색 결과 ${total}건`, `${total} results`)}</p>}{!normalized ? <div className="empty-state"><Search size={26} /><h3>{tx(locale, "검색어를 입력해 주세요", "Enter a search term")}</h3><p>{tx(locale, "교수명, 연구 키워드, 과목명, 동아리명, 공지 제목을 검색할 수 있습니다.", "Search by faculty, research keyword, course, student activity, or notice title.")}</p></div> : total === 0 ? <EmptyState locale={locale} /> : <div className="search-groups"><SearchGroup title={tx(locale, "교수진", "Faculty")} items={facultyResults.map((item) => ({ title: t(item.name, locale), description: item.researchKeywords[locale].join(" · "), path: `/faculty/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "연구", "Research")} items={researchResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/research/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "교육과정", "Academics")} items={courseResults.map((item) => ({ title: t(item.name, locale), description: `${item.code} · ${item.credits} ${tx(locale, "학점", "credits")}`, path: `/academics/courses/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "학생활동·동아리", "Student Activities")} items={studentActivityResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/about/student-activities/${item.slug}` }))} locale={locale} /><SearchGroup title={tx(locale, "교수 초빙", "Faculty Recruitment")} items={facultyRecruitmentResults.map((item) => ({ title: t(item.title, locale), description: t(item.description, locale), path: "/news/faculty-recruitment" }))} locale={locale} /><SearchGroup title={tx(locale, "공지 및 소식", "News & Notices")} items={noticeResults.map((item) => ({ title: t(item.title, locale), description: item.publishedAt, path: `/news/notices/${item.slug}` }))} locale={locale} /></div>}</div></section></>;
 }
 
 function SearchGroup({ title, items, locale }: { title: string; items: { title: string; description: string; path: string }[]; locale: Locale }) {
@@ -3582,6 +3671,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "news" && second === "notices" && third && getNoticeBySlug(third)) page = <NoticeDetail locale={locale} notice={getNoticeBySlug(third)!} />;
   else if (section === "news" && second === "notices") page = <NoticeDirectory locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "calendar") page = <CalendarPage locale={locale} searchParams={searchParams} />;
+  else if (section === "news" && second === "faculty-recruitment") page = <FacultyRecruitmentPage locale={locale} />;
   else if (section === "search") page = <SearchPage locale={locale} searchParams={searchParams} />;
   else if (section === "promotion" && second === "instagram") page = <HomePage locale={locale} />;
   else page = <PlaceholderPage locale={locale} segments={segments} />;

@@ -10703,3 +10703,274 @@ p {
     break-inside: avoid;
   }
 }
+
+/* Faculty recruitment */
+.faculty-recruitment-page {
+  background: #fff;
+}
+
+.faculty-recruitment-container {
+  max-width: 1160px;
+}
+
+.faculty-recruitment-section-heading {
+  margin-bottom: 34px;
+}
+
+.faculty-recruitment-section-heading h2,
+.faculty-recruitment-application h2 {
+  margin: 8px 0 0;
+  color: var(--color-navy-deep);
+  font-size: 30px;
+  line-height: 1.25;
+}
+
+.faculty-recruitment-overview {
+  padding-top: 106px;
+  padding-bottom: 90px;
+}
+
+.faculty-recruitment-summary {
+  max-width: 900px;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-navy-deep);
+  list-style: none;
+}
+
+.faculty-recruitment-summary li {
+  position: relative;
+  padding: 22px 24px 22px 30px;
+  border-bottom: 1px solid var(--color-border);
+  color: #3d4d5e;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.faculty-recruitment-summary li::before {
+  position: absolute;
+  top: 34px;
+  left: 4px;
+  width: 8px;
+  height: 2px;
+  background: var(--color-yonsei-blue);
+  content: "";
+}
+
+.faculty-recruitment-areas {
+  padding: 88px 0;
+  background: #f5f8fb;
+}
+
+.faculty-recruitment-area-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--color-navy-deep);
+  border-left: 1px solid var(--color-border);
+}
+
+.faculty-recruitment-area-grid article {
+  min-height: 155px;
+  padding: 28px 26px;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: #fff;
+}
+
+.faculty-recruitment-area-grid h3 {
+  margin: 0;
+  color: var(--color-navy-deep);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.faculty-recruitment-area-grid ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 20px 0 0;
+  padding: 0;
+  color: #637286;
+  font-size: 14px;
+  line-height: 1.5;
+  list-style: none;
+}
+
+.faculty-recruitment-area-grid li::after {
+  margin-left: 12px;
+  color: #b7c4ce;
+  content: "·";
+}
+
+.faculty-recruitment-area-grid li:last-child::after {
+  display: none;
+}
+
+.faculty-recruitment-scope-note {
+  margin: 25px 0 0;
+  color: #57687b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.faculty-recruitment-application {
+  padding: 78px 0;
+}
+
+.faculty-recruitment-application-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 38px 42px;
+  border-left: 4px solid var(--color-yonsei-blue);
+  background: #eef5fa;
+}
+
+.faculty-recruitment-application p:not(.section-label) {
+  margin: 12px 0 0;
+  color: #526276;
+  font-size: 16px;
+}
+
+.faculty-recruitment-apply-link {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.faculty-recruitment-contact {
+  padding: 0 0 110px;
+}
+
+.faculty-recruitment-contact dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  border-top: 1px solid var(--color-navy-deep);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.faculty-recruitment-contact dl > div {
+  padding: 25px 0;
+}
+
+.faculty-recruitment-contact dl > div + div {
+  padding-left: 42px;
+  border-left: 1px solid var(--color-border);
+}
+
+.faculty-recruitment-contact dt {
+  margin-bottom: 8px;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.faculty-recruitment-contact dd {
+  margin: 0;
+  color: var(--color-navy-deep);
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.faculty-recruitment-contact a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: #b7c4ce;
+  text-underline-offset: 4px;
+}
+
+.faculty-recruitment-contact a:hover,
+.faculty-recruitment-contact a:focus-visible {
+  color: var(--color-yonsei-blue);
+  text-decoration-color: currentcolor;
+}
+
+@media (max-width: 900px) {
+  .faculty-recruitment-area-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .faculty-recruitment-application-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 680px) {
+  .faculty-recruitment-overview {
+    padding-top: 70px;
+    padding-bottom: 62px;
+  }
+
+  .faculty-recruitment-areas {
+    padding: 62px 0;
+  }
+
+  .faculty-recruitment-section-heading {
+    margin-bottom: 25px;
+  }
+
+  .faculty-recruitment-section-heading h2,
+  .faculty-recruitment-application h2 {
+    font-size: 26px;
+  }
+
+  .faculty-recruitment-summary li {
+    padding: 18px 4px 18px 24px;
+    font-size: 14px;
+  }
+
+  .faculty-recruitment-summary li::before {
+    top: 29px;
+  }
+
+  .faculty-recruitment-area-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .faculty-recruitment-area-grid article {
+    min-height: 0;
+    padding: 23px 20px;
+  }
+
+  .faculty-recruitment-application {
+    padding: 55px 0;
+  }
+
+  .faculty-recruitment-application-inner {
+    gap: 27px;
+    padding: 30px 23px;
+  }
+
+  .faculty-recruitment-application p:not(.section-label) {
+    font-size: 14px;
+  }
+
+  .faculty-recruitment-apply-link {
+    width: 100%;
+    justify-content: center;
+    min-height: 46px;
+  }
+
+  .faculty-recruitment-contact {
+    padding-bottom: 72px;
+  }
+
+  .faculty-recruitment-contact dl {
+    grid-template-columns: 1fr;
+  }
+
+  .faculty-recruitment-contact dl > div,
+  .faculty-recruitment-contact dl > div + div {
+    padding: 20px 0;
+    border-left: 0;
+  }
+
+  .faculty-recruitment-contact dl > div + div {
+    border-top: 1px solid var(--color-border);
+  }
+}
