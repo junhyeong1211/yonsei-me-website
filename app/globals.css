@@ -2479,17 +2479,17 @@ p {
   line-height: 1.75;
 }
 
-.laboratory-guide-link {
+.button.outline.laboratory-guide-link {
   align-self: flex-start;
   margin-top: 24px;
   color: #fff;
-  border-color: #9ac9e8;
+  border-color: #fff;
 }
 
-.laboratory-guide-link:hover,
-.laboratory-guide-link:focus-visible {
-  color: #fff;
-  background: rgba(154, 201, 232, 0.14);
+.button.outline.laboratory-guide-link:hover,
+.button.outline.laboratory-guide-link:focus-visible {
+  color: var(--color-navy-deep);
+  background: #fff;
   border-color: #fff;
 }
 
