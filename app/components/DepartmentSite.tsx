@@ -110,7 +110,7 @@ import { getNewsBySlug, newsPosts } from "../data/news";
 import { getSeminarBySlug, seminarPosts } from "../data/seminars";
 import { eventPosts, getEventBySlug } from "../data/events";
 import { matchesEditorialQuery } from "../data/editorialContent";
-import { EditorialBoardPage, EditorialDetailPage, NewsDirectoryPage } from "./NewsContent";
+import { EditorialBoardPage, EditorialDetailPage, NewsDirectoryPage, ProgramsDirectoryPage } from "./NewsContent";
 import { AlumniPartnershipsPage } from "./AlumniPartnershipsPage";
 import { alumniPartnerships } from "../data/alumniPartnerships";
 import { departmentHistory } from "../data/history";
@@ -211,8 +211,9 @@ const routeLabels: Record<string, LocaleText> = {
   news: { ko: "학과소식", en: "News" },
   department: { ko: "뉴스", en: "News" },
   notices: { ko: "공지사항", en: "Notices" },
-  seminars: { ko: "세미나", en: "Seminars" },
-  events: { ko: "행사", en: "Events" },
+  programs: { ko: "세미나·행사", en: "Seminars & Events" },
+  seminars: { ko: "세미나·행사", en: "Seminars & Events" },
+  events: { ko: "세미나·행사", en: "Seminars & Events" },
   "faculty-recruitment": { ko: "교수 초빙", en: "Faculty Recruitment" },
   calendar: { ko: "학사일정", en: "Academic Calendar" },
   careers: { ko: "취업 정보", en: "Career Information" },
@@ -3725,13 +3726,18 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "news" && second === "calendar") page = <CalendarPage locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "faculty-recruitment") page = <FacultyRecruitmentPage locale={locale} />;
   else if (section === "news" && second === "department") page = <NewsDirectoryPage locale={locale} searchParams={searchParams} />;
-  else if (section === "news" && second === "events") page = <EditorialBoardPage locale={locale} searchParams={searchParams} posts={eventPosts} type="event" />;
+  else if (section === "news" && second === "programs" && third) {
+    const post = [...seminarPosts, ...eventPosts].find((item) => item.slug === third);
+    page = post ? <EditorialDetailPage locale={locale} post={post} posts={[...seminarPosts, ...eventPosts]} /> : <PlaceholderPage locale={locale} segments={segments} />;
+  }
+  else if (section === "news" && second === "programs") page = <ProgramsDirectoryPage locale={locale} searchParams={searchParams} posts={[...seminarPosts, ...eventPosts]} />;
+  else if (section === "news" && second === "events") page = <ProgramsDirectoryPage locale={locale} searchParams={{ ...searchParams, type: "event" }} posts={[...seminarPosts, ...eventPosts]} />;
   else if (section === "news" && second && getNewsBySlug(second)) page = <EditorialDetailPage locale={locale} post={getNewsBySlug(second)!} posts={newsPosts} />;
   else if (section === "news" && !second) page = <NewsDirectoryPage locale={locale} searchParams={searchParams} />;
   else if (section === "seminars" && second && getSeminarBySlug(second)) page = <EditorialDetailPage locale={locale} post={getSeminarBySlug(second)!} posts={seminarPosts} />;
-  else if (section === "seminars" && !second) page = <EditorialBoardPage locale={locale} searchParams={searchParams} posts={seminarPosts} type="seminar" />;
+  else if (section === "seminars" && !second) page = <ProgramsDirectoryPage locale={locale} searchParams={{ ...searchParams, type: "seminar" }} posts={[...seminarPosts, ...eventPosts]} />;
   else if (section === "events" && second && getEventBySlug(second)) page = <EditorialDetailPage locale={locale} post={getEventBySlug(second)!} posts={eventPosts} />;
-  else if (section === "events" && !second) page = <EditorialBoardPage locale={locale} searchParams={searchParams} posts={eventPosts} type="event" />;
+  else if (section === "events" && !second) page = <ProgramsDirectoryPage locale={locale} searchParams={{ ...searchParams, type: "event" }} posts={[...seminarPosts, ...eventPosts]} />;
   else if (section === "search") page = <SearchPage locale={locale} searchParams={searchParams} />;
   else if (section === "promotion" && second === "instagram") page = <HomePage locale={locale} />;
   else page = <PlaceholderPage locale={locale} segments={segments} />;

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, Download, ExternalLink, Paperclip, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Locale } from "../data/content";
@@ -142,6 +143,28 @@ export function EditorialBoardPage({ locale, searchParams, posts, type }: { loca
       </section>
     </>
   );
+}
+
+export function ProgramsDirectoryPage({ locale, searchParams, posts }: { locale: Locale; searchParams: Record<string, string>; posts: EditorialPost[] }) {
+  const router = useRouter();
+  const initialType = searchParams.type === "seminar" || searchParams.type === "event" ? searchParams.type : "all";
+  const [selectedType, setSelectedType] = useState<"all" | "seminar" | "event">(initialType);
+  const [query, setQuery] = useState(searchParams.q ?? "");
+  const [page, setPage] = useState(1);
+  const filteredPosts = useMemo(() => sortEditorialPosts(posts).filter((post) => {
+    const searchable = `${post.title.ko} ${post.title.en} ${post.author?.ko ?? ""} ${post.author?.en ?? ""}`.toLowerCase();
+    return (selectedType === "all" || post.type === selectedType) && searchable.includes(query.trim().toLowerCase());
+  }), [posts, query, selectedType]);
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / PAGE_SIZE));
+  const visiblePosts = filteredPosts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const selectType = (nextType: "all" | "seminar" | "event") => {
+    setSelectedType(nextType); setPage(1);
+    const params = new URLSearchParams();
+    if (nextType !== "all") params.set("type", nextType);
+    if (query.trim()) params.set("q", query.trim());
+    router.replace(`${localizedPath(locale, "/news/programs")}${params.size ? `?${params.toString()}` : ""}`);
+  };
+  return <><EditorialPageHeader eyebrow="SEMINARS & EVENTS" title={copy(locale, "세미나·행사", "Seminars & Events")} description={copy(locale, "기계공학부의 세미나와 주요 행사를 안내합니다.", "Find seminars and major department events.")} /><section className="section editorial-directory-section"><div className="container editorial-directory-container"><div className="editorial-toolbar"><div className="editorial-category-tabs" role="tablist" aria-label={copy(locale, "세미나·행사 분류", "Seminars and events categories")}>{(["all", "seminar", "event"] as const).map((type) => <button type="button" role="tab" aria-selected={selectedType === type} key={type} onClick={() => selectType(type)}>{type === "all" ? copy(locale, "전체", "All") : type === "seminar" ? copy(locale, "세미나", "Seminars") : copy(locale, "행사", "Events")}</button>)}</div><label className="editorial-search"><span className="sr-only">{copy(locale, "세미나·행사 검색", "Search seminars and events")}</span><Search size={18} aria-hidden="true" /><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder={copy(locale, "제목·작성자 검색", "Search title or author")} /></label></div><p className="editorial-result-count"><strong>{filteredPosts.length}</strong>{copy(locale, "건", " posts")}</p><div className="editorial-board" role="table" aria-label={copy(locale, "세미나·행사 목록", "Seminars and events list")}><div className="editorial-board-head" role="row"><span role="columnheader">{copy(locale, "번호", "No.")}</span><span role="columnheader">{copy(locale, "제목", "Title")}</span><span role="columnheader">{copy(locale, "첨부", "File")}</span><span role="columnheader">{copy(locale, "작성자", "Author")}</span><span role="columnheader">{copy(locale, "등록일", "Date")}</span></div>{visiblePosts.map((post, index) => <Link className="editorial-board-row" role="row" href={localizedPath(locale, `/news/programs/${post.slug}`)} key={post.id}><span className="editorial-board-number" role="cell">{filteredPosts.length - ((page - 1) * PAGE_SIZE + index)}</span><strong role="cell"><small className="editorial-program-type">{post.type === "seminar" ? copy(locale, "세미나", "Seminar") : copy(locale, "행사", "Event")}</small>{post.isNew && <span className="editorial-new-badge">N</span>}{text(post.title, locale)}</strong><span className="editorial-board-file" role="cell">{post.attachments.length > 0 ? <Paperclip size={15} /> : "-"}</span><span role="cell">{post.author ? text(post.author, locale) : copy(locale, "확인 중", "Pending")}</span><time role="cell" dateTime={post.publishedAt}>{dateLabel(post.publishedAt, locale)}</time></Link>)}</div>{!visiblePosts.length && <p className="editorial-empty">{copy(locale, "검색 결과가 없습니다.", "No results found.")}</p>}<Pagination page={page} totalPages={totalPages} onChange={setPage} locale={locale} /></div></section></>;
 }
 
 export function EditorialDetailPage({ locale, post, posts }: { locale: Locale; post: EditorialPost; posts: EditorialPost[] }) {

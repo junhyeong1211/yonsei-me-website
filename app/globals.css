@@ -11247,6 +11247,8 @@ p {
   vertical-align: 1px;
 }
 
+.editorial-program-type { display: inline-block; margin-right: 8px; color: var(--color-yonsei-blue); font-size: 11px; font-weight: 700; }
+
 .editorial-empty {
   min-height: 180px;
   margin: 0;

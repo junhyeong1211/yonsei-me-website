@@ -72,8 +72,7 @@ export const navigation: NavigationItem[] = [
     children: [
       child("공지사항", "Notices", "/news/notices"),
       child("뉴스", "News", "/news"),
-      child("세미나", "Seminars", "/seminars"),
-      child("행사", "Events", "/events"),
+      child("세미나·행사", "Seminars & Events", "/news/programs"),
       child("교수 초빙", "Faculty Recruitment", "/news/faculty-recruitment"),
       child("학사일정", "Academic Calendar", "/news/calendar"),
     ],
