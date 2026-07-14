@@ -89,6 +89,24 @@ test("searches student activities from the shared data source", async () => {
   }
 });
 
+test("server-renders alumni partnerships and finds it through integrated search", async () => {
+  for (const pathname of ["/ko/about/alumni-partnerships", "/en/about/alumni-partnerships", "/ko/about/alumni"]) {
+    const response = await render(pathname);
+    assert.equal(response.status, 200, pathname);
+    const html = await response.text();
+    assert.match(html, /ALUMNI &amp; PARTNERSHIPS/);
+    assert.match(html, /nmh@yonsei\.ac\.kr/);
+  }
+
+  for (const query of ["동문", "산학협력", "국제교류", "대외협력"]) {
+    const response = await render(`/ko/search?q=${encodeURIComponent(query)}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, /동문·대외협력/);
+    assert.match(html, /\/ko\/about\/alumni-partnerships/);
+  }
+});
+
 test("server-renders faculty recruitment and finds it through integrated search", async () => {
   const koreanResponse = await render("/ko/news/faculty-recruitment");
   assert.equal(koreanResponse.status, 200);

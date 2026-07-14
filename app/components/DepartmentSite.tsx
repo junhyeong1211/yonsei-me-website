@@ -111,6 +111,8 @@ import { getSeminarBySlug, seminarPosts } from "../data/seminars";
 import { eventPosts, getEventBySlug } from "../data/events";
 import { matchesEditorialQuery } from "../data/editorialContent";
 import { EditorialBoardPage, EditorialDetailPage, NewsDirectoryPage } from "./NewsContent";
+import { AlumniPartnershipsPage } from "./AlumniPartnershipsPage";
+import { alumniPartnerships } from "../data/alumniPartnerships";
 import { departmentHistory } from "../data/history";
 import {
   scholarshipCategoryLabels,
@@ -190,6 +192,7 @@ const routeLabels: Record<string, LocaleText> = {
   staff: { ko: "교직원", en: "Staff" },
   "student-activities": { ko: "학생활동·동아리", en: "Student Activities" },
   alumni: { ko: "동문·대외협력", en: "Alumni & Partnerships" },
+  "alumni-partnerships": { ko: "동문·대외협력", en: "Alumni & Partnerships" },
   contact: { ko: "조직 및 연락처", en: "Organization & Contact" },
   directions: { ko: "오시는 길", en: "Directions" },
   faculty: { ko: "교수진", en: "Faculty" },
@@ -3125,7 +3128,17 @@ function SearchPage({ locale, searchParams }: { locale: Locale; searchParams: Re
   const newsContentResults = normalized ? newsPosts.filter((item) => matchesEditorialQuery(item, normalized)) : [];
   const seminarContentResults = normalized ? seminarPosts.filter((item) => matchesEditorialQuery(item, normalized)) : [];
   const eventContentResults = normalized ? eventPosts.filter((item) => matchesEditorialQuery(item, normalized)) : [];
-  const total = facultyResults.length + researchResults.length + courseResults.length + noticeResults.length + studentActivityResults.length + facultyRecruitmentResults.length + newsContentResults.length + seminarContentResults.length + eventContentResults.length;
+  const alumniPartnershipResults = normalized && [
+    alumniPartnerships.title.ko,
+    alumniPartnerships.title.en,
+    alumniPartnerships.description.ko,
+    alumniPartnerships.description.en,
+    ...alumniPartnerships.searchKeywords,
+    ...alumniPartnerships.network.flatMap((item) => [item.title.ko, item.title.en, item.description.ko, item.description.en]),
+    ...alumniPartnerships.partnershipAreas.flatMap((item) => [item.title.ko, item.title.en, item.description.ko, item.description.en]),
+    ...alumniPartnerships.cases.flatMap((item) => [item.title.ko, item.title.en, item.description.ko, item.description.en]),
+  ].join(" ").toLowerCase().includes(normalized) ? [alumniPartnerships] : [];
+  const total = facultyResults.length + researchResults.length + courseResults.length + noticeResults.length + studentActivityResults.length + facultyRecruitmentResults.length + newsContentResults.length + seminarContentResults.length + eventContentResults.length + alumniPartnershipResults.length;
 
   return (
     <>
@@ -3145,6 +3158,7 @@ function SearchPage({ locale, searchParams }: { locale: Locale; searchParams: Re
               <SearchGroup title={tx(locale, "연구", "Research")} items={researchResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/research/${item.slug}` }))} locale={locale} />
               <SearchGroup title={tx(locale, "교육과정", "Academics")} items={courseResults.map((item) => ({ title: t(item.name, locale), description: `${item.code} · ${item.credits} ${tx(locale, "학점", "credits")}`, path: `/academics/courses/${item.slug}` }))} locale={locale} />
               <SearchGroup title={tx(locale, "학생활동·동아리", "Student Activities")} items={studentActivityResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/about/student-activities/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "동문·대외협력", "Alumni & Partnerships")} items={alumniPartnershipResults.map((item) => ({ title: t(item.title, locale), description: t(item.description, locale), path: "/about/alumni-partnerships" }))} locale={locale} />
               <SearchGroup title={tx(locale, "뉴스", "News")} items={newsContentResults.map((item) => ({ title: t(item.title, locale), description: t(item.summary, locale), path: `/news/${item.slug}` }))} locale={locale} />
               <SearchGroup title={tx(locale, "세미나", "Seminars")} items={seminarContentResults.map((item) => ({ title: t(item.title, locale), description: `${t(item.category, locale)} · ${item.publishedAt}`, path: `/seminars/${item.slug}` }))} locale={locale} />
               <SearchGroup title={tx(locale, "행사", "Events")} items={eventContentResults.map((item) => ({ title: t(item.title, locale), description: `${t(item.category, locale)} · ${item.publishedAt}`, path: `/events/${item.slug}` }))} locale={locale} />
@@ -3680,6 +3694,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "about" && second === "staff") page = <StaffPage locale={locale} />;
   else if (section === "about" && second === "student-activities" && third && getStudentActivityBySlug(third)) page = <StudentActivityDetail locale={locale} activity={getStudentActivityBySlug(third)!} />;
   else if (section === "about" && second === "student-activities") page = <StudentActivitiesPage locale={locale} />;
+  else if (section === "about" && (second === "alumni-partnerships" || second === "alumni")) page = <AlumniPartnershipsPage locale={locale} />;
   else if (section === "faculty" && second && getFacultyMemberBySlug(second)) page = <FacultyMemberDetail locale={locale} member={getFacultyMemberBySlug(second)!} />;
   else if (section === "faculty" && !second) page = <FacultyMemberDirectory locale={locale} />;
   else if (section === "faculty" && second && getFacultyBySlug(second)) page = <FacultyDetail locale={locale} person={getFacultyBySlug(second)!} />;

@@ -66,6 +66,7 @@ public/
 | 연혁 | `app/data/history.ts` | 학부 연혁 |
 | 교직원 | `app/data/staff.ts` | 학부·대학원·BK21 행정 담당자 |
 | 학생활동·동아리 | `app/data/studentActivities.ts` | 동아리 목록·상세, 대표 이미지와 공식 검수 전 영문 문구 |
+| 동문·대외협력 | `app/data/alumniPartnerships.ts` | 동문 네트워크, 협력 분야, 주요 교류 사례와 공식 문의처 |
 | 입학 | `app/data/undergraduateAdmission.ts` | 학부 입학 콘텐츠와 공식 외부 URL |
 | 취업 정보 | `app/data/careers.ts` | 채용·진로 게시 데이터 |
 | 학사일정 | `app/data/calendar.ts` | 정적 초기값과 fallback, 런타임 연동은 `app/api/calendar/route.ts` |

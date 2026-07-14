@@ -63,6 +63,7 @@
 | 연구실 찾기 | 홈 → 연구·구성원 → 연구실 | `/[locale]/labs` |
 | 교수진 찾기 | 홈 → 연구·구성원 → 교수진 | `/[locale]/faculty` |
 | 학생활동 찾기 | 홈 → 학부 소개 → 학생활동·동아리 | `/[locale]/about/student-activities` |
+| 동문·대외협력 확인 | 홈 → 학부 소개 → 동문·대외협력 | `/[locale]/about/alumni-partnerships` |
 | 대학원 입학 확인 | 홈 → 입학·진로 → 대학원 진학 | 연세대학교 일반대학원 공식 외부 URL |
 | 취업 정보 확인 | 홈 → 입학·진로 → 취업 정보 | `/[locale]/admission/careers` |
 
@@ -75,7 +76,7 @@
 /[locale]/about/staff
 /[locale]/about/student-activities
 /[locale]/about/student-activities/[slug]
-/[locale]/about/alumni
+/[locale]/about/alumni-partnerships
 /[locale]/about/directions
 
 /[locale]/academics
