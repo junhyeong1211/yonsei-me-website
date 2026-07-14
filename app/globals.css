@@ -2471,6 +2471,28 @@ p {
   border-bottom: 1px solid var(--color-border);
 }
 
+.laboratory-directory-page-header .page-header-inner > p:not(.section-label) {
+  max-width: 760px;
+  margin-bottom: 0;
+  color: #b8c8d5;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.laboratory-guide-link {
+  align-self: flex-start;
+  margin-top: 24px;
+  color: #fff;
+  border-color: #9ac9e8;
+}
+
+.laboratory-guide-link:hover,
+.laboratory-guide-link:focus-visible {
+  color: #fff;
+  background: rgba(154, 201, 232, 0.14);
+  border-color: #fff;
+}
+
 .laboratory-area-tabs {
   display: flex;
   min-width: 0;

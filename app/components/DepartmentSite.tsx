@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Download,
   ExternalLink,
+  FileText,
   FlaskConical,
   GraduationCap,
   MapPin,
@@ -1509,11 +1510,23 @@ function ResearchLabDirectory({ locale, searchParams }: { locale: Locale; search
 
   return (
     <>
-      <PageHeader
-        eyebrow="LABORATORIES"
-        title={tx(locale, "연구실", "Laboratories")}
-        description={tx(locale, "연구실명 또는 교수명으로 검색해 보세요.", "Search by laboratory or faculty advisor.")}
-      />
+      <header className="page-header laboratory-directory-page-header">
+        <div className="container page-header-inner">
+          <p className="section-label light">LABORATORIES</p>
+          <h1>{tx(locale, "연구실", "Laboratories")}</h1>
+          <p>{tx(locale, "연구실명 또는 교수명으로 검색해 보세요.", "Search by laboratory or faculty advisor.")}</p>
+          <a
+            className="button outline laboratory-guide-link"
+            href="/files/labs.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={tx(locale, "연구실 소개자료 PDF 보기, 새 탭에서 열림", "View the Laboratory Guide PDF, opens in a new tab")}
+          >
+            <FileText size={16} aria-hidden="true" />
+            {tx(locale, "연구실 소개자료 PDF 보기", "View Laboratory Guide PDF")}
+          </a>
+        </div>
+      </header>
       <section className="section content-section">
         <div className="container">
           <div className="laboratory-directory-toolbar">
