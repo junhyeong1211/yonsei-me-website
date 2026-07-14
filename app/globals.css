@@ -263,25 +263,9 @@ p {
   font-size: 13px;
 }
 
-.mega-menu-links a::after {
-  position: absolute;
-  bottom: 5px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  content: "";
-  background: currentColor;
-  transition: width 180ms ease;
-}
-
 .mega-menu-links a:hover,
 .mega-menu-links a:focus-visible {
   color: var(--color-yonsei-blue);
-}
-
-.mega-menu-links a:hover::after,
-.mega-menu-links a:focus-visible::after {
-  width: 34px;
 }
 
 .header-tools {
