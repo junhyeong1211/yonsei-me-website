@@ -136,14 +136,14 @@ p {
 .header-row {
   display: grid;
   grid-template-columns: 350px minmax(0, 1fr) 200px;
+  width: min(calc(100% - 32px), calc(var(--container-width) + 64px));
   align-items: stretch;
   height: 100%;
 }
 
-@media (min-width: 1600px) {
-  .site-header .header-row,
+@media (min-width: 1081px) {
   .mega-menu .mega-menu-grid {
-    width: min(calc(100% - 32px), calc(var(--container-width) + 160px));
+    width: min(calc(100% - 32px), calc(var(--container-width) + 64px));
   }
 }
 
