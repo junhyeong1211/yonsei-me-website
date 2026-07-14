@@ -268,6 +268,66 @@ p {
   color: var(--color-yonsei-blue);
 }
 
+/* English labels need a more compact desktop measure than Korean labels. */
+@media (min-width: 1201px) {
+  .header-navigation-shell[data-locale="en"] .header-row {
+    grid-template-columns: 260px minmax(0, 1fr) 190px;
+  }
+
+  .header-navigation-shell[data-locale="en"] .brand {
+    padding-right: 12px;
+  }
+
+  .header-navigation-shell[data-locale="en"] .desktop-nav {
+    gap: clamp(14px, 1.7vw, 28px);
+  }
+
+  .header-navigation-shell[data-locale="en"] .nav-item > button {
+    padding: 0 9px;
+    font-size: 14px;
+  }
+
+  .header-navigation-shell[data-locale="en"] .mega-menu-grid {
+    min-height: 420px;
+  }
+
+  .header-navigation-shell[data-locale="en"] .mega-menu-column {
+    width: clamp(128px, 10.5vw, 150px);
+    padding: 0 6px;
+  }
+
+  .header-navigation-shell[data-locale="en"] .mega-menu-links a {
+    min-height: 42px;
+    font-size: 12px;
+    line-height: 1.35;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (min-width: 1081px) and (max-width: 1200px) {
+  .header-navigation-shell[data-locale="en"] .header-row {
+    grid-template-columns: 260px minmax(0, 1fr) 210px;
+  }
+
+  .header-navigation-shell[data-locale="en"] .desktop-nav,
+  .header-navigation-shell[data-locale="en"] .mega-menu {
+    display: none;
+  }
+
+  .header-navigation-shell[data-locale="en"] .brand {
+    margin-right: auto;
+  }
+
+  .header-navigation-shell[data-locale="en"] .header-tools::before {
+    display: none;
+  }
+
+  .header-navigation-shell[data-locale="en"] .mobile-menu-button {
+    display: inline-grid;
+  }
+}
+
 .header-tools {
   position: relative;
   display: flex;

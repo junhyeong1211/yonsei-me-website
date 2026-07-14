@@ -109,10 +109,9 @@ import { facultyRecruitment } from "../data/facultyRecruitment";
 import { getNewsBySlug, newsPosts } from "../data/news";
 import { getSeminarBySlug, seminarPosts } from "../data/seminars";
 import { eventPosts, getEventBySlug } from "../data/events";
-import { matchesEditorialQuery } from "../data/editorialContent";
 import { EditorialBoardPage, EditorialDetailPage, NewsDirectoryPage, ProgramsDirectoryPage } from "./NewsContent";
 import { AlumniPartnershipsPage } from "./AlumniPartnershipsPage";
-import { alumniPartnerships } from "../data/alumniPartnerships";
+import { searchSiteDocuments } from "../data/searchIndex";
 import { departmentHistory } from "../data/history";
 import {
   scholarshipCategoryLabels,
@@ -446,6 +445,7 @@ function SiteHeader({
       <div
         className="header-navigation-shell"
         ref={headerShellRef}
+        data-locale={locale}
         onMouseLeave={() => setOpenMenu(null)}
         onBlur={(event) => {
           if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
@@ -627,7 +627,7 @@ function SearchDialog({ locale, onClose }: { locale: Locale; onClose: () => void
           <label htmlFor="global-search">{tx(locale, "검색어", "Search query")}</label>
           <div>
             <Search size={23} aria-hidden="true" />
-            <input id="global-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "교수, 연구분야, 교과목, 공지 검색", "Search faculty, research, courses, notices")} autoFocus />
+            <input id="global-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "교수, 교과목, 장학, 입학, 공지 검색", "Search faculty, courses, scholarships, admissions, notices")} autoFocus />
             <button type="submit" className="button primary">{tx(locale, "검색", "Search")}</button>
           </div>
         </form>
@@ -2214,13 +2214,13 @@ function CourseDirectory({ locale, searchParams }: { locale: Locale; searchParam
     if (next.semester !== "all") params.set("semester", next.semester);
     if (next.category !== "all") params.set("category", next.category);
     if (next.query.trim()) params.set("q", next.query.trim());
-    router.replace(`${hrefFor(locale, "/academics/courses")}?${params.toString()}`);
+    router.replace(`${hrefFor(locale, "/academics/courses")}?${params.toString()}`, { scroll: false });
   };
 
   const selectTab = (nextTab: UndergraduateCourseTab) => {
     setTab(nextTab);
     if (nextTab === "schedule") syncScheduleUrl(values);
-    else router.replace(`${hrefFor(locale, "/academics/courses")}?tab=${nextTab}`);
+    else router.replace(`${hrefFor(locale, "/academics/courses")}?tab=${nextTab}`, { scroll: false });
   };
 
   const resetFilters = () => {
@@ -2228,7 +2228,7 @@ function CourseDirectory({ locale, searchParams }: { locale: Locale; searchParam
     setSemester("all");
     setCategory("all");
     setQuery("");
-    router.replace(`${hrefFor(locale, "/academics/courses")}?tab=schedule`);
+    router.replace(`${hrefFor(locale, "/academics/courses")}?tab=schedule`, { scroll: false });
   };
   const hasFilters = year !== "all" || semester !== "all" || category !== "all" || Boolean(query.trim());
 
@@ -3129,8 +3129,8 @@ function SearchPage({ locale, searchParams }: { locale: Locale; searchParams: Re
   const normalized = query.trim().toLowerCase();
   const facultyResults = normalized ? faculty.filter((item) => `${item.name.ko} ${item.name.en} ${item.researchKeywords.ko.join(" ")} ${item.researchKeywords.en.join(" ")}`.toLowerCase().includes(normalized)) : [];
   const researchResults = normalized ? researchAreas.filter((item) => `${item.name.ko} ${item.name.en} ${item.keywords.ko.join(" ")} ${item.keywords.en.join(" ")}`.toLowerCase().includes(normalized)) : [];
-  const courseResults = normalized ? courses.filter((item) => `${item.code} ${item.name.ko} ${item.name.en}`.toLowerCase().includes(normalized)) : [];
-  const noticeResults = normalized ? notices.filter((item) => `${item.title.ko} ${item.title.en}`.toLowerCase().includes(normalized)) : [];
+  const labResults = normalized ? labs.filter((item) => `${item.name.ko} ${item.name.en} ${item.description.ko} ${item.description.en} ${item.location?.ko ?? ""} ${item.location?.en ?? ""}`.toLowerCase().includes(normalized)) : [];
+  const courseResults = normalized ? courses.filter((item) => `${item.code} ${item.name.ko} ${item.name.en} ${item.description.ko} ${item.description.en} ${item.category}`.toLowerCase().includes(normalized)) : [];
   const studentActivityResults = normalized ? studentActivities.filter((item) => [
     item.name.ko,
     item.name.en,
@@ -3145,28 +3145,11 @@ function SearchPage({ locale, searchParams }: { locale: Locale; searchParams: Re
     ...item.achievements.flatMap((entry) => [entry.ko, entry.en]),
     ...item.keywords.flatMap((entry) => [entry.ko, entry.en]),
   ].join(" ").toLowerCase().includes(normalized)) : [];
-  const facultyRecruitmentResults = normalized && [
-    facultyRecruitment.title.ko,
-    facultyRecruitment.title.en,
-    facultyRecruitment.description.ko,
-    facultyRecruitment.description.en,
-    ...facultyRecruitment.searchKeywords,
-    facultyRecruitment.contact.email,
-  ].join(" ").toLowerCase().includes(normalized) ? [facultyRecruitment] : [];
-  const newsContentResults = normalized ? newsPosts.filter((item) => matchesEditorialQuery(item, normalized)) : [];
-  const seminarContentResults = normalized ? seminarPosts.filter((item) => matchesEditorialQuery(item, normalized)) : [];
-  const eventContentResults = normalized ? eventPosts.filter((item) => matchesEditorialQuery(item, normalized)) : [];
-  const alumniPartnershipResults = normalized && [
-    alumniPartnerships.title.ko,
-    alumniPartnerships.title.en,
-    alumniPartnerships.description.ko,
-    alumniPartnerships.description.en,
-    ...alumniPartnerships.searchKeywords,
-    ...alumniPartnerships.network.flatMap((item) => [item.title.ko, item.title.en, item.description.ko, item.description.en]),
-    ...alumniPartnerships.partnershipAreas.flatMap((item) => [item.title.ko, item.title.en, item.description.ko, item.description.en]),
-    ...alumniPartnerships.cases.flatMap((item) => [item.title.ko, item.title.en, item.description.ko, item.description.en]),
-  ].join(" ").toLowerCase().includes(normalized) ? [alumniPartnerships] : [];
-  const total = facultyResults.length + researchResults.length + courseResults.length + noticeResults.length + studentActivityResults.length + facultyRecruitmentResults.length + newsContentResults.length + seminarContentResults.length + eventContentResults.length + alumniPartnershipResults.length;
+  const documentResults = normalized ? searchSiteDocuments(query) : [];
+  const pageResults = documentResults.filter((item) => item.kind === "page");
+  const noticeNewsResults = documentResults.filter((item) => item.kind === "notice-news");
+  const admissionCareerResults = documentResults.filter((item) => item.kind === "admission-career");
+  const total = facultyResults.length + researchResults.length + labResults.length + courseResults.length + studentActivityResults.length + pageResults.length + noticeNewsResults.length + admissionCareerResults.length;
 
   return (
     <>
@@ -3179,19 +3162,17 @@ function SearchPage({ locale, searchParams }: { locale: Locale; searchParams: Re
           </form>
           {normalized && <p className="search-summary"><strong>‘{query}’</strong> {tx(locale, `검색 결과 ${total}건`, `${total} results`)}</p>}
           {!normalized ? (
-            <div className="empty-state"><Search size={26} /><h3>{tx(locale, "검색어를 입력해 주세요", "Enter a search term")}</h3><p>{tx(locale, "교수명, 연구 키워드, 과목명, 동아리명, 뉴스와 공지 제목을 검색할 수 있습니다.", "Search by faculty, research keyword, course, student activity, news, or notice title.")}</p></div>
+            <div className="empty-state"><Search size={26} /><h3>{tx(locale, "검색어를 입력해 주세요", "Enter a search term")}</h3><p>{tx(locale, "교수진, 연구실, 교과목, 장학, 졸업요건, 입학·진로, 공지·뉴스를 검색할 수 있습니다.", "Search faculty, laboratories, courses, scholarships, graduation requirements, admissions and careers, notices, and news.")}</p></div>
           ) : total === 0 ? <EmptyState locale={locale} /> : (
             <div className="search-groups">
-              <SearchGroup title={tx(locale, "교수진", "Faculty")} items={facultyResults.map((item) => ({ title: t(item.name, locale), description: item.researchKeywords[locale].join(" · "), path: `/faculty/${item.slug}` }))} locale={locale} />
-              <SearchGroup title={tx(locale, "연구", "Research")} items={researchResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/research/${item.slug}` }))} locale={locale} />
-              <SearchGroup title={tx(locale, "교육과정", "Academics")} items={courseResults.map((item) => ({ title: t(item.name, locale), description: `${item.code} · ${item.credits} ${tx(locale, "학점", "credits")}`, path: `/academics/courses/${item.slug}` }))} locale={locale} />
-              <SearchGroup title={tx(locale, "학생활동·동아리", "Student Activities")} items={studentActivityResults.map((item) => ({ title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/about/student-activities/${item.slug}` }))} locale={locale} />
-              <SearchGroup title={tx(locale, "동문·대외협력", "Alumni & Partnerships")} items={alumniPartnershipResults.map((item) => ({ title: t(item.title, locale), description: t(item.description, locale), path: "/about/alumni-partnerships" }))} locale={locale} />
-              <SearchGroup title={tx(locale, "뉴스", "News")} items={newsContentResults.map((item) => ({ title: t(item.title, locale), description: t(item.summary, locale), path: `/news/${item.slug}` }))} locale={locale} />
-              <SearchGroup title={tx(locale, "세미나", "Seminars")} items={seminarContentResults.map((item) => ({ title: t(item.title, locale), description: `${t(item.category, locale)} · ${item.publishedAt}`, path: `/seminars/${item.slug}` }))} locale={locale} />
-              <SearchGroup title={tx(locale, "행사", "Events")} items={eventContentResults.map((item) => ({ title: t(item.title, locale), description: `${t(item.category, locale)} · ${item.publishedAt}`, path: `/events/${item.slug}` }))} locale={locale} />
-              <SearchGroup title={tx(locale, "교수 초빙", "Faculty Recruitment")} items={facultyRecruitmentResults.map((item) => ({ title: t(item.title, locale), description: t(item.description, locale), path: "/news/faculty-recruitment" }))} locale={locale} />
-              <SearchGroup title={tx(locale, "공지사항", "Notices")} items={noticeResults.map((item) => ({ title: t(item.title, locale), description: item.publishedAt, path: `/news/notices/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "페이지", "Pages")} items={pageResults.map((item) => ({ id: item.id, title: t(item.title, locale), description: t(item.description, locale), path: item.path }))} locale={locale} />
+              <SearchGroup title={tx(locale, "교수진", "Faculty")} items={facultyResults.map((item) => ({ id: item.id, title: t(item.name, locale), description: item.researchKeywords[locale].join(" · "), path: `/faculty/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "연구 분야", "Research Areas")} items={researchResults.map((item) => ({ id: item.id, title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/research/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "연구실", "Laboratories")} items={labResults.map((item) => ({ id: item.id, title: t(item.name, locale), description: t(item.description, locale), path: `/labs/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "교과목", "Courses")} items={courseResults.map((item) => ({ id: item.id, title: t(item.name, locale), description: `${item.code} · ${item.credits} ${tx(locale, "학점", "credits")}`, path: `/academics/courses/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "학생활동", "Student Activities")} items={studentActivityResults.map((item) => ({ id: item.id, title: t(item.name, locale), description: t(item.shortDescription, locale), path: `/about/student-activities/${item.slug}` }))} locale={locale} />
+              <SearchGroup title={tx(locale, "공지·뉴스", "Notices & News")} items={noticeNewsResults.map((item) => ({ id: item.id, title: t(item.title, locale), description: t(item.description, locale), path: item.path }))} locale={locale} />
+              <SearchGroup title={tx(locale, "입학·진로", "Admissions & Careers")} items={admissionCareerResults.map((item) => ({ id: item.id, title: t(item.title, locale), description: t(item.description, locale), path: item.path }))} locale={locale} />
             </div>
           )}
         </div>
@@ -3200,9 +3181,9 @@ function SearchPage({ locale, searchParams }: { locale: Locale; searchParams: Re
   );
 }
 
-function SearchGroup({ title, items, locale }: { title: string; items: { title: string; description: string; path: string }[]; locale: Locale }) {
+function SearchGroup({ title, items, locale }: { title: string; items: { id: string; title: string; description: string; path: string }[]; locale: Locale }) {
   if (!items.length) return null;
-  return <section className="search-group"><h2>{title}<span>{items.length}</span></h2>{items.map((item) => <Link href={hrefFor(locale, item.path)} key={item.path}><div><strong>{item.title}</strong><p>{item.description}</p></div><ArrowRight size={18} /></Link>)}</section>;
+  return <section className="search-group"><h2>{title}<span>{items.length}</span></h2>{items.map((item) => <Link href={hrefFor(locale, item.path)} key={item.id}><div><strong>{item.title}</strong><p>{item.description}</p></div><ArrowRight size={18} /></Link>)}</section>;
 }
 
 function RelatedLinks({ locale, items }: { locale: Locale; items: { title: string; path: string }[] }) {
