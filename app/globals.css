@@ -4711,6 +4711,173 @@ p {
   }
 }
 
+@media (max-width: 430px) {
+  :root {
+    --header-height: 64px;
+  }
+
+  .header-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: min(calc(100% - 24px), var(--container-width));
+  }
+
+  .brand {
+    min-width: 0;
+    gap: 7px;
+  }
+
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+
+  .brand-text {
+    min-width: 0;
+  }
+
+  .brand-text strong {
+    max-width: calc(100vw - 164px);
+    font-size: 13px;
+  }
+
+  .brand-text small {
+    display: none;
+  }
+
+  .header-tools {
+    gap: 0;
+  }
+
+  .header-tools .icon-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .home-page .hero {
+    height: 584px;
+    min-height: 584px;
+  }
+
+  .home-page .hero-slide-campus img {
+    object-position: 58% center;
+  }
+
+  .home-page .hero-slide-lab img,
+  .home-page .hero-slide-equipment img {
+    object-position: 74% center;
+  }
+
+  .home-page .hero-overlay {
+    background: linear-gradient(180deg, rgba(5, 26, 48, 0.28) 0%, rgba(5, 26, 48, 0.76) 58%, rgba(5, 26, 48, 0.9) 100%);
+  }
+
+  .home-page .hero-content {
+    padding-top: 42px;
+    padding-bottom: 84px;
+  }
+
+  .home-page .hero-kicker {
+    margin-bottom: 14px;
+    font-size: 10px;
+  }
+
+  .home-page .hero h1 {
+    max-width: 100%;
+    margin-bottom: 16px;
+    font-size: clamp(27px, 7.6vw, 30px);
+    line-height: 1.2;
+  }
+
+  .home-page .hero-content > p:not(.hero-kicker) {
+    display: -webkit-box;
+    max-width: 100%;
+    margin-bottom: 22px;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.65;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .home-page .hero-actions {
+    gap: 14px;
+  }
+
+  .home-page .hero-actions .button,
+  .home-page .hero-actions .text-button {
+    min-height: 44px;
+  }
+
+  .home-page .hero-controls {
+    right: 12px;
+    bottom: 12px;
+    gap: 4px;
+  }
+
+  .home-page .hero-controls > button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .home-page .hero-controls > button svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .home-page .hero-indicators {
+    gap: 3px;
+  }
+
+  .home-page .hero-indicators button {
+    width: 16px;
+    height: 32px;
+  }
+
+  .home-page .hero-count {
+    min-width: 38px;
+    font-size: 9px;
+  }
+
+  .home-page .quick-links-grid a {
+    grid-template-columns: 20px minmax(0, 1fr) 14px;
+    min-height: 60px;
+    padding: 0 10px;
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    gap: 7px;
+  }
+
+  .home-page .quick-links-grid a:first-child {
+    border-left: 0;
+  }
+
+  .home-page .quick-links-grid a:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .home-page .quick-links-grid a:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+
+  .home-page .quick-links-grid a > svg:first-child {
+    width: 18px;
+    height: 18px;
+  }
+
+  .home-page .quick-links-grid a > svg:last-child {
+    width: 14px;
+    height: 14px;
+  }
+
+  .home-page .quick-links-grid span {
+    overflow: hidden;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 .academic-quick-links {
   display: flex;
   align-items: center;
