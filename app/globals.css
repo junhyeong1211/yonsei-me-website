@@ -283,7 +283,7 @@ p {
   }
 
   .header-navigation-shell[data-locale="en"] .desktop-nav {
-    gap: clamp(14px, 1.7vw, 28px);
+    gap: clamp(20px, 2vw, 34px);
   }
 
   .header-navigation-shell[data-locale="en"] .nav-item > button {
