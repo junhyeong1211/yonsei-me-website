@@ -14,8 +14,12 @@
   --color-gold: #96773a;
   --color-sage: #526d67;
   --container-width: 1280px;
+  --content-narrow: 1120px;
   --section-spacing: 112px;
   --header-height: 84px;
+  --control-height: 46px;
+  --page-title-size: clamp(2.375rem, 3.4vw, 3.125rem);
+  --section-title-size: clamp(1.625rem, 2.2vw, 2.125rem);
   --font-sans: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
   --font-display: Georgia, "Times New Roman", serif;
 }
@@ -11884,4 +11888,342 @@ p {
   .partnership-case { padding: 34px 0 40px; }
   .partnership-case > div { display: grid; gap: 8px; }
   .alumni-inquiry-links a { min-height: 0; padding: 26px 4px; }
+}
+
+/* Shared interface rhythm
+   These rules deliberately sit on top of page-specific layouts: they align the
+   recurring interface language without changing page data, routes, or actions. */
+.page-header-inner {
+  display: flex;
+  min-height: 320px;
+  padding-top: 68px;
+  padding-bottom: 64px;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.page-header .section-label {
+  margin-bottom: 13px;
+  font-size: 11px;
+  letter-spacing: 0.13em;
+}
+
+.page-header h1 {
+  max-width: 940px;
+  margin-bottom: 18px;
+  font-size: var(--page-title-size);
+  line-height: 1.24;
+  overflow-wrap: break-word;
+  word-break: keep-all;
+}
+
+.page-header p:last-child {
+  max-width: 760px;
+  font-size: 15px;
+  line-height: 1.75;
+  overflow-wrap: break-word;
+}
+
+.directions-page-header {
+  display: flex;
+  min-height: 320px;
+  align-items: stretch;
+  padding: 0;
+}
+
+.directions-page-header .container {
+  display: flex;
+  min-height: inherit;
+  padding-top: 68px;
+  padding-bottom: 64px;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.directions-page-header .section-label {
+  margin-bottom: 13px;
+  font-size: 11px;
+  letter-spacing: 0.13em;
+}
+
+.directions-page-header h1 {
+  margin: 0 0 18px;
+  font-size: var(--page-title-size);
+  line-height: 1.24;
+  overflow-wrap: break-word;
+  word-break: keep-all;
+}
+
+.directions-page-header .container > p:last-child {
+  max-width: 760px;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.section-heading {
+  margin-bottom: 40px;
+}
+
+.section-heading .section-label {
+  margin-bottom: 10px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.section-heading h2 {
+  font-size: var(--section-title-size);
+  line-height: 1.3;
+  overflow-wrap: break-word;
+  word-break: keep-all;
+}
+
+.editorial-directory-container,
+.faculty-recruitment-container {
+  max-width: var(--content-narrow);
+}
+
+.button {
+  min-height: var(--control-height);
+  max-width: 100%;
+  padding: 10px 19px;
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+}
+
+.button.outline:hover,
+.button.outline:focus-visible {
+  color: var(--color-yonsei-blue);
+  border-color: var(--color-yonsei-blue);
+}
+
+.button:focus-visible,
+.text-button:focus-visible,
+.section-more:focus-visible {
+  outline: 2px solid var(--color-yonsei-blue);
+  outline-offset: 3px;
+}
+
+.text-button {
+  position: relative;
+  min-height: 44px;
+  padding: 0 1px;
+  line-height: 1.35;
+}
+
+.text-button::after {
+  position: absolute;
+  right: 1px;
+  bottom: 7px;
+  left: 1px;
+  height: 1px;
+  background: currentcolor;
+  content: "";
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 150ms ease;
+}
+
+.text-button:hover::after,
+.text-button:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.tabs,
+.editorial-category-tabs,
+.laboratory-area-tabs {
+  min-height: var(--control-height);
+}
+
+.tabs button,
+.editorial-category-tabs button,
+.laboratory-area-tabs button {
+  min-height: var(--control-height);
+  line-height: 1.35;
+  transition: color 150ms ease, border-color 150ms ease, background-color 150ms ease;
+}
+
+.tabs button:hover,
+.tabs button:focus-visible,
+.editorial-category-tabs button:hover,
+.editorial-category-tabs button:focus-visible,
+.laboratory-area-tabs button:hover,
+.laboratory-area-tabs button:focus-visible {
+  color: var(--color-yonsei-blue);
+}
+
+.tabs button:focus-visible,
+.editorial-category-tabs button:focus-visible,
+.laboratory-area-tabs button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--color-yonsei-blue);
+  outline-offset: -2px;
+}
+
+.filter-field input,
+.filter-field select {
+  height: var(--control-height);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.filter-field input:focus,
+.filter-field select:focus {
+  border-color: var(--color-yonsei-blue);
+  outline: 0;
+  box-shadow: 0 0 0 2px rgb(23 105 168 / 14%);
+}
+
+.inline-search,
+.editorial-search,
+.laboratory-search-field {
+  min-height: var(--control-height);
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.inline-search:focus-within,
+.editorial-search:focus-within,
+.laboratory-search-field:focus-within {
+  color: var(--color-yonsei-blue);
+  border-color: var(--color-yonsei-blue);
+}
+
+.notice-row,
+.editorial-board-row,
+.simple-link-list a,
+.research-directory-item,
+.lab-card,
+.research-lab-card,
+.laboratory-directory-card {
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+
+.notice-row:hover,
+.editorial-board-row:hover,
+.simple-link-list a:hover,
+.research-directory-item:hover,
+.lab-card:hover,
+.research-lab-card:hover,
+.laboratory-directory-card:hover {
+  background: #f8fafd;
+  border-color: #a8c3d8;
+}
+
+.notice-row:focus-visible,
+.editorial-board-row:focus-visible,
+.simple-link-list a:focus-visible,
+.research-directory-item:focus-visible,
+.lab-card:focus-visible,
+.research-lab-card:focus-visible,
+.laboratory-directory-card:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--color-yonsei-blue);
+  outline-offset: -2px;
+}
+
+.faculty-card,
+.faculty-member-card,
+.student-activity-card {
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+
+.faculty-card:hover,
+.faculty-member-card:hover,
+.student-activity-card:hover {
+  background: #f8fafd;
+  border-color: #9db9d0;
+}
+
+.faculty-card:focus-visible,
+.faculty-member-card:focus-visible,
+.student-activity-card > a:focus-visible {
+  outline: 2px solid var(--color-yonsei-blue);
+  outline-offset: 3px;
+}
+
+.faculty-member-photo > img,
+.news-editorial-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.faculty-member-photo > img {
+  object-position: center top;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --section-spacing: 80px;
+    --control-height: 44px;
+  }
+
+  .page-header-inner,
+  .directions-page-header,
+  .directions-page-header .container {
+    min-height: 248px;
+  }
+
+  .page-header-inner,
+  .directions-page-header .container {
+    padding-top: 50px;
+    padding-bottom: 46px;
+  }
+
+  .page-header h1,
+  .directions-page-header h1 {
+    margin-bottom: 15px;
+    font-size: clamp(2rem, 8vw, 2.375rem);
+  }
+
+  .page-header p:last-child,
+  .directions-page-header .container > p:last-child {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .section-heading {
+    margin-bottom: 30px;
+    gap: 18px;
+  }
+
+  .section-heading h2 {
+    font-size: clamp(1.5rem, 6vw, 1.875rem);
+  }
+
+  .tabs,
+  .editorial-category-tabs,
+  .laboratory-area-tabs {
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+}
+
+@media (max-width: 430px) {
+  :root {
+    --section-spacing: 64px;
+  }
+
+  .page-header-inner,
+  .directions-page-header,
+  .directions-page-header .container {
+    min-height: 232px;
+  }
+
+  .page-header-inner,
+  .directions-page-header .container {
+    padding-top: 42px;
+    padding-bottom: 38px;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .text-button {
+    min-height: 44px;
+  }
 }
