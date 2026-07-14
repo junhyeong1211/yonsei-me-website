@@ -135,7 +135,7 @@ p {
 
 .header-row {
   display: grid;
-  grid-template-columns: 350px minmax(0, 1fr) 200px;
+  grid-template-columns: 320px minmax(0, 1fr) 180px;
   width: min(calc(100% - 32px), calc(var(--container-width) + 64px));
   align-items: stretch;
   height: 100%;
@@ -236,7 +236,7 @@ p {
 
 .mega-menu-grid {
   display: grid;
-  grid-template-columns: 350px repeat(5, minmax(0, 1fr)) 200px;
+  grid-template-columns: 320px repeat(5, minmax(0, 1fr)) 180px;
   padding-top: 20px;
   padding-bottom: 40px;
 }
@@ -3865,11 +3865,11 @@ p {
   }
 
   .header-row {
-    grid-template-columns: 300px minmax(0, 1fr) 170px;
+    grid-template-columns: 280px minmax(0, 1fr) 160px;
   }
 
   .mega-menu-grid {
-    grid-template-columns: 300px repeat(5, minmax(0, 1fr)) 170px;
+    grid-template-columns: 280px repeat(5, minmax(0, 1fr)) 160px;
   }
 
   .brand-text strong {
