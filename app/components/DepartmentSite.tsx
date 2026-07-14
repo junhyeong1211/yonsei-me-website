@@ -1138,14 +1138,13 @@ function FacultyMemberDetail({ locale, member }: { locale: Locale; member: Facul
               <div><dt>{tx(locale, "이메일", "Email")}</dt><dd>{member.email ? <a href={`mailto:${member.email}`}>{member.email}</a> : "-"}</dd></div>
               <div><dt>{tx(locale, "연락처", "Contact")}</dt><dd>{member.phoneNumbers.length ? member.phoneNumbers.map((phone, index) => <span key={phone}>{index > 0 && " · "}<a href={`tel:${phone.replaceAll("-", "")}`}>{phone}</a></span>) : tx(locale, "연락처 확인 중", "Contact information pending")}</dd></div>
               <div><dt>{tx(locale, "연구실 위치", "Office")}</dt><dd>{member.office ?? tx(locale, "위치 확인 중", "Office information pending")}</dd></div>
-              {member.profileUrl && <div><dt>{tx(locale, "외부 프로필", "External profile")}</dt><dd><a href={member.profileUrl} target="_blank" rel="noopener noreferrer">{member.profileUrl}<ExternalLink size={15} /></a></dd></div>}
             </dl>
             {laboratory && (
               <Link className="faculty-laboratory-view-link" href={hrefFor(locale, `/labs/${laboratory.slug}`)}>
                 {tx(locale, "연구실 보기", "View laboratory")}<ArrowRight size={17} aria-hidden="true" />
               </Link>
             )}
-            <section className="detail-block faculty-member-research-placeholder"><p className="section-label">RESEARCH INFORMATION</p><h2>{tx(locale, "연구 정보", "Research Information")}</h2><p>{tx(locale, "상세 연구 정보는 추후 업데이트될 예정입니다.", "Detailed research information will be updated soon.")}</p></section>
+            {member.officialProfileUrl && <a className="button outline" href={member.officialProfileUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, `${member.nameKo ?? name} 연세대학교 교원정보, 새 탭에서 열림`, `Open Yonsei Faculty Profile for ${member.nameEn ?? name} in a new tab`)}>{tx(locale, "연세대학교 교원정보", "Yonsei Faculty Profile")}<ExternalLink size={16} aria-hidden="true" /></a>}
           </main>
         </div>
       </section>

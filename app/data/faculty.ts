@@ -11,10 +11,44 @@ export type FacultyMember = {
   office: string | null;
   image: string | null;
   profileUrl: string | null;
+  officialProfileUrl: string | null;
   reviewNote: string | null;
 };
 
-export const facultyMembers: FacultyMember[] = [
+type FacultyMemberSeed = Omit<FacultyMember, "officialProfileUrl">;
+
+const officialProfileUrls: Record<string, string> = {
+  "kang-keonwook": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=H6IAceQ75BsxdEuXLJXMoA%3D%3D&sosokcd=0000405",
+  "kang-shinill": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=b1GY5tMdKXn9pcopgnOXuA%3D%3D&sosokcd=",
+  "kim-kyoungsik": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=vf2yly2lcmm7EMPsUS2Fvw%3D%3D&sosokcd=",
+  "kim-dae-eun": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=Oc%2BnXOyFIPnaS%2F2tcn0VsQ%3D%3D&sosokcd=",
+  "kim-young-joo": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=M%2FhpSLUqHMFmyYRpueciEw%3D%3D&sosokcd=",
+  "kim-yong-jun": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=rF3EfB2KwpYgW%2F3mA9hWYQ%3D%3D&sosokcd=",
+  "kim-woochul": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=MS4QfqRPzaZ5YDrwsETFUA%3D%3D&sosokcd=",
+  "kim-jongbaeg": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=1RE2La5mkxWHrR7NkNGulA%3D%3D&sosokcd=0000405",
+  "kim-hae-jin": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=pAo4Dx2KA2dkOviAVvwsLQ%3D%3D&sosokcd=0000405",
+  "ryu-wonhyoung": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=FbTFwqvmJtakGUouowJkLQ%3D%3D&sosokcd=",
+  "min-byung-kwon": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=epVKuTRkwjej3W7%2F8Ob6lA%3D%3D&sosokcd=0000405",
+  "park-no-cheol": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=0fw0kb%2Brd1T%2BAnxOWIWCMg%3D%3D&sosokcd=",
+  "song-soonho": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=EMeDFsg7ezICnj1V655kTw%3D%3D&sosokcd=",
+  "yang-hyunseok": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=unA5vq9t8ID%2BONEoTLKWKQ%3D%3D&sosokcd=0000405",
+  "yoo-jeonghoon": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=J7LH67wjoKs7HqFmJNWRwg%3D%3D&sosokcd=",
+  "lee-namkyu": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=wLefcjV8lUCv2Zzs9J5RAQ%3D%3D&sosokcd=0000405",
+  "lee-jongsoo": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=AXk7pPArre7tC15Fk0psVg%3D%3D&sosokcd=",
+  "lee-joon-sang": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=b2q9%2FrsniLTpqoJPWYQWVA%3D%3D&sosokcd=",
+  "lee-changhoon": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=DRg2MLLATF8Kat2jhI9Ziw%3D%3D&sosokcd=0000405",
+  "lee-hyung-suk": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=bk0aGPYdMJPO%2FVyfZRhrHg%3D%3D&sosokcd=0000405",
+  "jang-yong-hoon": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=DotpS%2BViSxK%2FWL4BBUofsA%3D%3D&sosokcd=",
+  "jun-seong-chan": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=wTKcmb%2F8b6Ols1dO%2B8bByg%3D%3D&sosokcd=",
+  "chun-heoung-jae": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=e5X28rITIomg0i%2BF34C3pg%3D%3D&sosokcd=",
+  "jung-hyo-il": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=eIbW20vagt1HuZYo4nBWjg%3D%3D&sosokcd=",
+  "joo-chulmin": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=bhaCBRF5otdK3WVWoRHYiw%3D%3D&sosokcd=0000405",
+  "choi-jongeun": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=i8y28rIy7%2Fvf1sq15evoBw%3D%3D&sosokcd=0000405",
+  "hyun-jae-sang": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=foH0i4BlWWcsEx6j%2B0Dwqg%3D%3D&sosokcd=0000405",
+  "hong-jongsup": "https://me.yonsei.ac.kr/faculty/name_search.do?mode=view&userId=OqCjCitbqY9SNaY%2FMELsJg%3D%3D&sosokcd=0000405",
+};
+
+export const facultyMembers: FacultyMember[] = ([
   {
     "id": "kang-keonwook",
     "slug": "kang-keonwook",
@@ -573,7 +607,10 @@ export const facultyMembers: FacultyMember[] = [
     "profileUrl": null,
     "reviewNote": "연구실 위치 확인 필요"
   }
-];
+] satisfies FacultyMemberSeed[]).map((member) => ({
+  ...member,
+  officialProfileUrl: officialProfileUrls[member.id] ?? null,
+}));
 
 export const getFacultyMemberBySlug = (slug: string) =>
   facultyMembers.find((member) => member.slug === slug);
