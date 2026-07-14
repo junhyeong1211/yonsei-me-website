@@ -24,12 +24,14 @@ export type EditorialPost = {
   content: LocaleText | null;
   author: LocaleText | null;
   publishedAt: string;
+  researchDate?: string | null;
   eventDate: string | null;
   thumbnail: string | null;
   attachments: EditorialAttachment[];
   externalLinks: EditorialExternalLink[];
   hasAttachment?: boolean;
   sourceUrl?: string | null;
+  paperUrl?: string | null;
   isPinned?: boolean;
   reviewNote?: string;
   isNew: boolean;

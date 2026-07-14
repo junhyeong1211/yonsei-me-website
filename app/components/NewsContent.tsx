@@ -186,6 +186,7 @@ export function EditorialDetailPage({ locale, post, posts }: { locale: Locale; p
             <div><dt>{copy(locale, "카테고리", "Category")}</dt><dd>{text(post.category, locale)}</dd></div>
             <div><dt>{copy(locale, "작성자", "Author")}</dt><dd>{post.author ? text(post.author, locale) : copy(locale, "확인 중", "Pending")}</dd></div>
             <div><dt>{copy(locale, "등록일", "Published")}</dt><dd><time dateTime={post.publishedAt}>{dateLabel(post.publishedAt, locale)}</time></dd></div>
+            {post.researchDate && <div><dt>{copy(locale, "연구일", "Research date")}</dt><dd><time dateTime={post.researchDate}>{dateLabel(post.researchDate, locale)}</time></dd></div>}
             <div><dt>{copy(locale, "첨부", "Attachment")}</dt><dd>{hasAttachment(post) ? copy(locale, "첨부파일 있음", "Attachment available") : copy(locale, "없음", "None")}</dd></div>
             {post.eventDate && <div><dt>{copy(locale, "일정", "Event date")}</dt><dd><time dateTime={post.eventDate}>{dateLabel(post.eventDate, locale)}</time></dd></div>}
           </dl>
@@ -194,7 +195,10 @@ export function EditorialDetailPage({ locale, post, posts }: { locale: Locale; p
             <h2 id="editorial-attachments-title">{copy(locale, "첨부파일", "Attachments")}</h2>
             {post.attachments.map((attachment) => <a href={attachment.url} key={attachment.id} download><Download size={17} aria-hidden="true" />{text(attachment.name, locale)}</a>)}
           </section>}
-          {post.sourceUrl && <a className="button outline editorial-original-post-link" href={post.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={copy(locale, `${text(post.title, locale)} 공식 게시글 보기, 새 탭에서 열림`, `View original post: ${text(post.title, locale)}, opens in a new tab`)}>{copy(locale, "공식 게시글 보기", "View Original Post")}<ExternalLink size={16} aria-hidden="true" /></a>}
+          {(post.sourceUrl || post.paperUrl) && <div className="editorial-external-actions">
+            {post.sourceUrl && <a className="button outline editorial-original-post-link" href={post.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={copy(locale, `${text(post.title, locale)} 공식 게시글 보기, 새 탭에서 열림`, `View original post: ${text(post.title, locale)}, opens in a new tab`)}>{copy(locale, "공식 게시글 보기", "View Original Post")}<ExternalLink size={16} aria-hidden="true" /></a>}
+            {post.paperUrl && <a className="button outline editorial-related-paper-link" href={post.paperUrl} target="_blank" rel="noopener noreferrer" aria-label={copy(locale, `${text(post.title, locale)} 관련 논문 보기, 새 탭에서 열림`, `View related paper: ${text(post.title, locale)}, opens in a new tab`)}>{copy(locale, "관련 논문 보기", "View Related Paper")}<ExternalLink size={16} aria-hidden="true" /></a>}
+          </div>}
           {post.externalLinks.length > 0 && <section className="editorial-detail-resources" aria-labelledby="editorial-links-title">
             <h2 id="editorial-links-title">{copy(locale, "관련 외부 링크", "Related links")}</h2>
             {post.externalLinks.map((link) => <a href={link.url} target="_blank" rel="noopener noreferrer" key={link.id}>{text(link.label, locale)}<ExternalLink size={16} aria-hidden="true" /><span className="sr-only">{copy(locale, " 새 창", " opens in a new window")}</span></a>)}

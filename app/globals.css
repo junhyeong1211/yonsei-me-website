@@ -3086,8 +3086,14 @@ p {
   font-size: 11px;
 }
 
-.official-post-link,
-.editorial-original-post-link {
+.official-post-link {
+  margin-top: 28px;
+}
+
+.editorial-external-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 28px;
 }
 
@@ -11556,6 +11562,10 @@ p {
   border-right: 0;
 }
 
+.editorial-detail-meta > div:nth-child(4n) {
+  border-right: 0;
+}
+
 .editorial-detail-meta dt {
   margin-bottom: 7px;
   color: #7a8999;
@@ -11644,7 +11654,7 @@ p {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .editorial-detail-meta > div:nth-child(2) {
+  .editorial-detail-meta > div:nth-child(2n) {
     border-right: 0;
   }
 
