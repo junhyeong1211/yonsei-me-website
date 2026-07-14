@@ -274,8 +274,9 @@ p {
 
 .mega-menu-links {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   flex-direction: column;
+  text-align: center;
 }
 
 .mega-menu-links a {
@@ -283,6 +284,7 @@ p {
   display: inline-flex;
   min-height: 40px;
   align-items: center;
+  justify-content: center;
   padding: 5px 0;
   color: #344253;
   font-size: 13px;
