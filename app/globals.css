@@ -1308,6 +1308,48 @@ p {
   color: var(--color-navy-deep);
 }
 
+.faculty-member-detail-actions {
+  display: flex;
+  align-items: center;
+  margin-top: 22px;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+
+.faculty-member-detail-actions .faculty-laboratory-view-link {
+  margin-top: 0;
+}
+
+.detail-external-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0 15px 0 12px;
+  color: var(--color-navy-deep);
+  background: #f8fbfd;
+  border: 1px solid #c7d6e1;
+  border-left: 3px solid var(--color-yonsei-blue);
+  font-size: 13px;
+  font-weight: 720;
+  gap: 9px;
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+
+.detail-external-link:hover {
+  color: var(--color-yonsei-blue);
+  background: #eef6fb;
+  border-color: #8fb7d3;
+}
+
+.detail-external-link:focus-visible {
+  outline: 2px solid var(--color-yonsei-blue);
+  outline-offset: 3px;
+}
+
+.lab-homepage-link {
+  margin-top: 20px;
+}
+
 .faculty-image {
   display: flex;
   aspect-ratio: 4 / 5;

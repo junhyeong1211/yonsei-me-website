@@ -1139,12 +1139,10 @@ function FacultyMemberDetail({ locale, member }: { locale: Locale; member: Facul
               <div><dt>{tx(locale, "연락처", "Contact")}</dt><dd>{member.phoneNumbers.length ? member.phoneNumbers.map((phone, index) => <span key={phone}>{index > 0 && " · "}<a href={`tel:${phone.replaceAll("-", "")}`}>{phone}</a></span>) : tx(locale, "연락처 확인 중", "Contact information pending")}</dd></div>
               <div><dt>{tx(locale, "연구실 위치", "Office")}</dt><dd>{member.office ?? tx(locale, "위치 확인 중", "Office information pending")}</dd></div>
             </dl>
-            {laboratory && (
-              <Link className="faculty-laboratory-view-link" href={hrefFor(locale, `/labs/${laboratory.slug}`)}>
-                {tx(locale, "연구실 보기", "View laboratory")}<ArrowRight size={17} aria-hidden="true" />
-              </Link>
-            )}
-            {member.officialProfileUrl && <a className="button outline" href={member.officialProfileUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, `${member.nameKo ?? name} 연세대학교 교원정보, 새 탭에서 열림`, `Open Yonsei Faculty Profile for ${member.nameEn ?? name} in a new tab`)}>{tx(locale, "연세대학교 교원정보", "Yonsei Faculty Profile")}<ExternalLink size={16} aria-hidden="true" /></a>}
+            {(laboratory || member.officialProfileUrl) && <div className="faculty-member-detail-actions">
+              {laboratory && <Link className="faculty-laboratory-view-link" href={hrefFor(locale, `/labs/${laboratory.slug}`)}>{tx(locale, "연구실 보기", "View laboratory")}<ArrowRight size={17} aria-hidden="true" /></Link>}
+              {member.officialProfileUrl && <a className="detail-external-link" href={member.officialProfileUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, `${member.nameKo ?? name} 공식 프로필 보기, 새 탭에서 열림`, `View official profile for ${member.nameEn ?? name}, opens in a new tab`)}>{tx(locale, "공식 프로필 보기", "View Official Profile")}<ExternalLink size={16} aria-hidden="true" /></a>}
+            </div>}
           </main>
         </div>
       </section>
@@ -1598,7 +1596,7 @@ function ResearchLabDetail({ locale, lab }: { locale: Locale; lab: ResearchLab }
               <p className="section-label">ABOUT</p>
               <h2>{tx(locale, "연구실 소개", "About the Laboratory")}</h2>
               <p>{lab.description ?? pendingMessage}</p>
-              {lab.homepageUrl && <a className="button outline" href={lab.homepageUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, `${lab.nameKo} 홈페이지 방문, 새 탭에서 열림`, `Visit ${lab.nameEn} website, opens in a new tab`)}>{tx(locale, "연구실 홈페이지 방문", "Visit Lab Website")}<ExternalLink size={16} aria-hidden="true" /></a>}
+              {lab.homepageUrl && <a className="detail-external-link lab-homepage-link" href={lab.homepageUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, `${lab.nameKo} 홈페이지 방문, 새 탭에서 열림`, `Visit ${lab.nameEn} website, opens in a new tab`)}>{tx(locale, "연구실 홈페이지 방문", "Visit Lab Website")}<ExternalLink size={16} aria-hidden="true" /></a>}
             </section>
           </main>
           <aside className="detail-nav">
