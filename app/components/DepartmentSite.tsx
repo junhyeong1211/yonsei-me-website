@@ -1091,7 +1091,7 @@ function FacultyMemberCard({ member, locale, variant = "directory" }: { member: 
         <div className="faculty-member-card-body">
           <p className="faculty-member-position">{locale === "ko" ? member.positionKo : member.positionEn}</p>
           <h2>{name}</h2>
-          {alternateName && <p className="faculty-member-name-en">{alternateName}</p>}
+          <p className="faculty-member-name-en" aria-hidden={!alternateName}>{alternateName ?? "\u00a0"}</p>
           <p className="faculty-member-laboratory">{laboratoryContext}</p>
           <span className="faculty-member-detail-link">{tx(locale, "프로필 보기", "View profile")}<ArrowRight size={17} /></span>
         </div>
@@ -1105,7 +1105,8 @@ function FacultyMemberCard({ member, locale, variant = "directory" }: { member: 
       <div className="faculty-member-card-body">
         <p className="faculty-member-position">{locale === "ko" ? member.positionKo : member.positionEn}</p>
         <h2>{name}</h2>
-        {alternateName && <p className="faculty-member-name-en">{alternateName}</p>}
+        <p className="faculty-member-name-en" aria-hidden={!alternateName}>{alternateName ?? "\u00a0"}</p>
+        <p className="faculty-member-laboratory">{laboratoryContext}</p>
         <dl className="faculty-member-contact-list">
           <div><dt>{tx(locale, "이메일", "Email")}</dt><dd>{member.email ? <a href={`mailto:${member.email}`}>{member.email}</a> : tx(locale, "이메일 확인 중", "Email information pending")}</dd></div>
           <div><dt>{tx(locale, "연락처", "Contact")}</dt><dd>{member.phoneNumbers.length ? member.phoneNumbers.map((phone, index) => <span key={phone}>{index > 0 && " · "}<a href={`tel:${phone.replaceAll("-", "")}`}>{phone}</a></span>) : tx(locale, "연락처 확인 중", "Contact information pending")}</dd></div>

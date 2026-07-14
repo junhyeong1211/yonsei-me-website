@@ -1069,18 +1069,19 @@ p {
   display: flex;
   min-width: 0;
   height: 100%;
-  border-top: 2px solid var(--color-navy-deep);
   background: #fff;
+  border: 1px solid var(--color-border);
   flex-direction: column;
   transition: border-color 180ms ease;
 }
 
 .faculty-member-card:hover {
-  border-top-color: var(--color-yonsei-blue);
+  border-color: var(--color-yonsei-blue);
 }
 
 .faculty-member-photo {
   position: relative;
+  flex: 0 0 auto;
   aspect-ratio: 4 / 5;
   overflow: hidden;
   background: #edf2f5;
@@ -1102,10 +1103,9 @@ p {
 
 .faculty-member-card-body {
   display: flex;
-  min-height: 258px;
-  padding: 18px 18px 16px;
-  border: 1px solid var(--color-border);
-  border-top: 0;
+  min-height: 330px;
+  padding: 20px 20px 18px;
+  border-top: 1px solid var(--color-border);
   flex-direction: column;
 }
 
@@ -1129,7 +1129,7 @@ p {
 
 .faculty-member-name-en {
   min-height: 20px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   color: var(--color-muted);
   font-family: var(--font-display);
   font-size: 11px;
@@ -1138,7 +1138,7 @@ p {
 .faculty-member-contact-list {
   display: grid;
   margin: 0;
-  padding: 13px 0;
+  padding: 12px 0;
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
   gap: 7px;
@@ -1189,8 +1189,8 @@ p {
 }
 
 .faculty-member-laboratory {
-  min-height: 32px;
-  margin: 0 0 13px;
+  min-height: 34px;
+  margin: 0 0 12px;
   color: #617180;
   font-size: 11px;
   line-height: 1.45;
