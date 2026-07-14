@@ -450,21 +450,6 @@ function SiteHeader({
                       {t(item.label, locale)}
                       <ChevronDown size={14} aria-hidden="true" />
                     </button>
-                    {openMenu === item.key && (
-                      <div className="mega-menu mega-menu-single" id="desktop-mega-menu">
-                        <div className="mega-menu-links">
-                          {item.children.map((child) => child.externalUrl ? (
-                            <a key={`${item.key}-${child.path}`} href={child.externalUrl} target="_blank" rel="noopener noreferrer" aria-label={child.ariaLabel} onClick={() => setOpenMenu(null)}>
-                              {t(child.label, locale)}<ExternalLink size={13} aria-hidden="true" />
-                            </a>
-                          ) : (
-                            <Link key={`${item.key}-${child.path}`} href={hrefFor(locale, child.path)} onClick={() => setOpenMenu(null)}>
-                              {t(child.label, locale)}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -498,6 +483,52 @@ function SiteHeader({
           </div>
         </header>
 
+        {openMenu && (
+          <div className="mega-menu" id="desktop-mega-menu">
+            <div className="container mega-menu-grid">
+              {navigation.map((item) => (
+                <section
+                  className={`mega-menu-column${openMenu === item.key ? " active" : ""}`}
+                  key={item.key}
+                  onMouseEnter={() => setOpenMenu(item.key)}
+                >
+                  <Link
+                    className="mega-menu-title"
+                    href={hrefFor(locale, item.path)}
+                    onClick={() => setOpenMenu(null)}
+                    onFocus={() => setOpenMenu(item.key)}
+                  >
+                    {t(item.label, locale)}
+                  </Link>
+                  <div className="mega-menu-links">
+                    {item.children.map((child) => child.externalUrl ? (
+                      <a
+                        key={`${item.key}-${child.path}`}
+                        href={child.externalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={child.ariaLabel}
+                        onClick={() => setOpenMenu(null)}
+                        onFocus={() => setOpenMenu(item.key)}
+                      >
+                        {t(child.label, locale)}<ExternalLink size={13} aria-hidden="true" />
+                      </a>
+                    ) : (
+                      <Link
+                        key={`${item.key}-${child.path}`}
+                        href={hrefFor(locale, child.path)}
+                        onClick={() => setOpenMenu(null)}
+                        onFocus={() => setOpenMenu(item.key)}
+                      >
+                        {t(child.label, locale)}
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {mobileOpen && (
