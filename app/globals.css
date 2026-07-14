@@ -230,8 +230,8 @@ p {
 .mega-menu-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  padding-top: 34px;
-  padding-bottom: 40px;
+  padding-top: 30px;
+  padding-bottom: 34px;
 }
 
 .mega-menu-column {
@@ -251,7 +251,7 @@ p {
 
 .mega-menu-title {
   display: inline-block;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   color: var(--color-navy-deep);
   font-size: 17px;
   font-weight: 780;
@@ -272,9 +272,9 @@ p {
 .mega-menu-links a {
   position: relative;
   display: inline-flex;
-  min-height: 38px;
+  min-height: 34px;
   align-items: center;
-  padding: 6px 0;
+  padding: 4px 0;
   color: #344253;
   font-size: 13px;
 }
