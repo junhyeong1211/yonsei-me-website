@@ -16,10 +16,11 @@ export type EditorialExternalLink = {
 
 export type EditorialPost = {
   id: string;
+  number?: string;
   type: EditorialContentType;
   category: LocaleText;
   title: LocaleText;
-  summary: LocaleText;
+  summary: LocaleText | null;
   content: LocaleText | null;
   author: LocaleText | null;
   publishedAt: string;
@@ -27,6 +28,10 @@ export type EditorialPost = {
   thumbnail: string | null;
   attachments: EditorialAttachment[];
   externalLinks: EditorialExternalLink[];
+  hasAttachment?: boolean;
+  sourceUrl?: string | null;
+  isPinned?: boolean;
+  reviewNote?: string;
   isNew: boolean;
   slug: string;
 };
@@ -37,7 +42,7 @@ export const pendingEditorialContent: LocaleText = {
 };
 
 export const sortEditorialPosts = (posts: EditorialPost[]) =>
-  [...posts].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+  [...posts].sort((a, b) => Number(Boolean(b.isPinned)) - Number(Boolean(a.isPinned)) || b.publishedAt.localeCompare(a.publishedAt));
 
 export const matchesEditorialQuery = (post: EditorialPost, query: string) => {
   const normalized = query.trim().toLowerCase();
@@ -45,8 +50,8 @@ export const matchesEditorialQuery = (post: EditorialPost, query: string) => {
   return [
     post.title.ko,
     post.title.en,
-    post.summary.ko,
-    post.summary.en,
+    post.summary?.ko ?? "",
+    post.summary?.en ?? "",
     post.content?.ko ?? "",
     post.content?.en ?? "",
     post.author?.ko ?? "",

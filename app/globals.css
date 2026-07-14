@@ -3086,6 +3086,11 @@ p {
   font-size: 11px;
 }
 
+.official-post-link,
+.editorial-original-post-link {
+  margin-top: 28px;
+}
+
 .article-body {
   min-height: 360px;
   padding: 48px 0;

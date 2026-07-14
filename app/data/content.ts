@@ -64,14 +64,20 @@ export type Course = {
 
 export type Notice = {
   id: string;
+  number: string;
+  type: "notice";
   slug: string;
   title: LocaleText;
-  body: LocaleText;
+  body: LocaleText | null;
+  author: LocaleText;
   audience: "undergraduate" | "graduate" | "all";
   category: string;
   publishedAt: string;
-  isImportant: boolean;
-  attachments?: { id: string; name: LocaleText; url: string }[];
+  hasAttachment: boolean;
+  sourceUrl: string;
+  isPinned: boolean;
+  isNew: boolean;
+  reviewNote?: string;
 };
 
 export type Event = {
@@ -314,36 +320,85 @@ export const courses: Course[] = [
 
 export const notices: Notice[] = [
   {
-    id: "notice-01",
-    slug: "notice-01",
-    title: { ko: "[중요 학부공지 제목 입력 예정]", en: "[Important undergraduate notice]" },
-    body: { ko: "공지 본문과 안내 사항을 입력할 예정입니다.", en: "The official notice body will be added." },
+    id: "notice-pinned-course-graduation-faq",
+    number: "공지",
+    type: "notice",
+    slug: "course-graduation-faq",
+    title: { ko: "[필독] 교과목 수강 및 졸업 관련 주요 문의 사항에 대한 답변", en: "[필독] 교과목 수강 및 졸업 관련 주요 문의 사항에 대한 답변" },
+    body: null,
+    author: { ko: "기계공학부", en: "기계공학부" },
     audience: "undergraduate",
     category: "학사",
-    publishedAt: "2026-07-08",
-    isImportant: true,
-    attachments: [{ id: "file-01", name: { ko: "[첨부파일 입력 예정]", en: "[Attachment]" }, url: "#" }],
+    publishedAt: "2023-02-13",
+    hasAttachment: false,
+    sourceUrl: "https://me.yonsei.ac.kr/me/community/notice.do?mode=view&articleNo=159666&article.offset=0&articleLimit=10",
+    isPinned: true,
+    isNew: false,
   },
   {
-    id: "notice-02",
-    slug: "notice-02",
-    title: { ko: "[대학원공지 제목 입력 예정]", en: "[Graduate notice title]" },
-    body: { ko: "대학원 공지 본문을 입력할 예정입니다.", en: "The graduate notice body will be added." },
-    audience: "graduate",
-    category: "대학원",
-    publishedAt: "2026-07-03",
-    isImportant: false,
+    id: "notice-729-undergraduate-research-summer-2026",
+    number: "729",
+    type: "notice",
+    slug: "undergraduate-research-summer-2026",
+    title: { ko: "2026-여름계절학기 학부연구(3) 연구참여 신청서 제출 안내 (신청서 제출마감: 7.3.(금) 17:00) (update)", en: "2026-여름계절학기 학부연구(3) 연구참여 신청서 제출 안내 (신청서 제출마감: 7.3.(금) 17:00) (update)" },
+    body: null,
+    author: { ko: "기계공학부", en: "기계공학부" },
+    audience: "undergraduate",
+    category: "학부",
+    publishedAt: "2026-06-29",
+    hasAttachment: true,
+    sourceUrl: "https://me.yonsei.ac.kr/me/community/notice.do?mode=view&articleNo=474118&article.offset=0&articleLimit=10",
+    isPinned: false,
+    isNew: false,
   },
-  ...Array.from({ length: 4 }, (_, index): Notice => ({
-    id: `notice-0${index + 3}`,
-    slug: `notice-0${index + 3}`,
-    title: { ko: `[공지 제목 ${index + 3} 입력 예정]`, en: `[Notice title ${index + 3}]` },
-    body: { ko: "확정된 공지 내용으로 교체해야 하는 샘플입니다.", en: "Replace this sample with verified notice content." },
-    audience: index % 2 === 0 ? "undergraduate" : "graduate",
-    category: index % 2 === 0 ? "행사" : "장학",
-    publishedAt: `2026-06-${String(28 - index * 3).padStart(2, "0")}`,
-    isImportant: false,
-  })),
+  {
+    id: "notice-728-var-summer-2026",
+    number: "728",
+    type: "notice",
+    slug: "var-summer-2026",
+    title: { ko: "VAR 2026 여름학기 모집 안내", en: "VAR 2026 여름학기 모집 안내" },
+    body: null,
+    author: { ko: "기계공학부", en: "기계공학부" },
+    audience: "undergraduate",
+    category: "학부",
+    publishedAt: "2026-06-24",
+    hasAttachment: true,
+    sourceUrl: "https://me.yonsei.ac.kr/me/community/notice.do?mode=view&articleNo=473905&article.offset=0&articleLimit=10",
+    isPinned: false,
+    isNew: false,
+  },
+  {
+    id: "notice-727-website-competition",
+    number: "727",
+    type: "notice",
+    slug: "website-competition",
+    title: { ko: "기계공학부「홈페이지 구축 경진대회」안내", en: "기계공학부「홈페이지 구축 경진대회」안내" },
+    body: null,
+    author: { ko: "기계공학부", en: "기계공학부" },
+    audience: "undergraduate",
+    category: "학부",
+    publishedAt: "2026-06-23",
+    hasAttachment: true,
+    sourceUrl: "https://me.yonsei.ac.kr/me/community/notice.do?mode=view&articleNo=473812&article.offset=0&articleLimit=10",
+    isPinned: false,
+    isNew: false,
+  },
+  {
+    id: "notice-726-retake-mechanical-engineering-mathematics",
+    number: "726",
+    type: "notice",
+    slug: "retake-mechanical-engineering-mathematics",
+    title: { ko: "일몰된 교과목(기계공학수학)에 대한 재수강처리 요청서 제출 안내", en: "일몰된 교과목(기계공학수학)에 대한 재수강처리 요청서 제출 안내" },
+    body: null,
+    author: { ko: "기계공학부", en: "기계공학부" },
+    audience: "undergraduate",
+    category: "학부",
+    publishedAt: "2026-06-18",
+    hasAttachment: true,
+    sourceUrl: "https://me.yonsei.ac.kr/me/community/notice.do?mode=view&articleNo=473501&article.offset=0&articleLimit=10",
+    isPinned: false,
+    isNew: false,
+  },
 ];
 
 export const events: Event[] = [

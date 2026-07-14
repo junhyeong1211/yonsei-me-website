@@ -7,7 +7,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Download, ExternalLink, Paperclip
 import { useMemo, useState } from "react";
 import type { Locale } from "../data/content";
 import type { EditorialContentType, EditorialPost } from "../data/editorialContent";
-import { matchesEditorialQuery, pendingEditorialContent, sortEditorialPosts } from "../data/editorialContent";
+import { matchesEditorialQuery, sortEditorialPosts } from "../data/editorialContent";
 import { newsCategories, newsPosts, type NewsCategoryKey } from "../data/news";
 
 const PAGE_SIZE = 5;
@@ -15,6 +15,7 @@ const PAGE_SIZE = 5;
 const text = (value: { ko: string; en: string }, locale: Locale) => value[locale];
 const copy = (locale: Locale, ko: string, en: string) => locale === "ko" ? ko : en;
 const localizedPath = (locale: Locale, path: string) => `/${locale}${path}`;
+const hasAttachment = (post: EditorialPost) => post.hasAttachment ?? post.attachments.length > 0;
 const dateLabel = (date: string, locale: Locale) => {
   const [year, month, day] = date.split("-").map(Number);
   return locale === "ko"
@@ -92,9 +93,9 @@ export function NewsDirectoryPage({ locale, searchParams }: { locale: Locale; se
                   {post.thumbnail ? <Image src={post.thumbnail} alt="" fill sizes="(max-width: 680px) 100vw, 260px" /> : <span>NEWS</span>}
                 </Link>
                 <div className="news-editorial-content">
-                  <div className="news-editorial-meta"><span>{text(post.category, locale)}</span>{post.attachments.length > 0 && <Paperclip size={15} aria-label={copy(locale, "첨부파일 있음", "Attachment available")} />}</div>
+                  <div className="news-editorial-meta"><span>{text(post.category, locale)}</span>{hasAttachment(post) && <Paperclip size={15} aria-label={copy(locale, "첨부파일 있음", "Attachment available")} />}</div>
                   <h2><Link href={localizedPath(locale, `/news/${post.slug}`)}>{text(post.title, locale)}</Link></h2>
-                  <p>{text(post.summary, locale)}</p>
+                  {post.summary && <p>{text(post.summary, locale)}</p>}
                   <time dateTime={post.publishedAt}>{dateLabel(post.publishedAt, locale)}</time>
                 </div>
               </article>
@@ -129,9 +130,9 @@ export function EditorialBoardPage({ locale, searchParams, posts, type }: { loca
             <div className="editorial-board-head" role="row"><span role="columnheader">{copy(locale, "번호", "No.")}</span><span role="columnheader">{copy(locale, "제목", "Title")}</span><span role="columnheader">{copy(locale, "첨부", "File")}</span><span role="columnheader">{copy(locale, "작성자", "Author")}</span><span role="columnheader">{copy(locale, "등록일", "Date")}</span></div>
             {visiblePosts.map((post, index) => (
               <Link className="editorial-board-row" role="row" href={localizedPath(locale, `${settings.basePath}/${post.slug}`)} key={post.id} aria-label={text(post.title, locale)}>
-                <span className="editorial-board-number" role="cell">{filteredPosts.length - ((page - 1) * PAGE_SIZE + index)}</span>
+                <span className="editorial-board-number" role="cell">{post.number ?? filteredPosts.length - ((page - 1) * PAGE_SIZE + index)}</span>
                 <strong role="cell">{post.isNew && <span className="editorial-new-badge" aria-label={copy(locale, "새 글", "New post")}>N</span>}{text(post.title, locale)}</strong>
-                <span className="editorial-board-file" role="cell">{post.attachments.length > 0 ? <Paperclip size={15} aria-label={copy(locale, "첨부파일 있음", "Attachment available")} /> : "-"}</span>
+                <span className="editorial-board-file" role="cell">{hasAttachment(post) ? <Paperclip size={15} aria-label={copy(locale, "첨부파일 있음", "Attachment available")} /> : "-"}</span>
                 <span role="cell">{post.author ? text(post.author, locale) : copy(locale, "확인 중", "Pending")}</span>
                 <time role="cell" dateTime={post.publishedAt}>{dateLabel(post.publishedAt, locale)}</time>
               </Link>
@@ -164,16 +165,17 @@ export function ProgramsDirectoryPage({ locale, searchParams, posts }: { locale:
     if (query.trim()) params.set("q", query.trim());
     router.replace(`${localizedPath(locale, "/news/programs")}${params.size ? `?${params.toString()}` : ""}`);
   };
-  return <><EditorialPageHeader eyebrow="SEMINARS & EVENTS" title={copy(locale, "세미나·행사", "Seminars & Events")} description={copy(locale, "기계공학부의 세미나와 주요 행사를 안내합니다.", "Find seminars and major department events.")} /><section className="section editorial-directory-section"><div className="container editorial-directory-container"><div className="editorial-toolbar"><div className="editorial-category-tabs" role="tablist" aria-label={copy(locale, "세미나·행사 분류", "Seminars and events categories")}>{(["all", "seminar", "event"] as const).map((type) => <button type="button" role="tab" aria-selected={selectedType === type} key={type} onClick={() => selectType(type)}>{type === "all" ? copy(locale, "전체", "All") : type === "seminar" ? copy(locale, "세미나", "Seminars") : copy(locale, "행사", "Events")}</button>)}</div><label className="editorial-search"><span className="sr-only">{copy(locale, "세미나·행사 검색", "Search seminars and events")}</span><Search size={18} aria-hidden="true" /><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder={copy(locale, "제목·작성자 검색", "Search title or author")} /></label></div><p className="editorial-result-count"><strong>{filteredPosts.length}</strong>{copy(locale, "건", " posts")}</p><div className="editorial-board" role="table" aria-label={copy(locale, "세미나·행사 목록", "Seminars and events list")}><div className="editorial-board-head" role="row"><span role="columnheader">{copy(locale, "번호", "No.")}</span><span role="columnheader">{copy(locale, "제목", "Title")}</span><span role="columnheader">{copy(locale, "첨부", "File")}</span><span role="columnheader">{copy(locale, "작성자", "Author")}</span><span role="columnheader">{copy(locale, "등록일", "Date")}</span></div>{visiblePosts.map((post, index) => <Link className="editorial-board-row" role="row" href={localizedPath(locale, `/news/programs/${post.slug}`)} key={post.id}><span className="editorial-board-number" role="cell">{filteredPosts.length - ((page - 1) * PAGE_SIZE + index)}</span><strong role="cell"><small className="editorial-program-type">{post.type === "seminar" ? copy(locale, "세미나", "Seminar") : copy(locale, "행사", "Event")}</small>{post.isNew && <span className="editorial-new-badge">N</span>}{text(post.title, locale)}</strong><span className="editorial-board-file" role="cell">{post.attachments.length > 0 ? <Paperclip size={15} /> : "-"}</span><span role="cell">{post.author ? text(post.author, locale) : copy(locale, "확인 중", "Pending")}</span><time role="cell" dateTime={post.publishedAt}>{dateLabel(post.publishedAt, locale)}</time></Link>)}</div>{!visiblePosts.length && <p className="editorial-empty">{copy(locale, "검색 결과가 없습니다.", "No results found.")}</p>}<Pagination page={page} totalPages={totalPages} onChange={setPage} locale={locale} /></div></section></>;
+  return <><EditorialPageHeader eyebrow="SEMINARS & EVENTS" title={copy(locale, "세미나·행사", "Seminars & Events")} description={copy(locale, "기계공학부의 세미나와 주요 행사를 안내합니다.", "Find seminars and major department events.")} /><section className="section editorial-directory-section"><div className="container editorial-directory-container"><div className="editorial-toolbar"><div className="editorial-category-tabs" role="tablist" aria-label={copy(locale, "세미나·행사 분류", "Seminars and events categories")}>{(["all", "seminar", "event"] as const).map((type) => <button type="button" role="tab" aria-selected={selectedType === type} key={type} onClick={() => selectType(type)}>{type === "all" ? copy(locale, "전체", "All") : type === "seminar" ? copy(locale, "세미나", "Seminars") : copy(locale, "행사", "Events")}</button>)}</div><label className="editorial-search"><span className="sr-only">{copy(locale, "세미나·행사 검색", "Search seminars and events")}</span><Search size={18} aria-hidden="true" /><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder={copy(locale, "제목·작성자 검색", "Search title or author")} /></label></div><p className="editorial-result-count"><strong>{filteredPosts.length}</strong>{copy(locale, "건", " posts")}</p><div className="editorial-board" role="table" aria-label={copy(locale, "세미나·행사 목록", "Seminars and events list")}><div className="editorial-board-head" role="row"><span role="columnheader">{copy(locale, "번호", "No.")}</span><span role="columnheader">{copy(locale, "제목", "Title")}</span><span role="columnheader">{copy(locale, "첨부", "File")}</span><span role="columnheader">{copy(locale, "작성자", "Author")}</span><span role="columnheader">{copy(locale, "등록일", "Date")}</span></div>{visiblePosts.map((post, index) => <Link className="editorial-board-row" role="row" href={localizedPath(locale, `/news/programs/${post.slug}`)} key={post.id}><span className="editorial-board-number" role="cell">{post.number ?? filteredPosts.length - ((page - 1) * PAGE_SIZE + index)}</span><strong role="cell"><small className="editorial-program-type">{post.type === "seminar" ? copy(locale, "세미나", "Seminar") : copy(locale, "행사", "Event")}</small>{post.isNew && <span className="editorial-new-badge">N</span>}{text(post.title, locale)}</strong><span className="editorial-board-file" role="cell">{hasAttachment(post) ? <Paperclip size={15} aria-label={copy(locale, "첨부파일 있음", "Attachment available")} /> : "-"}</span><span role="cell">{post.author ? text(post.author, locale) : copy(locale, "확인 중", "Pending")}</span><time role="cell" dateTime={post.publishedAt}>{dateLabel(post.publishedAt, locale)}</time></Link>)}</div>{!visiblePosts.length && <p className="editorial-empty">{copy(locale, "검색 결과가 없습니다.", "No results found.")}</p>}<Pagination page={page} totalPages={totalPages} onChange={setPage} locale={locale} /></div></section></>;
 }
 
 export function EditorialDetailPage({ locale, post, posts }: { locale: Locale; post: EditorialPost; posts: EditorialPost[] }) {
   const settings = sectionSettings[post.type];
+  const basePath = post.type === "news" ? settings.basePath : "/news/programs";
   const orderedPosts = sortEditorialPosts(posts);
   const index = orderedPosts.findIndex((item) => item.id === post.id);
   const previous = orderedPosts[index - 1];
   const next = orderedPosts[index + 1];
-  const body = post.content ? text(post.content, locale) : text(pendingEditorialContent, locale);
+  const hasBody = Boolean(post.summary || post.content);
 
   return (
     <>
@@ -184,19 +186,21 @@ export function EditorialDetailPage({ locale, post, posts }: { locale: Locale; p
             <div><dt>{copy(locale, "카테고리", "Category")}</dt><dd>{text(post.category, locale)}</dd></div>
             <div><dt>{copy(locale, "작성자", "Author")}</dt><dd>{post.author ? text(post.author, locale) : copy(locale, "확인 중", "Pending")}</dd></div>
             <div><dt>{copy(locale, "등록일", "Published")}</dt><dd><time dateTime={post.publishedAt}>{dateLabel(post.publishedAt, locale)}</time></dd></div>
+            <div><dt>{copy(locale, "첨부", "Attachment")}</dt><dd>{hasAttachment(post) ? copy(locale, "첨부파일 있음", "Attachment available") : copy(locale, "없음", "None")}</dd></div>
             {post.eventDate && <div><dt>{copy(locale, "일정", "Event date")}</dt><dd><time dateTime={post.eventDate}>{dateLabel(post.eventDate, locale)}</time></dd></div>}
           </dl>
-          <div className="article-body editorial-article-body"><p>{text(post.summary, locale)}</p><p>{body}</p></div>
-          <section className="editorial-detail-resources" aria-labelledby="editorial-attachments-title">
+          {hasBody && <div className="article-body editorial-article-body">{post.summary && <p>{text(post.summary, locale)}</p>}{post.content && <p>{text(post.content, locale)}</p>}</div>}
+          {post.attachments.length > 0 && <section className="editorial-detail-resources" aria-labelledby="editorial-attachments-title">
             <h2 id="editorial-attachments-title">{copy(locale, "첨부파일", "Attachments")}</h2>
-            {post.attachments.length > 0 ? post.attachments.map((attachment) => <a href={attachment.url} key={attachment.id} download><Download size={17} aria-hidden="true" />{text(attachment.name, locale)}</a>) : <p>{copy(locale, "첨부파일이 없습니다.", "No attachments.")}</p>}
-          </section>
-          <section className="editorial-detail-resources" aria-labelledby="editorial-links-title">
+            {post.attachments.map((attachment) => <a href={attachment.url} key={attachment.id} download><Download size={17} aria-hidden="true" />{text(attachment.name, locale)}</a>)}
+          </section>}
+          {post.sourceUrl && <a className="button outline editorial-original-post-link" href={post.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={copy(locale, `${text(post.title, locale)} 공식 게시글 보기, 새 탭에서 열림`, `View original post: ${text(post.title, locale)}, opens in a new tab`)}>{copy(locale, "공식 게시글 보기", "View Original Post")}<ExternalLink size={16} aria-hidden="true" /></a>}
+          {post.externalLinks.length > 0 && <section className="editorial-detail-resources" aria-labelledby="editorial-links-title">
             <h2 id="editorial-links-title">{copy(locale, "관련 외부 링크", "Related links")}</h2>
-            {post.externalLinks.length > 0 ? post.externalLinks.map((link) => <a href={link.url} target="_blank" rel="noopener noreferrer" key={link.id}>{text(link.label, locale)}<ExternalLink size={16} aria-hidden="true" /><span className="sr-only">{copy(locale, " 새 창", " opens in a new window")}</span></a>) : <p>{copy(locale, "등록된 외부 링크가 없습니다.", "No external links.")}</p>}
-          </section>
-          <div className="article-navigation editorial-article-navigation">{previous ? <Link href={localizedPath(locale, `${settings.basePath}/${previous.slug}`)}><ChevronLeft size={18} /><span><small>{copy(locale, "이전 글", "Previous")}</small>{text(previous.title, locale)}</span></Link> : <span />}{next ? <Link href={localizedPath(locale, `${settings.basePath}/${next.slug}`)}><span><small>{copy(locale, "다음 글", "Next")}</small>{text(next.title, locale)}</span><ChevronRight size={18} /></Link> : <span />}</div>
-          <Link className="button outline article-list-button" href={localizedPath(locale, settings.basePath)}><ArrowLeft size={17} />{copy(locale, "목록으로 돌아가기", "Back to list")}</Link>
+            {post.externalLinks.map((link) => <a href={link.url} target="_blank" rel="noopener noreferrer" key={link.id}>{text(link.label, locale)}<ExternalLink size={16} aria-hidden="true" /><span className="sr-only">{copy(locale, " 새 창", " opens in a new window")}</span></a>)}
+          </section>}
+          <div className="article-navigation editorial-article-navigation">{previous ? <Link href={localizedPath(locale, `${basePath}/${previous.slug}`)}><ChevronLeft size={18} /><span><small>{copy(locale, "이전 글", "Previous")}</small>{text(previous.title, locale)}</span></Link> : <span />}{next ? <Link href={localizedPath(locale, `${basePath}/${next.slug}`)}><span><small>{copy(locale, "다음 글", "Next")}</small>{text(next.title, locale)}</span><ChevronRight size={18} /></Link> : <span />}</div>
+          <Link className="button outline article-list-button" href={localizedPath(locale, basePath)}><ArrowLeft size={17} />{copy(locale, "목록으로 돌아가기", "Back to list")}</Link>
         </article>
       </section>
     </>
