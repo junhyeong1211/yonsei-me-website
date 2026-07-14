@@ -1599,11 +1599,7 @@ function ResearchLabDetail({ locale, lab }: { locale: Locale; lab: ResearchLab }
               <p className="section-label">ABOUT</p>
               <h2>{tx(locale, "연구실 소개", "About the Laboratory")}</h2>
               <p>{lab.description ?? pendingMessage}</p>
-            </section>
-            <section className="detail-block">
-              <p className="section-label">HOMEPAGE</p>
-              <h2>{tx(locale, "홈페이지", "Homepage")}</h2>
-              {lab.homepageUrl ? <a className="text-button" href={lab.homepageUrl} target="_blank" rel="noopener noreferrer">{lab.homepageUrl}<ExternalLink size={16} /></a> : <p>{pendingMessage}</p>}
+              {lab.homepageUrl && <a className="button outline" href={lab.homepageUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, `${lab.nameKo} 홈페이지 방문, 새 탭에서 열림`, `Visit ${lab.nameEn} website, opens in a new tab`)}>{tx(locale, "연구실 홈페이지 방문", "Visit Lab Website")}<ExternalLink size={16} aria-hidden="true" /></a>}
             </section>
           </main>
           <aside className="detail-nav">

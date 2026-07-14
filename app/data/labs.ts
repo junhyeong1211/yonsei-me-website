@@ -24,6 +24,41 @@ const pendingDetails = {
   reviewNote: null,
 } as const;
 
+const homepageUrls: Record<string, string> = {
+  "computational-mechanics-materials": "https://sites.google.com/site/kwkanglab/",
+  "nano-fabrication-micro-optics": "http://nanofab.yonsei.ac.kr/",
+  "optics-quantum": "https://sites.google.com/yonsei.ac.kr/oql/",
+  tribology: "http://trl.yonsei.ac.kr/",
+  "max-lab": "https://sites.google.com/view/seoklab/max",
+  "nano-optoelectronics-system": "http://nos.yonsei.ac.kr/",
+  mems: "http://mems.yonsei.ac.kr/",
+  "advanced-thermoengineering": "http://atel.yonsei.ac.kr/",
+  "small-scale-fluids": "https://ssfl.yonsei.ac.kr/",
+  "nano-transducers": "http://ntl.yonsei.ac.kr/",
+  "intelligent-device-manufacturing": "http://yslidm.com/",
+  "biomedical-energy-system": "https://sites.google.com/a/bmesyonsei.com/bmeslab/",
+  "computational-science-ai": "https://csailabyonsei.quv.kr/",
+  "manufacturing-mechatronics": "http://minlab.yonsei.ac.kr/",
+  "vibration-opto-mechatronics": "http://optomecha.yonsei.ac.kr/",
+  "ice-clean-energy": "http://cleanenergy.yonsei.ac.kr/",
+  "human-centered-ai-robotics": "http://hcr.yonsei.ac.kr/",
+  "micro-servo-system": "http://mservo.yonsei.ac.kr/",
+  "systematic-structure-design": "http://ssd.yonsei.ac.kr/",
+  "heat-transfer-thermal-design": "https://sites.google.com/view/httd-yonsei",
+  "multi-physics-design-optimization-phm": "http://mdophm.yonsei.ac.kr/",
+  "multi-scale-fluid-dynamics": "https://mfdl.yonsei.ac.kr/",
+  turbulence: "http://euler.yonsei.ac.kr/",
+  "biomechanics-soft-materials": "http://leelab.yonsei.ac.kr/",
+  "micro-mechanics": "https://mcmclab.yonsei.ac.kr/",
+  nemd: "http://nemd.yonsei.ac.kr/",
+  "intelligent-structures-integrated-design": "http://isid.yonsei.ac.kr/",
+  "biochip-technology": "https://sites.google.com/view/yonseilbt/introduction",
+  "computational-imaging-instrumentation": "http://boilab.wordpress.com/",
+  "machine-learning-control-systems": "http://mlcs.yonsei.ac.kr/",
+  "accurate-measurement-intelligent-sensing": "https://sites.google.com/view/damislab",
+  "multiphysics-energy-system": "http://mes.yonsei.ac.kr/",
+};
+
 export const researchLabs: ResearchLab[] = [
   { id: "computational-mechanics-materials", slug: "computational-mechanics-materials", nameKo: "전산재료역학 연구실", nameEn: "Computational Mechanics of Materials Lab.", professorKo: "강건욱", professorEn: "Keonwook Kang", primaryArea: "mechanics-materials", secondaryAreas: [], location: "공학관 N204", phoneNumbers: ["02-2123-7426"], ...pendingDetails },
   { id: "nano-fabrication-micro-optics", slug: "nano-fabrication-micro-optics", nameKo: "마이크로 나노 응용 기술 개발 연구실", nameEn: "Nano Fabrication/Micro Optics Lab.", professorKo: "강신일", professorEn: "Kang, Shinill", primaryArea: "micro-nano", secondaryAreas: ["bio-photonics"], location: "공학관 C330", phoneNumbers: ["02-2123-2829"], ...pendingDetails },
@@ -58,7 +93,10 @@ export const researchLabs: ResearchLab[] = [
   { id: "machine-learning-control-systems", slug: "machine-learning-control-systems", nameKo: "기계학습 및 제어 시스템 연구실", nameEn: "Machine Learning and Control Systems Lab.", professorKo: "최종은", professorEn: "Choi, Jongeun", primaryArea: "robotics-control", secondaryAreas: [], location: "공학관 N206", phoneNumbers: [], ...pendingDetails },
   { id: "accurate-measurement-intelligent-sensing", slug: "accurate-measurement-intelligent-sensing", nameKo: "정밀 측정 및 지능형 센싱 연구실", nameEn: "High-Dimensional Accurate Measurement and Intelligent Sensing Lab.", professorKo: "현재상", professorEn: "Hyun, Jae-Sang", primaryArea: "robotics-control", secondaryAreas: ["design-manufacturing"], location: "공학관 C315", phoneNumbers: ["02-2123-2818"], ...pendingDetails },
   { id: "multiphysics-energy-system", slug: "multiphysics-energy-system", nameKo: "지속가능한 에너지 플랫폼 개발 연구실", nameEn: "Multiphysics Energy System Lab.", professorKo: "홍종섭", professorEn: "Hong, Jongsup", primaryArea: "energy-thermal-fluids", secondaryAreas: [], location: "공학관 A288", phoneNumbers: [], ...pendingDetails },
-];
+].map((lab) => ({
+  ...lab,
+  homepageUrl: homepageUrls[lab.id] ?? lab.homepageUrl,
+}));
 
 export const getResearchLabBySlug = (slug: string) =>
   researchLabs.find((lab) => lab.slug === slug);
