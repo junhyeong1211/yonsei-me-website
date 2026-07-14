@@ -390,9 +390,40 @@ function SiteHeader({
   setSearchOpen: (value: boolean) => void;
 }) {
   const headerShellRef = useRef<HTMLDivElement>(null);
+  const navButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [megaMenuCenters, setMegaMenuCenters] = useState<Record<string, number>>({});
   const currentPath = segments.length ? `/${segments.join("/")}` : "/";
   const localeSuffix = segments.length ? `/${segments.join("/")}` : "";
   const activeItemKey = getActiveNavigationItem(currentPath)?.key;
+
+  useEffect(() => {
+    if (!openMenu) return;
+
+    const syncMegaMenuCenters = () => {
+      const shell = headerShellRef.current;
+      if (!shell) return;
+
+      const shellRect = shell.getBoundingClientRect();
+      const centers = Object.fromEntries(
+        navigation.flatMap((item) => {
+          const button = navButtonRefs.current[item.key];
+          if (!button) return [];
+
+          const rect = button.getBoundingClientRect();
+          return [[item.key, rect.left - shellRect.left + rect.width / 2] as const];
+        }),
+      );
+
+      setMegaMenuCenters(centers);
+    };
+
+    const frame = window.requestAnimationFrame(syncMegaMenuCenters);
+    window.addEventListener("resize", syncMegaMenuCenters);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", syncMegaMenuCenters);
+    };
+  }, [openMenu]);
 
   useEffect(() => {
     if (!openMenu) return;
@@ -440,6 +471,9 @@ function SiteHeader({
                 return (
                   <div className="nav-item" key={item.key} onMouseEnter={() => setOpenMenu(item.key)}>
                     <button
+                      ref={(button) => {
+                        navButtonRefs.current[item.key] = button;
+                      }}
                       type="button"
                       className={active ? "active" : undefined}
                       aria-expanded={openMenu === item.key}
@@ -485,12 +519,13 @@ function SiteHeader({
 
         {openMenu && (
           <div className="mega-menu" id="desktop-mega-menu">
-            <div className="container mega-menu-grid">
+            <div className="mega-menu-grid">
               {navigation.map((item) => (
                 <section
                   className={`mega-menu-column${openMenu === item.key ? " active" : ""}`}
                   key={item.key}
                   onMouseEnter={() => setOpenMenu(item.key)}
+                  style={{ left: `${megaMenuCenters[item.key] ?? 0}px` }}
                 >
                   <div className="mega-menu-links">
                     {item.children.map((child) => child.externalUrl ? (
