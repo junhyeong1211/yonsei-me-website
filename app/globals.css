@@ -236,7 +236,7 @@ p {
 .mega-menu-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 160px));
-  padding-left: clamp(350px, 30vw, 600px);
+  padding-left: max(0px, calc(clamp(350px, 30vw, 600px) - 16px));
   padding-top: 34px;
   padding-bottom: 40px;
 }
