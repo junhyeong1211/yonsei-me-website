@@ -492,14 +492,6 @@ function SiteHeader({
                   key={item.key}
                   onMouseEnter={() => setOpenMenu(item.key)}
                 >
-                  <Link
-                    className="mega-menu-title"
-                    href={hrefFor(locale, item.path)}
-                    onClick={() => setOpenMenu(null)}
-                    onFocus={() => setOpenMenu(item.key)}
-                  >
-                    {t(item.label, locale)}
-                  </Link>
                   <div className="mega-menu-links">
                     {item.children.map((child) => child.externalUrl ? (
                       <a

@@ -141,7 +141,7 @@ p {
 
 @media (min-width: 1600px) {
   .site-header .header-row {
-    width: min(calc(100% - 64px), calc(var(--container-width) + 96px));
+    width: min(calc(100% - 32px), calc(var(--container-width) + 160px));
   }
 }
 
@@ -237,18 +237,14 @@ p {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 160px));
   padding-left: max(0px, calc(clamp(350px, 30vw, 600px) - 16px));
-  padding-top: 34px;
+  padding-top: 20px;
   padding-bottom: 40px;
 }
 
 .mega-menu-column {
-  display: grid;
-  grid-template-rows: 26px minmax(0, 1fr);
-  align-content: start;
   min-width: 0;
   padding: 0 28px;
   border-left: 1px solid var(--color-border);
-  row-gap: 16px;
 }
 
 .mega-menu-column:first-child {
