@@ -4725,57 +4725,8 @@ p {
     flex-wrap: wrap;
   }
 
-  .mobile-menu {
-    display: flex;
-    min-height: 100dvh;
-    flex-direction: column;
-  }
-
-  .mobile-menu-top {
-    min-height: 58px;
-    padding: 0 18px;
-    font-size: 14px;
-  }
-
-  .mobile-menu nav {
-    flex: 1 0 auto;
-    padding: 4px 18px 10px;
-  }
-
-  .mobile-nav-group > button {
-    min-height: 50px;
-    font-size: 15px;
-  }
-
   .mobile-nav-links {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 0 0 10px;
-    gap: 0 12px;
-  }
-
-  .mobile-nav-links a {
-    min-width: 0;
-    min-height: 44px;
-    padding: 5px 0;
-    align-items: center;
-    font-size: 12px;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
-  }
-
-  .mobile-menu-footer {
-    margin-top: auto;
-    padding: 8px 18px 12px;
-    gap: 8px;
-  }
-
-  .mobile-menu-footer a {
-    min-height: 44px;
-    font-size: 11px;
-  }
-
-  .mobile-menu-footer > a:last-child {
-    margin-left: 4px;
+    grid-template-columns: 1fr;
   }
 
   .page-header-inner {
@@ -5743,26 +5694,97 @@ p {
     border-bottom: 1px solid var(--color-border);
   }
 
+  .undergraduate-courses-page {
+    padding-top: 42px;
+  }
+
+  .course-page-actions {
+    margin-bottom: 20px;
+  }
+
+  .course-page-actions .button {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
+  }
+
   .undergraduate-course-tabs {
-    display: flex;
-    overflow-x: auto;
+    overflow: hidden;
   }
 
   .undergraduate-course-tabs button {
-    min-width: max-content;
-    flex: 1 0 auto;
-    padding: 0 20px;
+    min-width: 0;
+    min-height: 58px;
+    padding: 8px 7px;
+    font-size: 11px;
+    line-height: 1.3;
+    white-space: normal;
+  }
+
+  .undergraduate-course-tabs button[aria-selected="true"]::after {
+    right: 10px;
+    left: 10px;
+  }
+
+  .course-schedule-panel,
+  .course-detail-panel {
+    padding-top: 28px;
   }
 
   .undergraduate-course-filter {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 16px 0;
+    gap: 12px;
   }
 
-  .undergraduate-course-filter .search-field,
+  .undergraduate-course-filter .search-field {
+    grid-column: 1 / -1;
+  }
+
   .undergraduate-course-filter .button,
   .undergraduate-course-filter .course-filter-reset {
-    grid-column: 1;
     grid-row: auto;
+  }
+
+  .undergraduate-course-filter .button {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .undergraduate-course-filter .button:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .undergraduate-course-filter .course-filter-reset {
+    grid-column: 2;
+    align-self: end;
+    justify-self: stretch;
+    min-height: 46px;
+    padding: 0 8px;
+    border: 1px solid var(--color-border);
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .results-heading {
+    margin-top: 24px;
+  }
+
+  .undergraduate-course-mobile-list > article {
+    padding: 20px 0;
+  }
+
+  .course-mobile-meta {
+    margin-bottom: 9px;
+  }
+
+  .undergraduate-course-mobile-list h3 {
+    font-size: 17px;
+    line-height: 1.4;
+  }
+
+  .undergraduate-course-mobile-list dl {
+    margin-top: 16px;
   }
 
   .undergraduate-course-detail-list summary {
