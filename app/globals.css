@@ -4598,6 +4598,10 @@ p {
     gap: 22px;
   }
 
+  .home-page .faculty-member-grid-preview .faculty-member-card:nth-child(n + 4) {
+    display: none;
+  }
+
   .faculty-member-card {
     display: grid;
     grid-template-columns: minmax(128px, 0.72fr) minmax(0, 1.28fr);
@@ -5049,6 +5053,12 @@ p {
     gap: 7px;
   }
 
+  .home-page .quick-links-grid {
+    border-top: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+  }
+
   .home-page .quick-links-grid a:first-child {
     border-left: 0;
   }
@@ -5076,6 +5086,35 @@ p {
     font-size: 12px;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .home-page .event-list {
+    border-top-color: var(--color-navy-deep);
+  }
+
+  .home-page .event-row {
+    grid-template-columns: 58px minmax(0, 1fr);
+    min-height: 76px;
+    gap: 12px;
+  }
+
+  .home-page .event-date {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+  }
+
+  .home-page .event-date span {
+    font-size: 9px;
+    letter-spacing: 0.04em;
+  }
+
+  .home-page .event-date strong {
+    font-family: var(--font-sans);
+    font-size: 25px;
+    font-weight: 760;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
   }
 }
 
