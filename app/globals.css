@@ -5055,7 +5055,6 @@ p {
 
   .home-page .quick-links-grid {
     border-top: 1px solid var(--color-border);
-    border-right: 1px solid var(--color-border);
     border-left: 1px solid var(--color-border);
   }
 
@@ -10325,12 +10324,22 @@ p {
     grid-template-columns: 1fr;
   }
 
+  .admission-preview-grid {
+    border-right: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+  }
+
   .admission-type-grid article,
   .admission-process-list li,
   .admission-preview-grid a {
     min-height: 0;
     padding: 24px 20px;
     border-left: 1px solid var(--color-border);
+  }
+
+  .admission-preview-grid a,
+  .admission-preview-grid a:nth-child(2n + 1) {
+    border-left: 0;
   }
 
   .admission-process-list p {
