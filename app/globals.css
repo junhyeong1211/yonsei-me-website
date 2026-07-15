@@ -4944,6 +4944,61 @@ p {
     min-height: 44px;
   }
 
+  .home-page .education-section {
+    padding: 38px 0 44px;
+  }
+
+  .home-page .education-section .section-heading {
+    margin-bottom: 22px;
+  }
+
+  .home-page .education-section .section-heading h2 {
+    font-size: 28px;
+  }
+
+  .home-page .education-panel {
+    min-height: 0;
+    padding: 20px 20px 16px;
+  }
+
+  .home-page .education-number {
+    top: 15px;
+    right: 18px;
+    font-size: 28px;
+  }
+
+  .home-page .education-panel > p:first-of-type {
+    margin-bottom: 8px;
+    font-size: 9px;
+  }
+
+  .home-page .education-panel h3 {
+    margin-bottom: 8px;
+    font-size: 22px;
+    line-height: 1.3;
+  }
+
+  .home-page .education-description {
+    display: -webkit-box;
+    max-width: calc(100% - 28px);
+    margin: 0;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.6;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .home-page .education-panel ul {
+    display: none;
+  }
+
+  .home-page .education-panel .text-button {
+    min-height: 40px;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+
   .home-page .hero-controls {
     right: 12px;
     bottom: 12px;
