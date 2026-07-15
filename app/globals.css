@@ -283,7 +283,11 @@ p {
   }
 
   .header-navigation-shell[data-locale="en"] .desktop-nav {
-    gap: clamp(20px, 2vw, 34px);
+    gap: clamp(24px, 2.2vw, 38px);
+  }
+
+  .header-navigation-shell[data-locale="en"] .nav-item:first-child {
+    margin-right: clamp(4px, 0.5vw, 10px);
   }
 
   .header-navigation-shell[data-locale="en"] .nav-item > button {
@@ -296,12 +300,19 @@ p {
   }
 
   .header-navigation-shell[data-locale="en"] .mega-menu-column {
-    width: clamp(128px, 10.5vw, 150px);
-    padding: 0 6px;
+    width: clamp(142px, 11vw, 164px);
+    padding: 0 10px;
+  }
+
+  .header-navigation-shell[data-locale="en"] .mega-menu-links {
+    align-items: flex-start;
+    text-align: left;
   }
 
   .header-navigation-shell[data-locale="en"] .mega-menu-links a {
-    min-height: 42px;
+    min-height: 40px;
+    justify-content: flex-start;
+    padding: 5px 4px;
     font-size: 12px;
     line-height: 1.35;
     white-space: normal;
