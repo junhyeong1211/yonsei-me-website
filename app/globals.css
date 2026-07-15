@@ -189,24 +189,24 @@ p {
 }
 
 .desktop-nav {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   min-width: 0;
-  gap: clamp(32px, 3vw, 56px);
 }
 
 .nav-item {
   position: relative;
   display: flex;
+  min-width: 0;
 }
 
 .nav-item > button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: auto;
+  width: 100%;
   min-width: 0;
-  padding: 0 16px;
+  padding: 0 6px;
   background: transparent;
   border: 0;
   border-bottom: 3px solid transparent;
@@ -234,25 +234,35 @@ p {
 }
 
 .mega-menu-grid {
-  position: relative;
-  min-height: 340px;
-  padding-bottom: 40px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: min(calc(100% - 32px), calc(var(--container-width) + 64px));
+  min-height: 0;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 0 180px 0 320px;
 }
 
 .mega-menu-column {
-  position: absolute;
-  top: 20px;
-  width: clamp(150px, 15vw, 220px);
+  position: static;
+  top: auto;
+  left: auto !important;
+  width: auto;
   min-width: 0;
-  padding: 0 12px;
-  transform: translateX(-50%);
+  padding: 24px 20px 30px;
+  border-left: 1px solid var(--color-border);
+  transform: none;
+}
+
+.mega-menu-column:last-child {
+  border-right: 1px solid var(--color-border);
 }
 
 .mega-menu-links {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-direction: column;
-  text-align: center;
+  text-align: left;
 }
 
 .mega-menu-links a {
@@ -261,7 +271,7 @@ p {
   width: 100%;
   min-height: 40px;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 5px 0;
   color: #344253;
   font-size: 13px;
@@ -283,38 +293,27 @@ p {
   }
 
   .header-navigation-shell[data-locale="en"] .desktop-nav {
-    gap: clamp(24px, 2.2vw, 38px);
+    gap: 0;
   }
 
   .header-navigation-shell[data-locale="en"] .nav-item:first-child {
-    margin-right: clamp(4px, 0.5vw, 10px);
-  }
-
-  /* Keep the five English menu anchors on a consistent visual rhythm. */
-  .header-navigation-shell[data-locale="en"] .nav-item:nth-child(2) {
-    transform: translateX(clamp(16px, 1.75vw, 24px));
-  }
-
-  .header-navigation-shell[data-locale="en"] .nav-item:nth-child(3) {
-    transform: translateX(clamp(7px, 0.75vw, 11px));
-  }
-
-  .header-navigation-shell[data-locale="en"] .nav-item:nth-child(4) {
-    transform: translateX(clamp(9px, 0.9vw, 13px));
+    margin-right: 0;
   }
 
   .header-navigation-shell[data-locale="en"] .nav-item > button {
-    padding: 0 9px;
-    font-size: 14px;
+    padding: 0 4px;
+    font-size: 13px;
   }
 
   .header-navigation-shell[data-locale="en"] .mega-menu-grid {
-    min-height: 420px;
+    min-height: 0;
+    padding-right: 190px;
+    padding-left: 260px;
   }
 
   .header-navigation-shell[data-locale="en"] .mega-menu-column {
-    width: 150px;
-    padding: 0;
+    width: auto;
+    padding: 24px 14px 30px;
   }
 
   .header-navigation-shell[data-locale="en"] .mega-menu-links {
@@ -329,7 +328,7 @@ p {
     font-size: 12px;
     line-height: 1.35;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
   }
 }
 
@@ -4012,13 +4011,18 @@ p {
   }
 
   .nav-item > button {
-    min-width: 82px;
-    padding: 0 12px;
+    min-width: 0;
+    padding: 0 6px;
     font-size: 13px;
   }
 
   .desktop-nav {
-    gap: 24px;
+    gap: 0;
+  }
+
+  .mega-menu-grid {
+    padding-right: 160px;
+    padding-left: 280px;
   }
 
   .header-tools {
