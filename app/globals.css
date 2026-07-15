@@ -290,6 +290,19 @@ p {
     margin-right: clamp(4px, 0.5vw, 10px);
   }
 
+  /* Keep the five English menu anchors on a consistent visual rhythm. */
+  .header-navigation-shell[data-locale="en"] .nav-item:nth-child(2) {
+    transform: translateX(clamp(16px, 1.75vw, 24px));
+  }
+
+  .header-navigation-shell[data-locale="en"] .nav-item:nth-child(3) {
+    transform: translateX(clamp(7px, 0.75vw, 11px));
+  }
+
+  .header-navigation-shell[data-locale="en"] .nav-item:nth-child(4) {
+    transform: translateX(clamp(9px, 0.9vw, 13px));
+  }
+
   .header-navigation-shell[data-locale="en"] .nav-item > button {
     padding: 0 9px;
     font-size: 14px;
@@ -300,8 +313,8 @@ p {
   }
 
   .header-navigation-shell[data-locale="en"] .mega-menu-column {
-    width: clamp(142px, 11vw, 164px);
-    padding: 0 10px;
+    width: 150px;
+    padding: 0;
   }
 
   .header-navigation-shell[data-locale="en"] .mega-menu-links {
@@ -312,7 +325,7 @@ p {
   .header-navigation-shell[data-locale="en"] .mega-menu-links a {
     min-height: 40px;
     justify-content: flex-start;
-    padding: 5px 4px;
+    padding: 5px 0;
     font-size: 12px;
     line-height: 1.35;
     white-space: normal;
