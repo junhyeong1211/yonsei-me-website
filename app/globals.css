@@ -10873,9 +10873,9 @@ p {
 
 @media (max-width: 767px) {
   .curriculum-tree-header {
-    padding-top: 52px;
-    padding-bottom: 36px;
-    gap: 24px;
+    padding-top: 42px;
+    padding-bottom: 28px;
+    gap: 20px;
   }
 
   .curriculum-tree-header h1 {
@@ -10887,9 +10887,15 @@ p {
   }
 
   .curriculum-tree-actions {
+    width: 100%;
     align-items: flex-start;
     flex-wrap: wrap;
-    gap: 10px 14px;
+    gap: 8px 14px;
+  }
+
+  .curriculum-print-button,
+  .curriculum-source-link {
+    min-height: 44px;
   }
 
   .curriculum-tree-main {
@@ -10903,12 +10909,39 @@ p {
     gap: 11px;
   }
 
+  .curriculum-requirements-banner a {
+    min-height: 44px;
+  }
+
+  .curriculum-legend {
+    margin-top: 16px;
+    font-size: 11px;
+    gap: 7px 9px;
+  }
+
+  .curriculum-legend > span {
+    min-height: 24px;
+    padding: 0 8px;
+  }
+
+  .curriculum-legend > .is-prerequisite {
+    width: 100%;
+  }
+
   .curriculum-semester-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     margin-top: 24px;
+    padding: 9px 0;
+    overflow: visible;
+    gap: 6px;
   }
 
   .curriculum-semester-tabs button {
+    min-width: 0;
     min-height: 44px;
+    padding: 0 4px;
+    font-size: 11px;
   }
 
   .curriculum-tree-sections {
@@ -10932,7 +10965,7 @@ p {
   }
 
   .curriculum-tree-section-content {
-    padding: 24px 20px 28px;
+    padding: 22px 16px 26px;
   }
 
   .curriculum-tree-section-content > h2 {
@@ -10946,7 +10979,7 @@ p {
 
   .curriculum-mobile-years {
     display: grid;
-    gap: 11px;
+    gap: 8px;
   }
 
   .curriculum-mobile-years details {
@@ -10956,16 +10989,29 @@ p {
 
   .curriculum-mobile-years summary {
     display: flex;
-    min-height: 54px;
+    min-height: 52px;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     color: var(--color-navy-deep);
     font-size: 15px;
     font-weight: 760;
     cursor: pointer;
   }
 
+  .curriculum-mobile-years summary::after {
+    margin-left: 8px;
+    color: var(--color-yonsei-blue);
+    content: "+";
+    font-size: 20px;
+    font-weight: 400;
+  }
+
+  .curriculum-mobile-years details[open] summary::after {
+    content: "−";
+  }
+
   .curriculum-mobile-years summary span {
+    margin-left: auto;
     color: #718190;
     font-size: 11px;
     font-weight: 650;
@@ -10974,8 +11020,8 @@ p {
   .curriculum-mobile-semesters {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 0 0 18px;
-    gap: 14px;
+    padding: 0 0 14px;
+    gap: 12px;
   }
 
   .curriculum-mobile-semesters > section {
@@ -10995,13 +11041,33 @@ p {
   }
 
   .curriculum-mobile-entry {
-    margin: 4px 0 4px;
+    margin: 2px 0 4px;
     padding: 7px 10px;
     color: var(--color-navy-deep);
     background: #eaf4fb;
     font-size: 12px;
     font-weight: 700;
     text-align: center;
+  }
+
+  .curriculum-course-card {
+    min-height: 54px;
+    padding: 10px 11px;
+  }
+
+  .curriculum-course-name {
+    padding-right: 25px;
+    font-size: 14px;
+  }
+
+  .curriculum-course-card small {
+    margin-top: 5px;
+    font-size: 11px;
+  }
+
+  .curriculum-course-required,
+  .curriculum-course-prerequisite {
+    font-size: 10px;
   }
 
   .curriculum-major-strips,
@@ -11067,7 +11133,7 @@ p {
   }
 
   .curriculum-course-card {
-    min-height: 58px;
+    min-height: 54px;
   }
 
   .curriculum-special-track {
