@@ -1755,7 +1755,6 @@ function CurriculumTreeSemesterGrid({
   onSelect: (id: string) => void;
 }) {
   const coursesBySemester = (semester: CurriculumSemester) => courses.filter((course) => course.semester === semester);
-  const years = [1, 2, 3, 4] as const;
 
   return (
     <>
@@ -1771,28 +1770,13 @@ function CurriculumTreeSemesterGrid({
           ))}
         </div>
       </div>
-      <div className="curriculum-mobile-years">
-        {years.map((year) => {
-          const yearSemesters = curriculumSemesters.filter((semester) => semester.year === year);
-          const shouldOpen = activeSemester === "all" ? year === 1 : yearSemesters.some((semester) => semester.id === activeSemester);
-          return (
-            <div key={year}>
-              <details open={shouldOpen}>
-                <summary>{year}학년 <span>{yearSemesters.map((semester) => semester.id).join(" · ")}</span></summary>
-                <div className="curriculum-mobile-semesters">
-                  {yearSemesters.map((semester) => (
-                    <section className={activeSemester !== "all" && activeSemester !== semester.id ? "is-dimmed" : ""} key={semester.id}>
-                      <h3>{semester.id}</h3>
-                      <CurriculumTreeCourseList courses={coursesBySemester(semester.id)} activeSemester={activeSemester} selectedCourseId={selectedCourseId} prerequisiteIds={prerequisiteIds} onSelect={onSelect} />
-                    </section>
-                  ))}
-                </div>
-              </details>
-              {year === 1 && <p className="curriculum-mobile-entry">2학년 진입 전 필수</p>}
-              {year === 2 && <p className="curriculum-mobile-entry">3학년 진입 전 필수</p>}
-            </div>
-          );
-        })}
+      <div className="curriculum-mobile-list">
+        {curriculumSemesters.filter((semester) => coursesBySemester(semester.id).length > 0).map((semester) => (
+          <section className={activeSemester !== "all" && activeSemester !== semester.id ? "is-dimmed" : ""} key={semester.id}>
+            <header><h3>{semester.id}</h3><span>{semester.year}학년</span></header>
+            <CurriculumTreeCourseList courses={coursesBySemester(semester.id)} activeSemester={activeSemester} selectedCourseId={selectedCourseId} prerequisiteIds={prerequisiteIds} onSelect={onSelect} />
+          </section>
+        ))}
       </div>
     </>
   );
@@ -2303,7 +2287,22 @@ function undergraduateCategoryLabel(category: UndergraduateCourseCategory, local
   return tx(locale, "전공선택", "Elective");
 }
 
+function UndergraduateCourseMobileCard({ locale, item }: { locale: Locale; item: UndergraduateCourseOffering }) {
+  const detailItem = getUndergraduateCourseDetail(item.courseCode, item.nameKo);
+  return <article><div className="course-mobile-meta"><span>{item.courseCode}</span><i className={`course-category course-category-${item.category}`}>{undergraduateCategoryLabel(item.category, locale)}</i></div><h3>{locale === "en" && item.nameEn ? item.nameEn : item.nameKo}</h3>{item.nameEn && <p className="course-mobile-english">{locale === "ko" ? item.nameEn : item.nameKo}</p>}<dl><div><dt>{tx(locale, "학점", "Credits")}</dt><dd>{item.credits}</dd></div><div><dt>{tx(locale, "강의·실습", "Lecture · Practice")}</dt><dd>{item.lectureHours} · {item.practiceHours}</dd></div></dl>{item.reviewNote && <p className="course-review-note">{tx(locale, "공식 확인 필요", "Official verification needed")}</p>}{detailItem && <details><summary>{tx(locale, "상세보기", "View Details")}</summary><p>{detailItem.description}</p></details>}</article>;
+}
+
 function UndergraduateCourseSchedule({ locale, items, expandedOffering, setExpandedOffering }: { locale: Locale; items: UndergraduateCourseOffering[]; expandedOffering: string | null; setExpandedOffering: (id: string | null) => void }) {
+  const mobileYearGroups = Array.from(new Map(items.map((item) => {
+    const key = item.years.join("-");
+    return [key, {
+      key,
+      label: locale === "ko" ? item.years.map((year) => `${year}학년`).join(" · ") : item.years.map((year) => `Year ${year}`).join(" · "),
+      order: Math.min(...item.years),
+      items: items.filter((candidate) => candidate.years.join("-") === key),
+    }];
+  })).values()).sort((left, right) => left.order - right.order);
+
   return (
     <>
       <div className="undergraduate-course-table-wrap">
@@ -2321,6 +2320,18 @@ function UndergraduateCourseSchedule({ locale, items, expandedOffering, setExpan
           const detailItem = getUndergraduateCourseDetail(item.courseCode, item.nameKo);
           return <article key={item.id}><div className="course-mobile-meta"><span>{item.courseCode}</span><i className={`course-category course-category-${item.category}`}>{undergraduateCategoryLabel(item.category, locale)}</i></div><h3>{locale === "en" && item.nameEn ? item.nameEn : item.nameKo}</h3>{item.nameEn && <p className="course-mobile-english">{locale === "ko" ? item.nameEn : item.nameKo}</p>}<dl><div><dt>{tx(locale, "학년", "Year")}</dt><dd>{item.years.join("·")}</dd></div><div><dt>{tx(locale, "학기", "Semester")}</dt><dd>{item.semester ? item.semester : tx(locale, "확인 필요", "To confirm")}</dd></div><div><dt>{tx(locale, "학점", "Credits")}</dt><dd>{item.credits}</dd></div><div><dt>{tx(locale, "강의·실습", "Lecture · Practice")}</dt><dd>{item.lectureHours} · {item.practiceHours}</dd></div></dl>{item.reviewNote && <p className="course-review-note">{tx(locale, "공식 확인 필요", "Official verification needed")}</p>}{detailItem && <details><summary>{tx(locale, "상세보기", "View Details")}</summary><p>{detailItem.description}</p></details>}</article>;
         })}
+      </div>
+      <div className="undergraduate-course-mobile-groups">
+        {mobileYearGroups.map((group, index) => <details defaultOpen={index === 0} key={group.key}>
+          <summary><span>{group.label}</span><small>{group.items.length}{tx(locale, "개 교과목", " courses")}</small><ChevronDown size={17} /></summary>
+          <div>
+            {([1, 2, null] as const).map((semester) => {
+              const semesterItems = group.items.filter((item) => item.semester === semester);
+              if (!semesterItems.length) return null;
+              return <section key={semester ?? "unscheduled"}><h3>{semester ? tx(locale, `${semester}학기`, `Semester ${semester}`) : tx(locale, "개설 학기 확인 필요", "Semester to confirm")}</h3><div>{semesterItems.map((item) => <UndergraduateCourseMobileCard item={item} locale={locale} key={item.id} />)}</div></section>;
+            })}
+          </div>
+        </details>)}
       </div>
     </>
   );

@@ -5395,6 +5395,10 @@ p {
   display: none;
 }
 
+.undergraduate-course-mobile-groups {
+  display: none;
+}
+
 .course-detail-intro {
   max-width: 720px;
   margin-bottom: 30px;
@@ -5574,8 +5578,63 @@ p {
   }
 
   .undergraduate-course-mobile-list {
+    display: none;
+  }
+
+  .undergraduate-course-mobile-groups {
     display: grid;
     border-top: 1px solid var(--color-navy-deep);
+  }
+
+  .undergraduate-course-mobile-groups > details {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .undergraduate-course-mobile-groups > details > summary {
+    display: flex;
+    min-height: 56px;
+    align-items: center;
+    color: var(--color-navy-deep);
+    cursor: pointer;
+    gap: 10px;
+  }
+
+  .undergraduate-course-mobile-groups > details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .undergraduate-course-mobile-groups > details > summary span {
+    font-size: 15px;
+    font-weight: 760;
+  }
+
+  .undergraduate-course-mobile-groups > details > summary small {
+    margin-left: auto;
+    color: var(--color-muted);
+    font-size: 11px;
+  }
+
+  .undergraduate-course-mobile-groups > details[open] > summary svg {
+    transform: rotate(180deg);
+  }
+
+  .undergraduate-course-mobile-groups > details > div {
+    display: grid;
+    padding: 0 0 20px;
+    gap: 20px;
+  }
+
+  .undergraduate-course-mobile-groups section > h3 {
+    margin: 0 0 10px;
+    color: var(--color-yonsei-blue);
+    font-size: 12px;
+    font-weight: 760;
+  }
+
+  .undergraduate-course-mobile-groups section > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 
   .undergraduate-course-mobile-list > article {
@@ -5647,6 +5706,61 @@ p {
     margin-top: 12px;
     color: #765c2d;
     font-size: 10px;
+  }
+
+  .undergraduate-course-mobile-groups article {
+    padding: 18px 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .undergraduate-course-mobile-groups article:first-child {
+    border-top: 0;
+  }
+
+  .undergraduate-course-mobile-groups h3 {
+    color: var(--color-navy-deep);
+    font-size: 17px;
+    line-height: 1.4;
+  }
+
+  .undergraduate-course-mobile-groups dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 16px 0 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .undergraduate-course-mobile-groups dl div {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .undergraduate-course-mobile-groups dt {
+    color: var(--color-muted);
+    font-size: 9px;
+  }
+
+  .undergraduate-course-mobile-groups dd {
+    margin: 5px 0 0;
+    font-size: 12px;
+  }
+
+  .undergraduate-course-mobile-groups details details {
+    margin-top: 15px;
+  }
+
+  .undergraduate-course-mobile-groups details details summary {
+    color: var(--color-yonsei-blue);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .undergraduate-course-mobile-groups details details p {
+    margin-top: 14px;
+    color: #4f5d6b;
+    font-size: 12px;
+    line-height: 1.8;
   }
 }
 
@@ -5785,6 +5899,24 @@ p {
 
   .undergraduate-course-mobile-list dl {
     margin-top: 16px;
+  }
+
+  .undergraduate-course-mobile-groups > details > summary {
+    min-height: 52px;
+  }
+
+  .undergraduate-course-mobile-groups > details > div {
+    padding-bottom: 16px;
+    gap: 16px;
+  }
+
+  .undergraduate-course-mobile-groups section > div {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .undergraduate-course-mobile-groups article {
+    padding: 20px 0;
   }
 
   .undergraduate-course-detail-list summary {
@@ -10617,7 +10749,8 @@ p {
   gap: 8px;
 }
 
-.curriculum-mobile-years {
+.curriculum-mobile-years,
+.curriculum-mobile-list {
   display: none;
 }
 
@@ -10978,6 +11111,45 @@ p {
   }
 
   .curriculum-mobile-years {
+    display: none;
+  }
+
+  .curriculum-mobile-list {
+    display: grid;
+    border-top: 1px solid #d8dee5;
+  }
+
+  .curriculum-mobile-list > section {
+    padding: 16px 0 20px;
+    border-bottom: 1px solid #d8dee5;
+    transition: opacity 150ms ease;
+  }
+
+  .curriculum-mobile-list > section.is-dimmed {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .curriculum-mobile-list > section > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .curriculum-mobile-list h3 {
+    margin: 0;
+    color: var(--color-navy-deep);
+    font-size: 15px;
+  }
+
+  .curriculum-mobile-list > section > header span {
+    color: #718190;
+    font-size: 11px;
+    font-weight: 650;
+  }
+
+  .curriculum-mobile-years {
     display: grid;
     gap: 8px;
   }
@@ -11125,6 +11297,10 @@ p {
   }
 
   .curriculum-mobile-semesters > section.is-dimmed {
+    display: none;
+  }
+
+  .curriculum-mobile-list > section.is-dimmed {
     display: none;
   }
 
