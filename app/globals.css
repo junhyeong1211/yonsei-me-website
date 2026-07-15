@@ -4414,13 +4414,63 @@ p {
     font-size: 12px;
   }
 
+  .research-section {
+    padding: 40px 0 44px;
+  }
+
+  .research-index-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    margin-bottom: 20px;
+    gap: 10px 14px;
+  }
+
+  .research-index-header .section-label {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+    font-size: 11px;
+  }
+
+  .research-index-header h2 {
+    font-size: 28px;
+  }
+
+  .research-all-link {
+    min-height: 36px;
+    font-size: 13px;
+  }
+
   .research-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .research-card {
-    min-height: 245px;
-    padding: 26px 24px;
+    min-height: 124px;
+    padding: 17px 15px;
+  }
+
+  .research-card-number {
+    margin-bottom: 10px;
+    font-size: 11px;
+  }
+
+  .research-card h3 {
+    font-size: 18px;
+    line-height: 1.3;
+  }
+
+  .research-card .research-en {
+    margin: 7px 20px 0 0;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  .research-card-arrow {
+    right: 12px;
+    bottom: 12px;
+    width: 16px;
+    height: 16px;
   }
 
   .research-area-grid,
@@ -8276,34 +8326,37 @@ p {
   }
 
   .research-grid {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .research-card {
-    min-height: 220px;
-    padding: 25px 24px;
+    min-height: 154px;
+    padding: 20px 18px;
   }
 
   .research-card-number {
-    margin-bottom: 24px;
-  }
-
-  .research-card h3 {
-    font-size: 23px;
-  }
-
-  .research-card .research-en {
-    font-size: 14px;
-  }
-
-  .research-description {
-    margin-right: 38px;
+    margin-bottom: 14px;
     font-size: 12px;
   }
 
+  .research-card h3 {
+    font-size: 20px;
+  }
+
+  .research-card .research-en {
+    margin-top: 8px;
+    font-size: 12px;
+  }
+
+  .research-description {
+    display: none;
+  }
+
   .research-card-arrow {
-    right: 24px;
-    bottom: 25px;
+    right: 16px;
+    bottom: 16px;
+    width: 17px;
+    height: 17px;
   }
 }
 
