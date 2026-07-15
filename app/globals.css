@@ -5055,7 +5055,13 @@ p {
 
   .home-page .quick-links-grid {
     border-top: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
     border-left: 1px solid var(--color-border);
+  }
+
+  .home-page .quick-links {
+    border-bottom: 0;
   }
 
   .home-page .quick-links-grid a:first-child {
