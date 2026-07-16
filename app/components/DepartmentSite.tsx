@@ -27,7 +27,6 @@ import {
   Menu,
   MessageSquareText,
   Paperclip,
-  RotateCcw,
   Search,
   TrainFront,
   UserRound,
@@ -110,7 +109,7 @@ import { facultyRecruitment } from "../data/facultyRecruitment";
 import { getNewsBySlug, newsPosts } from "../data/news";
 import { getSeminarBySlug, seminarPosts } from "../data/seminars";
 import { eventPosts, getEventBySlug } from "../data/events";
-import { EditorialBoardPage, EditorialDetailPage, NewsDirectoryPage, ProgramsDirectoryPage } from "./NewsContent";
+import { EditorialDetailPage, NewsDirectoryPage, ProgramsDirectoryPage } from "./NewsContent";
 import { AlumniPartnershipsPage } from "./AlumniPartnershipsPage";
 import { searchSiteDocuments } from "../data/searchIndex";
 import { departmentHistory } from "../data/history";
@@ -135,7 +134,6 @@ import { departmentDirections } from "../data/directions";
 import {
   graduateAdmissionUrl,
   undergraduateAdmission,
-  undergraduateAdmissionUrl,
 } from "../data/undergraduateAdmission";
 import {
   careerCategoryLabels,
@@ -712,7 +710,7 @@ function SiteFooter({ locale }: { locale: Locale }) {
           {relatedSitesOpen && (
             <div className="related-sites-menu" role="menu" aria-label={tx(locale, "관련 사이트 목록", "Related sites list")}>
               {relatedSites.map((site) => (
-                <a href={site.url} target="_blank" rel="noopener noreferrer" role="menuitem" onClick={() => setRelatedSitesOpen(false)} key={site.url}>
+                <a href={site.url} target="_blank" rel="noopener noreferrer" role="menuitem" aria-label={tx(locale, `${site.label.ko} 새 탭에서 열기`, `Open ${site.label.en} in a new tab`)} onClick={() => setRelatedSitesOpen(false)} key={site.url}>
                   {locale === "ko" ? site.label.ko : site.label.en}
                 </a>
               ))}
@@ -1154,48 +1152,6 @@ function FacultyMemberDetail({ locale, member }: { locale: Locale; member: Facul
   );
 }
 
-function FacultyDirectory({ locale, searchParams }: { locale: Locale; searchParams: Record<string, string> }) {
-  const router = useRouter();
-  const [area, setArea] = useState(searchParams.area ?? "all");
-  const [position, setPosition] = useState(searchParams.position ?? "all");
-  const [query, setQuery] = useState(searchParams.query ?? "");
-
-  const results = useMemo(() => faculty.filter((person) => {
-    const searchable = `${person.name.ko} ${person.name.en} ${person.researchKeywords.ko.join(" ")} ${person.researchKeywords.en.join(" ")}`.toLowerCase();
-    return (area === "all" || person.researchAreaIds.includes(area)) && (position === "all" || person.position.en === position) && (!query || searchable.includes(query.toLowerCase()));
-  }), [area, position, query]);
-
-  const syncUrl = (nextArea: string, nextPosition: string, nextQuery: string) => {
-    const params = new URLSearchParams();
-    if (nextArea !== "all") params.set("area", nextArea);
-    if (nextPosition !== "all") params.set("position", nextPosition);
-    if (nextQuery) params.set("query", nextQuery);
-    router.replace(`${hrefFor(locale, "/faculty")}${params.size ? `?${params.toString()}` : ""}`);
-  };
-
-  const reset = () => { setArea("all"); setPosition("all"); setQuery(""); router.replace(hrefFor(locale, "/faculty")); };
-
-  return (
-    <>
-      <PageHeader eyebrow="FACULTY" title={tx(locale, "교수진", "Faculty")} description={tx(locale, "연구분야와 키워드로 교수진과 연구실을 탐색합니다.", "Explore faculty and laboratories by research area and keyword.")} />
-      <section className="section content-section">
-        <div className="container">
-          <div className="sample-data-note">{tx(locale, "현재 교수 정보는 레이아웃 검토용 샘플입니다.", "Faculty records shown here are sample data for layout review.")}</div>
-          <form className="filter-bar" onSubmit={(event) => { event.preventDefault(); syncUrl(area, position, query); }}>
-            <div className="filter-field search-field"><label htmlFor="faculty-query">{tx(locale, "이름 또는 연구 키워드", "Name or research keyword")}</label><div><Search size={18} /><input id="faculty-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx(locale, "예: 로보틱스, 제어", "e.g. robotics, control")} /></div></div>
-            <div className="filter-field"><label htmlFor="faculty-area">{tx(locale, "연구분야", "Research area")}</label><select id="faculty-area" value={area} onChange={(event) => { setArea(event.target.value); syncUrl(event.target.value, position, query); }}><option value="all">{tx(locale, "전체", "All")}</option>{researchAreas.map((item) => <option key={item.id} value={item.id}>{t(item.name, locale)}</option>)}</select></div>
-            <div className="filter-field"><label htmlFor="faculty-position">{tx(locale, "직위", "Position")}</label><select id="faculty-position" value={position} onChange={(event) => { setPosition(event.target.value); syncUrl(area, event.target.value, query); }}><option value="all">{tx(locale, "전체", "All")}</option><option value="Professor">{tx(locale, "교수", "Professor")}</option><option value="Associate Professor">{tx(locale, "부교수", "Associate Professor")}</option><option value="Assistant Professor">{tx(locale, "조교수", "Assistant Professor")}</option></select></div>
-            <button className="button primary filter-submit" type="submit"><Search size={17} />{tx(locale, "검색", "Search")}</button>
-            <button className="icon-button filter-reset" type="button" onClick={reset} aria-label={tx(locale, "필터 초기화", "Reset filters")} title={tx(locale, "초기화", "Reset")}><RotateCcw size={19} /></button>
-          </form>
-          <div className="results-heading"><p><strong>{results.length}</strong> {tx(locale, "명의 교수진", "faculty members")}</p><span>{tx(locale, "이름순", "By name")}</span></div>
-          {results.length ? <div className="faculty-grid directory">{results.map((person) => <FacultyCard key={person.id} item={person} locale={locale} />)}</div> : <EmptyState locale={locale} />}
-        </div>
-      </section>
-    </>
-  );
-}
-
 function FacultyDetail({ locale, person }: { locale: Locale; person: Faculty }) {
   const areas = person.researchAreaIds.map((id) => researchAreas.find((area) => area.id === id)).filter((area): area is ResearchArea => Boolean(area));
   const lab = labs.find((entry) => entry.id === person.labId);
@@ -1467,11 +1423,6 @@ function ResearchLabDirectory({ locale, searchParams }: { locale: Locale; search
     [],
   );
 
-  useEffect(() => {
-    setArea(initialArea);
-    setQuery(searchParams.q ?? "");
-  }, [initialArea, searchParams.q]);
-
   const results = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
     return researchLabs.filter((lab) => {
@@ -1625,28 +1576,11 @@ function ResearchLabDetail({ locale, lab }: { locale: Locale; lab: ResearchLab }
   );
 }
 
-function ResearchDirectory({ locale }: { locale: Locale }) {
-  return <><PageHeader eyebrow="RESEARCH" title={tx(locale, "연구분야", "Research Areas")} description={tx(locale, "기계공학의 여섯 연구축을 통해 교수, 연구실, 교과목을 함께 탐색합니다.", "Explore six research areas and their connected faculty, labs, and courses.")} /><section className="section content-section"><div className="container"><div className="research-directory-grid">{researchAreas.map((area) => <ResearchDirectoryItem key={area.id} area={area} locale={locale} />)}</div></div></section></>;
-}
-
-function ResearchDirectoryItem({ area, locale }: { area: ResearchArea; locale: Locale }) {
-  return <Link className="research-directory-item" href={hrefFor(locale, `/research/${area.slug}`)}><span>{area.number}</span><div><p>{area.name.en}</p><h2>{area.name[locale]}</h2><p>{t(area.shortDescription, locale)}</p><div className="keyword-list small">{area.keywords[locale].map((keyword) => <i key={keyword}>{keyword}</i>)}</div></div><ArrowRight size={24} /></Link>;
-}
-
 function ResearchDetail({ locale, area }: { locale: Locale; area: ResearchArea }) {
   const relatedFaculty = getFacultyForArea(area.id);
   const relatedLabs = getLabsForArea(area.id);
   const relatedCourses = getCoursesForArea(area.id);
   return <><PageHeader eyebrow={`RESEARCH AREA ${area.number}`} title={t(area.name, locale)} description={t(area.shortDescription, locale)} /><section className="section content-section"><div className="container detail-layout"><main><section className="detail-block first"><p className="section-label">OVERVIEW</p><h2>{tx(locale, "연구분야 소개", "Overview")}</h2><p>{t(area.description, locale)}</p><div className="keyword-list">{area.keywords[locale].map((keyword) => <span key={keyword}>{keyword}</span>)}</div></section><section className="detail-block"><SectionHeading label="FACULTY" title={tx(locale, "관련 교수진", "Related Faculty")} /><div className="faculty-grid related">{relatedFaculty.map((person) => <FacultyCard key={person.id} item={person} locale={locale} />)}</div></section><section className="detail-block"><SectionHeading label="LABORATORIES" title={tx(locale, "관련 연구실", "Related Laboratories")} /><div className="simple-link-list">{relatedLabs.map((lab) => <Link href={hrefFor(locale, `/labs/${lab.slug}`)} key={lab.id}><FlaskConical size={20} /><span><strong>{t(lab.name, locale)}</strong><small>{t(lab.description, locale)}</small></span><ArrowRight size={18} /></Link>)}</div></section><section className="detail-block"><SectionHeading label="COURSES" title={tx(locale, "관련 교과목", "Related Courses")} /><div className="simple-link-list">{relatedCourses.map((course) => <Link href={hrefFor(locale, `/academics/courses/${course.slug}`)} key={course.id}><BookOpen size={20} /><span><strong>{t(course.name, locale)}</strong><small>{course.code} · {course.credits} {tx(locale, "학점", "credits")}</small></span><ArrowRight size={18} /></Link>)}</div></section></main><aside className="detail-nav"><p>{tx(locale, "다른 연구분야", "Other Areas")}</p>{researchAreas.filter((item) => item.id !== area.id).map((item) => <Link href={hrefFor(locale, `/research/${item.slug}`)} key={item.id}><span>{item.number}</span>{t(item.name, locale)}</Link>)}</aside></div></section></>;
-}
-
-function LabDirectory({ locale }: { locale: Locale }) {
-  return <><PageHeader eyebrow="LABORATORIES" title={tx(locale, "연구실", "Laboratories")} description={tx(locale, "연구분야별 연구실과 담당 교수진을 연결해 확인합니다.", "Discover laboratories and their connected faculty by research area.")} /><section className="section content-section"><div className="container lab-grid">{labs.map((lab) => <LegacyLabCard key={lab.id} lab={lab} locale={locale} />)}</div></section></>;
-}
-
-function LegacyLabCard({ lab, locale }: { lab: Lab; locale: Locale }) {
-  const area = researchAreas.find((item) => item.id === lab.researchAreaIds[0]);
-  return <Link className="lab-card" href={hrefFor(locale, `/labs/${lab.slug}`)}><div className="lab-card-icon"><FlaskConical size={30} /></div><div><p>{area ? t(area.name, locale) : ""}</p><h2>{t(lab.name, locale)}</h2><span>{t(lab.description, locale)}</span></div><ArrowRight size={20} /></Link>;
 }
 
 function LabDetail({ locale, lab }: { locale: Locale; lab: Lab }) {
@@ -1841,11 +1775,11 @@ function CurriculumTreePage({ locale }: { locale: Locale }) {
         </div>
         <div className="curriculum-tree-actions">
           {curriculumTreeSource.originalPdfUrl ? (
-            <a className="curriculum-print-button" href={curriculumTreeSource.originalPdfUrl} target="_blank" rel="noopener noreferrer"><Download size={16} />{tx(locale, "인쇄용 PDF 다운로드", "Download printable PDF")}</a>
+            <a className="curriculum-print-button" href={curriculumTreeSource.originalPdfUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, "교과목 체계도 인쇄용 PDF 다운로드, 새 탭에서 열림", "Download the curriculum tree printable PDF, opens in a new tab")}><Download size={16} />{tx(locale, "인쇄용 PDF 다운로드", "Download printable PDF")}</a>
           ) : (
             <button className="curriculum-print-button" type="button" onClick={() => window.print()}><Download size={16} />{tx(locale, "인쇄용 PDF 다운로드", "Save as printable PDF")}</button>
           )}
-          <a className="curriculum-source-link" href={curriculumTreeSource.originalChartUrl} target="_blank" rel="noopener noreferrer">{tx(locale, "원본 체계도 보기", "View original chart")}<ExternalLink size={15} aria-hidden="true" /></a>
+          <a className="curriculum-source-link" href={curriculumTreeSource.originalChartUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, "교과목 원본 체계도 보기, 새 탭에서 열림", "View the original curriculum chart, opens in a new tab")}>{tx(locale, "원본 체계도 보기", "View original chart")}<ExternalLink size={15} aria-hidden="true" /></a>
         </div>
       </div>
 
@@ -2069,12 +2003,6 @@ function GraduateCourseCatalog({ locale, searchParams }: { locale: Locale; searc
   const [credits, setCredits] = useState<GraduateCreditsFilter>(() => graduateCreditsFilterFromQuery(searchParams.credits));
   const [query, setQuery] = useState(searchParams.q ?? "");
 
-  useEffect(() => {
-    setLevel(graduateLevelFilterFromQuery(searchParams.level));
-    setCredits(graduateCreditsFilterFromQuery(searchParams.credits));
-    setQuery(searchParams.q ?? "");
-  }, [searchParams.credits, searchParams.level, searchParams.q]);
-
   const results = useMemo(() => graduateCourses.filter((course) => {
     const searchable = `${course.courseCode} ${course.nameKo} ${course.nameEn}`.toLowerCase();
     return graduateCourseLevelMatches(course, level)
@@ -2181,16 +2109,6 @@ function CourseDirectory({ locale, searchParams }: { locale: Locale; searchParam
   const [category, setCategory] = useState(() => normalizedCourseFilter(searchParams.category, ["university-core", "required", "elective"]));
   const [query, setQuery] = useState(searchParams.q ?? searchParams.query ?? "");
   const [expandedOffering, setExpandedOffering] = useState<string | null>(null);
-
-  useEffect(() => {
-    const nextTab = resolveUndergraduateCourseTab(searchParams);
-    setTab(nextTab);
-    if (nextTab !== "schedule") return;
-    setYear(normalizedCourseFilter(searchParams.year, ["1", "2", "3", "4"]));
-    setSemester(normalizedCourseFilter(searchParams.semester, ["1", "2"]));
-    setCategory(normalizedCourseFilter(searchParams.category, ["university-core", "required", "elective"]));
-    setQuery(searchParams.q ?? searchParams.query ?? "");
-  }, [searchParams.category, searchParams.q, searchParams.query, searchParams.semester, searchParams.tab, searchParams.year]);
 
   const values = { year, semester, category, query };
   const results = useMemo(() => undergraduateCourseOfferings.filter((item) => {
@@ -2351,11 +2269,6 @@ function GraduationRequirementsPage({ locale, searchParams }: { locale: Locale; 
   const router = useRouter();
   const [program, setProgram] = useState<GraduationProgram>(() => graduationProgramFromQuery(searchParams.program));
   const [admissionYear, setAdmissionYear] = useState<GraduationAdmissionYear>(() => graduationYearFromQuery(searchParams.year));
-
-  useEffect(() => {
-    setProgram(graduationProgramFromQuery(searchParams.program));
-    setAdmissionYear(graduationYearFromQuery(searchParams.year));
-  }, [searchParams.program, searchParams.year]);
 
   const syncUrl = (nextProgram: GraduationProgram, nextYear = admissionYear) => {
     const params = new URLSearchParams({ program: nextProgram });
@@ -2818,7 +2731,7 @@ function CareerDetail({ locale, post }: { locale: Locale; post: CareerPost }) {
           {post.isDemo && <p className="sample-data-note">{tx(locale, "이 게시글은 취업 정보 화면 구성 확인을 위한 샘플이며 실제 공고가 아닙니다.", "This is a sample post for reviewing the career page and is not an actual announcement.")}</p>}
           <div className="article-body"><p>{summary}</p><p>{content}</p></div>
           {post.attachments.length > 0 && <div className="attachments"><h2>{tx(locale, "첨부파일", "Attachments")}</h2>{post.attachments.map((attachment) => <a href={attachment.url} key={attachment.id}><Download size={18} />{t(attachment.name, locale)}</a>)}</div>}
-          {post.externalUrl && <a className="button primary career-apply-link" href={post.externalUrl} target="_blank" rel="noopener noreferrer">{tx(locale, "외부 지원 링크", "External application link")}<ExternalLink size={16} /></a>}
+          {post.externalUrl && <a className="button primary career-apply-link" href={post.externalUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, `${post.titleKo} 외부 지원 링크, 새 탭에서 열림`, `Open the external application link for ${post.titleEn}, opens in a new tab`)}>{tx(locale, "외부 지원 링크", "External application link")}<ExternalLink size={16} aria-hidden="true" /></a>}
           <div className="article-navigation">{previous ? <Link href={hrefFor(locale, `/admission/careers/${previous.slug}`)}><ChevronLeft size={18} /><span><small>{tx(locale, "이전글", "Previous")}</small>{locale === "ko" ? previous.titleKo : previous.titleEn}</span></Link> : <span />}{next ? <Link href={hrefFor(locale, `/admission/careers/${next.slug}`)}><span><small>{tx(locale, "다음글", "Next")}</small>{locale === "ko" ? next.titleKo : next.titleEn}</span><ChevronRight size={18} /></Link> : <span />}</div>
           <Link className="button outline article-list-button" href={hrefFor(locale, "/admission/careers")}><ArrowLeft size={17} />{tx(locale, "목록으로 돌아가기", "Back to list")}</Link>
         </article>
@@ -2916,7 +2829,7 @@ function CalendarEventDialog({ event, locale, onClose, closeButtonRef }: { event
           <div><dt>{tx(locale, "장소", "Location")}</dt><dd>{event.location ? t(event.location, locale) : unavailable}</dd></div>
           <div><dt>{tx(locale, "상세", "Details")}</dt><dd>{event.description ? t(event.description, locale) : unavailable}</dd></div>
         </dl>
-        {event.link && <a href={event.link} target="_blank" rel="noreferrer">{tx(locale, "관련 안내 보기", "View related notice")}<ExternalLink size={15} /></a>}
+        {event.link && <a href={event.link} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, `${t(event.title, locale)} 관련 안내 보기, 새 탭에서 열림`, `View related notice for ${t(event.title, locale)}, opens in a new tab`)}>{tx(locale, "관련 안내 보기", "View related notice")}<ExternalLink size={15} aria-hidden="true" /></a>}
       </section>
     </div>
   );
@@ -2966,10 +2879,6 @@ function CalendarPage({ locale, searchParams }: { locale: Locale; searchParams: 
     setFocusedDayIndex(nextIndex);
     window.requestAnimationFrame(() => calendarDayRefs.current[nextIndex]?.focus());
   };
-
-  useEffect(() => {
-    if (queryYear === 2026 && queryMonth >= 1 && queryMonth <= 12 && queryMonth !== selectedMonth) setSelectedMonth(queryMonth);
-  }, [queryMonth, queryYear, selectedMonth]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -3357,7 +3266,7 @@ function DirectionsPage({ locale }: { locale: Locale }) {
           <MapEmbed locale={locale} />
           <div className="directions-map-meta">
             <p>{departmentDirections.mapQuery}</p>
-            <a href={departmentDirections.externalMapUrl} target="_blank" rel="noopener noreferrer">
+            <a href={departmentDirections.externalMapUrl} target="_blank" rel="noopener noreferrer" aria-label={tx(locale, "기계공학부 지도 크게 보기, 새 탭에서 열림", "Open the department map in a new tab")}>
               {tx(locale, "지도 크게 보기", "Open larger map")}
               <span className="sr-only">{tx(locale, " (새 창)", " (opens in a new window)")}</span>
               <ExternalLink size={15} aria-hidden="true" />
@@ -3726,6 +3635,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   }, [mobileOpen, searchOpen]);
 
   const [section, second, third] = segments;
+  const searchParamsKey = JSON.stringify(Object.entries(searchParams).sort(([left], [right]) => left.localeCompare(right)));
   let page: ReactNode;
   if (!section) page = <HomePage locale={locale} />;
   else if (section === "about" && !second) page = <AboutPage locale={locale} />;
@@ -3744,15 +3654,15 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "research" && !second) page = <ResearchFieldsPage locale={locale} searchParams={searchParams} />;
   else if (section === "labs" && second && getResearchLabBySlug(second)) page = <ResearchLabDetail locale={locale} lab={getResearchLabBySlug(second)!} />;
   else if (section === "labs" && second && getLabBySlug(second)) page = <LabDetail locale={locale} lab={getLabBySlug(second)!} />;
-  else if (section === "labs" && !second) page = <ResearchLabDirectory locale={locale} searchParams={searchParams} />;
+  else if (section === "labs" && !second) page = <ResearchLabDirectory key={searchParamsKey} locale={locale} searchParams={searchParams} />;
   else if (section === "about" && second === "directions") page = <DirectionsPage locale={locale} />;
   else if (section === "academics" && second === "scholarships") page = <ScholarshipsPage locale={locale} searchParams={searchParams} />;
-  else if (section === "academics" && second === "requirements") page = <GraduationRequirementsPage locale={locale} searchParams={searchParams} />;
+  else if (section === "academics" && second === "requirements") page = <GraduationRequirementsPage key={searchParamsKey} locale={locale} searchParams={searchParams} />;
   else if (section === "academics" && second === "curriculum-tree") page = <CurriculumTreePage locale={locale} />;
   else if (section === "academics" && second === "undergraduate") page = <UndergraduateProgramPage locale={locale} />;
-  else if (section === "academics" && second === "graduate") page = <GraduateProgramPage locale={locale} searchParams={searchParams} />;
+  else if (section === "academics" && second === "graduate") page = <GraduateProgramPage key={searchParamsKey} locale={locale} searchParams={searchParams} />;
   else if (section === "academics" && second === "courses" && third && getCourseBySlug(third)) page = <CourseDetail locale={locale} course={getCourseBySlug(third)!} />;
-  else if (section === "academics" && second === "courses") page = <CourseDirectory locale={locale} searchParams={searchParams} />;
+  else if (section === "academics" && second === "courses") page = <CourseDirectory key={searchParamsKey} locale={locale} searchParams={searchParams} />;
   else if (section === "admission" && second === "undergraduate") page = <UndergraduateAdmissionPage locale={locale} />;
   else if (section === "admission" && second === "graduate") page = <GraduateAdmissionRedirect locale={locale} />;
   else if (section === "admission" && second === "careers" && third && getCareerPostBySlug(third)) page = <CareerDetail locale={locale} post={getCareerPostBySlug(third)!} />;
@@ -3761,7 +3671,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else if (section === "news" && second === "careers") page = <CareerDirectory locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "notices" && third && getNoticeBySlug(third)) page = <NoticeDetail locale={locale} notice={getNoticeBySlug(third)!} />;
   else if (section === "news" && second === "notices") page = <NoticeDirectory locale={locale} searchParams={searchParams} />;
-  else if (section === "news" && second === "calendar") page = <CalendarPage locale={locale} searchParams={searchParams} />;
+  else if (section === "news" && second === "calendar") page = <CalendarPage key={searchParamsKey} locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "faculty-recruitment") page = <FacultyRecruitmentPage locale={locale} />;
   else if (section === "news" && second === "department") page = <NewsDirectoryPage locale={locale} searchParams={searchParams} />;
   else if (section === "news" && second === "programs" && third) {
@@ -3781,7 +3691,7 @@ export default function DepartmentSite({ locale, segments, searchParams }: Depar
   else page = <PlaceholderPage locale={locale} segments={segments} />;
 
   return (
-    <div className="site-shell">
+    <div className="site-shell" lang={locale}>
       <SiteHeader locale={locale} segments={segments} openMenu={openMenu} setOpenMenu={setOpenMenu} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} mobileSection={mobileSection} setMobileSection={setMobileSection} searchOpen={searchOpen} setSearchOpen={setSearchOpen} />
       <Breadcrumb locale={locale} segments={segments} />
       <main id="main-content">{page}</main>

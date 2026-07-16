@@ -201,7 +201,7 @@ export function EditorialDetailPage({ locale, post, posts }: { locale: Locale; p
           </div>}
           {post.externalLinks.length > 0 && <section className="editorial-detail-resources" aria-labelledby="editorial-links-title">
             <h2 id="editorial-links-title">{copy(locale, "관련 외부 링크", "Related links")}</h2>
-            {post.externalLinks.map((link) => <a href={link.url} target="_blank" rel="noopener noreferrer" key={link.id}>{text(link.label, locale)}<ExternalLink size={16} aria-hidden="true" /><span className="sr-only">{copy(locale, " 새 창", " opens in a new window")}</span></a>)}
+            {post.externalLinks.map((link) => <a href={link.url} target="_blank" rel="noopener noreferrer" key={link.id} aria-label={copy(locale, `${text(link.label, locale)} 새 탭에서 열기`, `Open ${text(link.label, locale)} in a new tab`)}>{text(link.label, locale)}<ExternalLink size={16} aria-hidden="true" /><span className="sr-only">{copy(locale, " 새 창", " opens in a new window")}</span></a>)}
           </section>}
           <div className="article-navigation editorial-article-navigation">{previous ? <Link href={localizedPath(locale, `${basePath}/${previous.slug}`)}><ChevronLeft size={18} /><span><small>{copy(locale, "이전 글", "Previous")}</small>{text(previous.title, locale)}</span></Link> : <span />}{next ? <Link href={localizedPath(locale, `${basePath}/${next.slug}`)}><span><small>{copy(locale, "다음 글", "Next")}</small>{text(next.title, locale)}</span><ChevronRight size={18} /></Link> : <span />}</div>
           <Link className="button outline article-list-button" href={localizedPath(locale, basePath)}><ArrowLeft size={17} />{copy(locale, "목록으로 돌아가기", "Back to list")}</Link>

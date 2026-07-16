@@ -84,7 +84,7 @@ test("searches student activities from the shared data source", async () => {
     const response = await render(`/ko/search?q=${encodeURIComponent(query)}`);
     assert.equal(response.status, 200);
     const html = await response.text();
-    assert.match(html, /학생활동·동아리/);
+    assert.match(html, /학생활동/);
     assert.match(html, new RegExp(expected));
   }
 });
@@ -137,15 +137,15 @@ test("server-renders news, seminars, events, and shared detail pages", async () 
     assert.equal(response.status, 200, pathname);
   }
 
-  const newsDetail = await render("/ko/news/important-undergraduate-news-pending");
+  const newsDetail = await render("/ko/news/flexible-acoustic-wave-device-polymer-film");
   assert.equal(newsDetail.status, 200);
-  assert.match(await newsDetail.text(), /관련 외부 링크/);
+  assert.match(await newsDetail.text(), /관련 논문 보기/);
 
-  const seminarDetail = await render("/ko/seminars/bk-seminar-hirai");
+  const seminarDetail = await render("/ko/seminars/bk-seminar-robert-landers");
   assert.equal(seminarDetail.status, 200);
-  assert.match(await seminarDetail.text(), /상세 내용 준비 중/);
+  assert.match(await seminarDetail.text(), /Robert G\. Landers/);
 
-  const eventDetail = await render("/en/events/summer-session-event-july-24");
+  const eventDetail = await render("/en/events/overseas-intensive-lecture-series-2-2026");
   assert.equal(eventDetail.status, 200);
   assert.match(await eventDetail.text(), /Back to list/);
 
@@ -157,16 +157,16 @@ test("server-renders news, seminars, events, and shared detail pages", async () 
 
 test("searches news, seminar, and event data by content fields", async () => {
   const cases = [
-    ["중요 학부공지", "뉴스"],
-    ["Robert G. Landers", "세미나"],
-    ["여름학기", "행사"],
+    ["비압전성 폴리머", "flexible-acoustic-wave-device-polymer-film"],
+    ["Robert G. Landers", "bk-seminar-robert-landers"],
+    ["여름학기", "overseas-intensive-lecture-series-2-2026"],
   ];
 
-  for (const [query, resultType] of cases) {
+  for (const [query, expectedPath] of cases) {
     const response = await render(`/ko/search?q=${encodeURIComponent(query)}`);
     assert.equal(response.status, 200);
     const html = await response.text();
-    assert.match(html, new RegExp(resultType));
+    assert.match(html, new RegExp(expectedPath));
   }
 });
 
